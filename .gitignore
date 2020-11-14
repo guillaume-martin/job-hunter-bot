@@ -1,0 +1,14 @@
+# ide files
+.idea/
+.empty
+.vscode
+
+# notebooks
+.ipynb_checkpoints
+
+
+__pycache__
+
+
+drafts/
+output/
