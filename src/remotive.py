@@ -2,9 +2,18 @@
 
 import json 
 import urllib
+import logging
 from datetime import datetime
 
 import requests
+
+
+logger = logging.getLogger(__name__)
+file_handler = logger.addHandler('../logs/job_search.log')
+formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+file_handler.setFormatter(formatter)
+logger.setLevel(logging.INFO)
+
 
 BASE_URL = 'https://oqubrx6zeq-3.algolianet.com/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.0.0)%3B%20Browser%20(lite)&x-algolia-api-key=7a1d0ebc0d0e9ba3dc035fc09729f2a8&x-algolia-application-id=OQUBRX6ZEQ'
 

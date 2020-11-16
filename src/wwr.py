@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 import urllib
+import logging
 from datetime import datetime
 from dateutil.parser import parse
 
 import requests
 from bs4 import BeautifulSoup
 
+
+logger = logging.getLogger(__name__)
+file_handler = logger.addHandler('../logs/job_search.log')
+formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+file_handler.setFormatter(formatter)
+logger.setLevel(logging.INFO)
 
 BASE_URL = 'https://weworkremotely.com/remote-jobs'
 

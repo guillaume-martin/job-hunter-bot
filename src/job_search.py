@@ -1,10 +1,18 @@
 """ Searches jobs offers on a selection of web sites
 """
 # -*- coding: utf-8 -*-
+import logging
 from datetime import datetime
 
 import remotive
 import wwr
+
+
+logger = logging.getLogger(__name__)
+file_handler = logger.addHandler('../logs/job_search.log')
+formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+file_handler.setFormatter(formatter)
+logger.setLevel(logging.INFO)
 
 SEARCHES = [
     ('sql', 'Data'),
@@ -47,22 +55,22 @@ def find_jobs(searches):
     """
     jobs = []
     for term, category in searches:
-        print("=" * 10, " ", term, " - ", category, " ", "=" * 10)
+        logger.info("=" * 10, " ", term, " - ", category, " ", "=" * 10)
 
         # get jobs from Remotive
-        print("Searching Remotive jobs...")
+        logger.info("Searching Remotive jobs...")
         new_jobs = remotive.get_jobs(term, category)
-        print(f"Found {len(new_jobs)} jobs")
+        logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
 
         # get jobs from wwr
         if len(term) > 0:
-            print("Searching We Work Remotely jobs...")
+            logger.info("Searching We Work Remotely jobs...")
             new_jobs += wwr.get_jobs(term)
-            print(f"Found {len(new_jobs)} jobs")
+            logger.info(f"Found {len(new_jobs)} jobs")
             jobs += new_jobs
         else:
-            print("Skipping We Work Remotely.")
+            logger.info("Skipping We Work Remotely.")
 
     return jobs
 
@@ -76,7 +84,6 @@ def save_jobs(jobs):
         output += '"' + job['date_published'] + '",'
         output += '"' + job['url'] + '"\n'
     
-    # print(output)
     with open('../output/jobs.csv', 'w') as file:
         file.write(output)
         
@@ -95,7 +102,7 @@ def print_jobs(jobs):
     
     html += '</div>'
         
-    # print(html)
+    # logger.info(html)
     with open('../output/jobs.html', 'w') as file:
         file.write(html)
         
@@ -105,15 +112,15 @@ def main():
     jobs = find_jobs(SEARCHES)
 
     # Remove duplicates
-    print("Removing duplicates...")
+    logger.info("Removing duplicates...")
     single_jobs = []
     for job in jobs:
         if job not in single_jobs:
             single_jobs.append(job)
-    print(f"Removed {len(jobs) - len(single_jobs)} jobs.")
+    logger.info(f"Removed {len(jobs) - len(single_jobs)} jobs.")
             
     # Remove older posts
-    print("Removing older jobs...")
+    logger.info("Removing older jobs...")
     before = len(single_jobs)
     old_jobs = []
     for job in single_jobs:
@@ -125,10 +132,10 @@ def main():
     for old_job in old_jobs:
         single_jobs.remove(old_job)
 
-    print(f"Removed {before - len(single_jobs)} jobs")
+    logger.info(f"Removed {before - len(single_jobs)} jobs")
     
     # Remove unwanted jobs
-    print("Removing unwanted jobs...")
+    logger.info("Removing unwanted jobs...")
     before = len(single_jobs)
     unwanted_jobs = []
     for job in single_jobs:
@@ -139,10 +146,10 @@ def main():
     for unwanted_job in unwanted_jobs:
         single_jobs.remove(unwanted_job)
     
-    print(f"Removed {before - len(single_jobs)} jobs")
+    logger.info(f"Removed {before - len(single_jobs)} jobs")
     
     # save_jobs(single_jobs)
-    # print("Jobs saved.")
+    # logger.info("Jobs saved.")
     
     print_jobs(single_jobs)
     
