@@ -9,10 +9,14 @@ from bs4 import BeautifulSoup
 
 
 logger = logging.getLogger(__name__)
-file_handler = logger.addHandler('../logs/job_search.log')
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-file_handler.setFormatter(formatter)
 logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+
+file_handler = logging.FileHandler('../logs/job_search.log')
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+
 
 BASE_URL = 'https://weworkremotely.com/remote-jobs'
 

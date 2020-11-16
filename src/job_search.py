@@ -9,10 +9,14 @@ import wwr
 
 
 logger = logging.getLogger(__name__)
-file_handler = logger.addHandler('../logs/job_search.log')
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
-file_handler.setFormatter(formatter)
 logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+
+file_handler = logging.FileHandler('../logs/job_search.log')
+file_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+
 
 SEARCHES = [
     ('sql', 'Data'),
@@ -55,7 +59,7 @@ def find_jobs(searches):
     """
     jobs = []
     for term, category in searches:
-        logger.info("=" * 10, " ", term, " - ", category, " ", "=" * 10)
+        logger.info(f"========== {term} - {category} ==========")
 
         # get jobs from Remotive
         logger.info("Searching Remotive jobs...")
