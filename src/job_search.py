@@ -7,27 +7,32 @@ import remotive
 import wwr
 
 SEARCHES = [
-    # ('sql', 'Data'),
+    ('sql', 'Data'),
     ('database', 'Data'),
-    # ('database', 'DevOps/Sysadmin'),
-    # ('postgresql', 'Data'),
-    # ('', 'Customer Service'),
-    # ('data analyst', 'Data'),
-    # ('data analyst', 'Business'),
-    # ('data engineer', 'Data'),
-    # ('business analyst', 'Data')
+    ('database', 'DevOps/Sysadmin'),
+    ('postgresql', 'Data'),
+    ('', 'Customer Service'),
+    ('data analyst', 'Data'),
+    ('data analyst', 'Business'),
+    ('data engineer', 'Data'),
+    ('business analyst', 'Data')
     ]
 
 EXCLUDE_TERMS = [
     'Developer',
     'Software Engineer',
     'Full Stack Engineer',
-    'Back End Engineer'
+    'Back End Engineer',
+    'Backend Engineer',
+    'Front End Engineer',
+    'Frontend Engineer',
+    'Node JS',
+    'NodeJS'
     ]
 
 # Number of days since the job was published
 # Older jobs are dropped.
-SINCE = 1
+SINCE = 7
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -42,14 +47,22 @@ def find_jobs(searches):
     """
     jobs = []
     for term, category in searches:
+        print("=" * 10, " ", term, " - ", category, " ", "=" * 10)
 
         # get jobs from Remotive
         print("Searching Remotive jobs...")
-        jobs += remotive.get_jobs(term, category)
+        new_jobs = remotive.get_jobs(term, category)
+        print(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
 
         # get jobs from wwr
-        print("Searching We Work Remotely jobs...")
-        jobs += wwr.get_jobs(term)
+        if len(term) > 0:
+            print("Searching We Work Remotely jobs...")
+            new_jobs += wwr.get_jobs(term)
+            print(f"Found {len(new_jobs)} jobs")
+            jobs += new_jobs
+        else:
+            print("Skipping We Work Remotely.")
 
     return jobs
 
@@ -102,21 +115,31 @@ def main():
     # Remove older posts
     print("Removing older jobs...")
     before = len(single_jobs)
-    for index, job in enumerate(single_jobs):
+    old_jobs = []
+    for job in single_jobs:
         date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
         days_since_published = (datetime.now() - date_published).days
-        
         if days_since_published > SINCE:
-            single_jobs.remove(job)
-            print(job in single_jobs)
-            
+            old_jobs.append(job)
+
+    for old_job in old_jobs:
+        single_jobs.remove(old_job)
+
     print(f"Removed {before - len(single_jobs)} jobs")
     
     # Remove unwanted jobs
+    print("Removing unwanted jobs...")
+    before = len(single_jobs)
+    unwanted_jobs = []
     for job in single_jobs:
         for exclude in EXCLUDE_TERMS:
-            if exclude in job['title']:
-                single_jobs.remove(job)
+            if exclude.lower() in job['title'].lower():
+                unwanted_jobs.append(job)
+
+    for unwanted_job in unwanted_jobs:
+        single_jobs.remove(unwanted_job)
+    
+    print(f"Removed {before - len(single_jobs)} jobs")
     
     # save_jobs(single_jobs)
     # print("Jobs saved.")
