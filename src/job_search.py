@@ -4,6 +4,7 @@
 import logging
 from datetime import datetime
 
+import config
 import remotive
 import wwr
 import remoteok
@@ -21,35 +22,6 @@ stream_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 logger.addHandler(stream_handler)
-
-
-SEARCHES = [
-    ('sql', 'Data'),
-    ('database', 'Data'),
-    ('database', 'DevOps/Sysadmin'),
-    ('postgresql', 'Data'),
-    ('', 'Customer Service'),
-    ('data analyst', 'Data'),
-    ('data analyst', 'Business'),
-    ('data engineer', 'Data'),
-    ('business analyst', 'Data')
-    ]
-
-EXCLUDE_TERMS = [
-    'Developer',
-    'Software Engineer',
-    'Full Stack Engineer',
-    'Back End Engineer',
-    'Backend Engineer',
-    'Front End Engineer',
-    'Frontend Engineer',
-    'Node JS',
-    'NodeJS'
-    ]
-
-# Number of days since the job was published
-# Older jobs are dropped.
-SINCE = 7 
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -148,9 +120,10 @@ def print_jobs(jobs):
         
     
 def main():
-    # Extract jobs from web sites and save them in a list
+    
+   # Extract jobs from web sites and save them in a list
     logger.info("###############  Searching Jobs  ###############")
-    jobs = find_jobs(SEARCHES)
+    jobs = find_jobs(config.searches)
     
     # with open('../logs/jobs_list.txt', 'w') as file:
     #     file.write(',\n'.join(jobs))
@@ -172,7 +145,7 @@ def main():
     for job in single_jobs:
         date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
         days_since_published = (datetime.now() - date_published).days
-        if days_since_published > SINCE:
+        if days_since_published > config.since:
             old_jobs.append(job)
 
     for old_job in old_jobs:
@@ -185,7 +158,7 @@ def main():
     before = len(single_jobs)
     unwanted_jobs = []
     for job in single_jobs:
-        for exclude in EXCLUDE_TERMS:
+        for exclude in config.excluded_terms:
             if exclude.lower() in job['title'].lower():
                 unwanted_jobs.append(job)
 
