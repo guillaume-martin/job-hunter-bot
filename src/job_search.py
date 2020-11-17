@@ -7,6 +7,7 @@ from datetime import datetime
 import remotive
 import wwr
 import remoteok
+import worknomads
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -76,26 +77,41 @@ def find_jobs(searches):
         logger.info("Searching We Work Remotely jobs...")
         if len(term) == 0:
             wwr_term = category
-            logger.info(f"Search term changed to {term}.")
+            logger.info(f"Search term changed to {category}.")
         else:
             wwr_term = term
             
         new_jobs = wwr.get_jobs(wwr_term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-            
+        logger.info('-' * 50)
+        
         # Get jobs from remoteok
         logger.info("Searching remote | OK...")
         if len(term) == 0:
             remoteok_term = category
-            logger.info(f"Search term changed to {term}.")
+            logger.info(f"Search term changed to {category}.")
         else:
             remoteok_term = term
             
         new_jobs = remoteok.get_jobs(remoteok_term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-
+        logger.info('-' * 50)
+        
+        # Get jobs from worknomads
+        logger.info("Searching worknomads")
+        if len(term) == 0:
+            worknomads_term = category
+            logger.info(f"Search term changed to {category}.")
+        else:
+            worknomads_term = term
+            
+        new_jobs = worknomads.get_jobs(worknomads_term)
+        logger.info(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+        logger.info('-' * 50)
+        
     return jobs
 
 
@@ -136,8 +152,8 @@ def main():
     logger.info("###############  Searching Jobs  ###############")
     jobs = find_jobs(SEARCHES)
     
-    with open('../logs/jobs_list.txt', 'w') as file:
-        file.write(jobs)
+    # with open('../logs/jobs_list.txt', 'w') as file:
+    #     file.write(',\n'.join(jobs))
 
     logger.info("###############  Cleaning Job List  ###############")
 
