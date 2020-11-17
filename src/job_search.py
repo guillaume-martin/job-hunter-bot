@@ -6,16 +6,20 @@ from datetime import datetime
 
 import remotive
 import wwr
-
+import remoteok
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
 file_handler = logging.FileHandler('../logs/job_search.log')
 file_handler.setFormatter(formatter)
 
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
 logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 SEARCHES = [
@@ -44,7 +48,7 @@ EXCLUDE_TERMS = [
 
 # Number of days since the job was published
 # Older jobs are dropped.
-SINCE = 7
+SINCE = 7 
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -61,20 +65,36 @@ def find_jobs(searches):
     for term, category in searches:
         logger.info(f"========== {term} - {category} ==========")
 
-        # get jobs from Remotive
+        # Get jobs from Remotive
         logger.info("Searching Remotive jobs...")
         new_jobs = remotive.get_jobs(term, category)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
+        logger.info('-' * 50)
 
-        # get jobs from wwr
-        if len(term) > 0:
-            logger.info("Searching We Work Remotely jobs...")
-            new_jobs += wwr.get_jobs(term)
-            logger.info(f"Found {len(new_jobs)} jobs")
-            jobs += new_jobs
+        # Get jobs from wwr
+        logger.info("Searching We Work Remotely jobs...")
+        if len(term) == 0:
+            wwr_term = category
+            logger.info(f"Search term changed to {term}.")
         else:
-            logger.info("Skipping We Work Remotely.")
+            wwr_term = term
+            
+        new_jobs = wwr.get_jobs(wwr_term)
+        logger.info(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+            
+        # Get jobs from remoteok
+        logger.info("Searching remote | OK...")
+        if len(term) == 0:
+            remoteok_term = category
+            logger.info(f"Search term changed to {term}.")
+        else:
+            remoteok_term = term
+            
+        new_jobs = remoteok.get_jobs(remoteok_term)
+        logger.info(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
 
     return jobs
 
@@ -113,7 +133,13 @@ def print_jobs(jobs):
     
 def main():
     # Extract jobs from web sites and save them in a list
+    logger.info("###############  Searching Jobs  ###############")
     jobs = find_jobs(SEARCHES)
+    
+    with open('../logs/jobs_list.txt', 'w') as file:
+        file.write(jobs)
+
+    logger.info("###############  Cleaning Job List  ###############")
 
     # Remove duplicates
     logger.info("Removing duplicates...")

@@ -10,12 +10,16 @@ from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
 file_handler = logging.FileHandler('../logs/job_search.log')
 file_handler.setFormatter(formatter)
 
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
 logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 BASE_URL = 'https://weworkremotely.com/remote-jobs'
@@ -121,6 +125,7 @@ def get_jobs(term, region=REGION, job_type=JOB_TYPE):
         f"&job_listing_type[]={urllib.parse.quote(job_type)}"
         )
 
+    logger.info(f"query_url = {query_url}")
     r = requests.get(query_url)
 
     if r.status_code == 200:

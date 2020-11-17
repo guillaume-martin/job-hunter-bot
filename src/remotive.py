@@ -10,12 +10,16 @@ import requests
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(message)s')
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
 file_handler = logging.FileHandler('../logs/job_search.log')
 file_handler.setFormatter(formatter)
 
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
 logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 
 BASE_URL = 'https://oqubrx6zeq-3.algolianet.com/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.0.0)%3B%20Browser%20(lite)&x-algolia-api-key=7a1d0ebc0d0e9ba3dc035fc09729f2a8&x-algolia-application-id=OQUBRX6ZEQ'
@@ -57,6 +61,7 @@ def get_jobs(term, category):
       ]
     }
 
+    logger.info(f"payload = {payload}")
     r = requests.request('POST', BASE_URL, headers=HEADERS, data=json.dumps(payload))
 
     response = json.loads(r.content)
