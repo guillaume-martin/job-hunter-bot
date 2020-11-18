@@ -17,11 +17,11 @@ formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 file_handler = logging.FileHandler('../logs/job_search.log')
 file_handler.setFormatter(formatter)
 
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
+# stream_handler = logging.StreamHandler()
+# stream_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
+# logger.addHandler(stream_handler)
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -114,10 +114,8 @@ def print_jobs(jobs):
     
     html += '</div>'
         
-    # logger.info(html)
-    with open('../output/jobs.html', 'w') as file:
-        file.write(html)
-        
+    print(html)
+
     
 def main():
     
