@@ -1,14 +1,22 @@
 """ Searches jobs offers on a selection of web sites
 """
 # -*- coding: utf-8 -*-
+import os
+import ssl
 import logging
+import smtplib
 from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+from dotenv import load_dotenv
 
 import config
 import remotive
 import wwr
 import remoteok
 import worknomads
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -17,11 +25,12 @@ formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 file_handler = logging.FileHandler('../logs/job_search.log')
 file_handler.setFormatter(formatter)
 
-# stream_handler = logging.StreamHandler()
-# stream_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
-# logger.addHandler(stream_handler)
+logger.addHandler(stream_handler)
+
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -87,7 +96,7 @@ def find_jobs(searches):
     return jobs
 
 
-def save_jobs(jobs):
+def jobs_to_csv(jobs):
     
     output = "company,title,date,url\n"
     for job in jobs:
@@ -99,7 +108,8 @@ def save_jobs(jobs):
     with open('../output/jobs.csv', 'w') as file:
         file.write(output)
         
-def print_jobs(jobs):
+
+def jobs_to_html(jobs):
     
     html = '<div>'
     
@@ -114,9 +124,49 @@ def print_jobs(jobs):
     
     html += '</div>'
         
-    print(html)
+    return html
 
-    
+
+def jobs_to_text(jobs):
+
+    txt = ''
+    for job in jobs:
+        txt += f"{job['title']} @ {job['company']} ({job['date_published']}) - {job['url']}\n"
+
+    return txt
+
+
+def send_jobs(jobs):
+    smtp_server = os.getenv('SMTP_SERVER')
+    smtp_port = os.getenv('SMTP_PORT')
+    smtp_user = os.getenv('SMTP_USER')
+    smtp_pwd = os.getenv('SMTP_PASSWORD')
+
+    receiver_email = os.getenv('RECEIVER_EMAIL')
+
+    message = MIMEMultipart("alternative")
+    message['subject'] = 'remote job search results'
+    message['from'] = smtp_user
+    message['to'] = receiver_email
+
+    text = MIMEText(jobs_to_text(jobs), 'plain')
+    html = MIMEText(jobs_to_html(jobs), 'html')
+
+    message.attach(text)
+    message.attach(html)
+    context = ssl.create_default_context()
+
+    with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
+        logger.info(f"Connect as {smtp_user} : {smtp_pwd}")
+        server.login(smtp_user, smtp_pwd)
+        logger.info(f"Sending email to {receiver_email}")
+        server.sendmail(
+            smtp_user,
+            receiver_email,
+            message.as_string()
+        )
+
+
 def main():
     
    # Extract jobs from web sites and save them in a list
@@ -165,10 +215,12 @@ def main():
     
     logger.info(f"Removed {before - len(single_jobs)} jobs")
     
-    # save_jobs(single_jobs)
-    # logger.info("Jobs saved.")
+    # Send jobs by email
+    logger.info("###############  Sending Results  ###############")
+    logger.info(f"Sending {len(single_jobs)} jobs.")
+    send_jobs(single_jobs)
     
-    print_jobs(single_jobs)
-    
+
 if __name__ == '__main__':
+    load_dotenv(verbose=False)
     main()

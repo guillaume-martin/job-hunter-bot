@@ -10,6 +10,9 @@
 # logs
 logs
 
+.env
+
+
 __pycache__
 
 
