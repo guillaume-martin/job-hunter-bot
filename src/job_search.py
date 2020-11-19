@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
-file_handler = logging.FileHandler('../logs/job_search.log')
+date = datetime.strftime(datetime.now(), '%Y-%m-%d')
+file_handler = logging.FileHandler(f'../logs/{date}.log')
 file_handler.setFormatter(formatter)
 
 stream_handler = logging.StreamHandler()
