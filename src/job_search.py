@@ -5,6 +5,7 @@ import os
 import ssl
 import logging
 import smtplib
+from pathlib import Path
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -17,13 +18,18 @@ import wwr
 import remoteok
 import worknomads
 
+# Setup paths
+script_dir = Path(__file__).parent
+main_dir = (script_dir / '..').resolve()
+logs_dir = (main_dir / 'logs').resolve()
+output_dir = (main_dir / 'output').resolve()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
-file_handler = logging.FileHandler(f'../logs/{date}.log')
+file_handler = logging.FileHandler(f'{logs_dir}/{date}.log')
 file_handler.setFormatter(formatter)
 
 stream_handler = logging.StreamHandler()
@@ -106,7 +112,7 @@ def jobs_to_csv(jobs):
         output += '"' + job['date_published'] + '",'
         output += '"' + job['url'] + '"\n'
     
-    with open('../output/jobs.csv', 'w') as file:
+    with open(f'{output_dir}/{date}.csv', 'w') as file:
         file.write(output)
         
 
@@ -174,9 +180,6 @@ def main():
     logger.info("###############  Searching Jobs  ###############")
     jobs = find_jobs(config.searches)
     
-    # with open('../logs/jobs_list.txt', 'w') as file:
-    #     file.write(',\n'.join(jobs))
-
     logger.info("###############  Cleaning Job List  ###############")
 
     # Remove duplicates
@@ -216,6 +219,9 @@ def main():
     
     logger.info(f"Removed {before - len(single_jobs)} jobs")
     
+    # Save jobs 
+    jobs_to_csv(single_jobs)
+
     # Send jobs by email
     logger.info("###############  Sending Results  ###############")
     logger.info(f"Sending {len(single_jobs)} jobs.")

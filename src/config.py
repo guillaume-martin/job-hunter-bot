@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Searches are a list of tuples (search_term, category)
 # The categories are used in remotive.io
 searches = [
@@ -22,6 +20,7 @@ excluded_terms = [
     'Backend Engineer',
     'Front End Engineer',
     'Frontend Engineer',
+    'Front-End Engineer',
     'Node JS',
     'NodeJS'
     ]
