@@ -1,15 +1,13 @@
 # Searches are a list of tuples (search_term, category)
 # The categories are used in remotive.io
 searches = [
-    ('sql', 'Data'),
-    ('database', 'Data'),
-    ('database', 'DevOps/Sysadmin'),
-    ('postgresql', 'Data'),
-    ('', 'Customer Service'),
-    ('data analyst', 'Data'),
-    ('data analyst', 'Business'),
-    ('data engineer', 'Data'),
-    ('business analyst', 'Data')
+    'sql',
+    'database',
+    'postgresql',
+    'customer',
+    'data analyst',
+    'data engineer',
+    'business analyst'
     ]
 
 excluded_terms = [
@@ -27,4 +25,4 @@ excluded_terms = [
 
 # Number of days since the job was published
 # Older jobs are dropped.
-since = 1
+since = 7

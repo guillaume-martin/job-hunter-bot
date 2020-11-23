@@ -51,51 +51,33 @@ def find_jobs(searches):
         }
     """
     jobs = []
-    for term, category in searches:
-        logger.info(f"========== {term} - {category} ==========")
+    for term in searches:
+        logger.info(f"========== {term} ==========")
 
         # Get jobs from Remotive
         logger.info("Searching Remotive jobs...")
-        new_jobs = remotive.get_jobs(term, category)
+        new_jobs = remotive.get_jobs(term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         logger.info('-' * 50)
 
         # Get jobs from wwr
         logger.info("Searching We Work Remotely jobs...")
-        if len(term) == 0:
-            wwr_term = category
-            logger.info(f"Search term changed to {category}.")
-        else:
-            wwr_term = term
-            
-        new_jobs = wwr.get_jobs(wwr_term)
+        new_jobs = wwr.get_jobs(term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         logger.info('-' * 50)
         
         # Get jobs from remoteok
         logger.info("Searching remote | OK...")
-        if len(term) == 0:
-            remoteok_term = category
-            logger.info(f"Search term changed to {category}.")
-        else:
-            remoteok_term = term
-            
-        new_jobs = remoteok.get_jobs(remoteok_term)
+        new_jobs = remoteok.get_jobs(term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         logger.info('-' * 50)
         
         # Get jobs from worknomads
         logger.info("Searching worknomads")
-        if len(term) == 0:
-            worknomads_term = category
-            logger.info(f"Search term changed to {category}.")
-        else:
-            worknomads_term = term
-            
-        new_jobs = worknomads.get_jobs(worknomads_term)
+        new_jobs = worknomads.get_jobs(term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         logger.info('-' * 50)

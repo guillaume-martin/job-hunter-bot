@@ -37,22 +37,21 @@ HEADERS = {
 US_ONLY = 'false'
 
 
-def get_jobs(term, category):
+def get_jobs(term):
 
     jobs = []
 
     term_encoded = urllib.parse.quote(term)
-    category_encoded = urllib.parse.quote(category)
 
     payload = {
       "requests": [
         {
           "indexName": "live_jobs",
-          "params": f"query={term_encoded}&page=0&maxValuesPerFacet=1000&facets=%5B%22us_only%22%2C%22category%22%5D&tagFilters=&facetFilters=%5B%5B%22us_only%3A{US_ONLY}%22%5D%2C%5B%22category%3A{category_encoded}%22%5D%5D"
+          "params": f"query={term_encoded}&page=0&maxValuesPerFacet=1000&facets=%5B%22us_only%22%2C%22category%22%5D&tagFilters=&facetFilters=%5B%5B%22us_only%3A{US_ONLY}%22%5D%5D"
         },
         {
           "indexName": "live_jobs",
-          "params": f"query={term_encoded}&page=0&maxValuesPerFacet=1000&hitsPerPage=1&attributesToRetrieve=%5B%5D&attributesToHighlight=%5B%5D&attributesToSnippet=%5B%5D&tagFilters=&analytics=false&clickAnalytics=false&facets=us_only&facetFilters=%5B%5B%22category%3A{category_encoded}%22%5D%5D"
+          "params": f"query={term_encoded}&page=0&maxValuesPerFacet=1000&hitsPerPage=1&attributesToRetrieve=%5B%5D&attributesToHighlight=%5B%5D&attributesToSnippet=%5B%5D&tagFilters=&analytics=false&clickAnalytics=false&facets=us_only&facetFilters=%5B%5D"
         },
         {
           "indexName": "live_jobs",
