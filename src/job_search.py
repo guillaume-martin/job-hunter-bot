@@ -52,7 +52,7 @@ def find_jobs(searches):
     """
     jobs = []
     for term in searches:
-        logger.info(f"========== {term} ==========")
+        logger.info(f"=============== {term} ===============")
 
         # Get jobs from Remotive
         logger.info("Searching Remotive jobs...")
@@ -193,12 +193,23 @@ def main():
     unwanted_jobs = []
     for job in single_jobs:
         for exclude in config.excluded_terms:
-            if exclude.lower() in job['title'].lower():
+            exclude_cleaned = exclude.lower() \
+                              .replace(' ', '') \
+                               .replace('-', '')
+            title_cleaned = job['title'].lower() \
+                                        .replace(' ', '') \
+                                        .replace('-', '')
+
+            if exclude_cleaned in title_cleaned:
                 unwanted_jobs.append(job)
 
     for unwanted_job in unwanted_jobs:
-        single_jobs.remove(unwanted_job)
-    
+        try:
+            single_jobs.remove(unwanted_job)
+        except:
+            logger.info(f"Failed to remove {unwanted_job}")
+            continue
+
     logger.info(f"Removed {before - len(single_jobs)} jobs")
     
     # Save jobs 
