@@ -8,23 +8,25 @@ searches = [
     'customer support',
     'data analyst',
     'data engineer',
+    'data manager',
     'business analyst'
     ]
 
 excluded_terms = [
-    # 'Developer',
+    'Developer',
     'Software Engineer',
     'Full Stack',
     'Backend Engineer',
     'Frontend Engineer',
     'NodeJS',
-    'Node Developer',
     'DevOps',
     'Ruby',
     'WordPress',
-    'PhP'
+    'PhP',
+    'Marketing',
+    'Sales'
     ]
 
 # Number of days since the job was published
 # Older jobs are dropped.
-since = 10
+since = 1

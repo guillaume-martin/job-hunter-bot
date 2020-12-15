@@ -17,6 +17,8 @@ import remotive
 import wwr
 import remoteok
 import worknomads
+import indeed
+
 
 # Setup paths
 script_dir = Path(__file__).parent
@@ -78,6 +80,13 @@ def find_jobs(searches):
         # Get jobs from worknomads
         logger.info("Searching worknomads")
         new_jobs = worknomads.get_jobs(term)
+        logger.info(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+        logger.info('-' * 50)
+
+        # Get jobs from Indeed
+        logger.info("Searching Indeed")
+        new_jobs = indeed.get_jobs(term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         logger.info('-' * 50)
