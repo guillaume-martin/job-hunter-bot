@@ -155,12 +155,12 @@ def send_jobs(jobs):
     smtp_port = os.getenv('SMTP_PORT')
     smtp_user = os.getenv('SMTP_USER')
     smtp_pwd = os.getenv('SMTP_PASSWORD')
-
+    from_email = os.getenv('FROM')
     receiver_email = os.getenv('RECEIVER_EMAIL')
 
     message = MIMEMultipart("alternative")
     message['subject'] = 'remote job search results'
-    message['from'] = smtp_user
+    message['from'] = from_email
     message['to'] = receiver_email
 
     text = MIMEText(jobs_to_text(jobs), 'plain')
@@ -171,7 +171,7 @@ def send_jobs(jobs):
     context = ssl.create_default_context()
 
     with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
-        logger.info(f"Connect as {smtp_user} : {smtp_pwd}")
+        logger.debug(f"Connect as {smtp_user} : {smtp_pwd}")
         server.login(smtp_user, smtp_pwd)
         logger.info(f"Sending email to {receiver_email}")
         server.sendmail(
@@ -179,6 +179,33 @@ def send_jobs(jobs):
             receiver_email,
             message.as_string()
         )
+
+
+def filter_titles(jobs, searches):
+    """ Remove all jobs that don't have any keyword in their title
+    
+    Parameters
+    ----------
+    jobs: List
+        The list of jobs to process    
+    
+    searches: List
+        A list of search terms
+    """
+
+    jobs_to_keep = []
+    for keywords in searches:
+        logger.debug(f"Filtering {keywords}")
+        for job in jobs:
+            keywords_list = keywords.lower().split(' ')
+            title_list = job['title'].lower().split(' ')
+            logger.debug(f"Controling if {keywords_list} is in {title_list}")
+            if all(item in title_list for item in keywords_list):
+                logger.debug("-" * 50)
+                logger.debug(f"{keywords_list} in {title_list}")
+                jobs_to_keep.append(job)
+
+    return jobs_to_keep
 
 
 def main():
@@ -212,28 +239,10 @@ def main():
 
     logger.info(f"Removed {before - len(single_jobs)} jobs")
     
-    # Remove unwanted jobs
-    logger.info("Removing unwanted jobs...")
-    before = len(single_jobs)
-    unwanted_jobs = []
-    for job in single_jobs:
-        for exclude in config.excluded_terms:
-            exclude_cleaned = exclude.lower() \
-                              .replace(' ', '') \
-                               .replace('-', '')
-            title_cleaned = job['title'].lower() \
-                                        .replace(' ', '') \
-                                        .replace('-', '')
 
-            if exclude_cleaned in title_cleaned:
-                unwanted_jobs.append(job)
-
-    for unwanted_job in unwanted_jobs:
-        try:
-            single_jobs.remove(unwanted_job)
-        except:
-            logger.info(f"Failed to remove {unwanted_job}")
-            continue
+    # Keep only the good titles
+    logger.info("Filtering job titles...")
+    single_jobs = filter_titles(single_jobs, config.searches)
 
     logger.info(f"Removed {before - len(single_jobs)} jobs")
     
