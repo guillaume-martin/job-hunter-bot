@@ -17,7 +17,9 @@ import remotive
 import wwr
 import remoteok
 import worknomads
+import remoteco
 import indeed
+import tw104
 
 
 # Setup paths
@@ -84,12 +86,26 @@ def find_jobs(searches):
         jobs += new_jobs
         logger.info('-' * 50)
 
-        # Get jobs from Indeed
-        logger.info("Searching Indeed")
-        new_jobs = indeed.get_jobs(term)
+        # Get jobs from remote.co
+        logger.info("Searching remote.co")
+        new_jobs = remoteco.get_jobs(term)
         logger.info(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         logger.info('-' * 50)
+
+        # Get jobs from 104
+        logger.info("Searching 104")
+        new_jobs = tw104.get_jobs(term)
+        logger.info(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+        logger.info('-' * 50)
+
+        # # Get jobs from Indeed
+        # logger.info("Searching Indeed")
+        # new_jobs = indeed.get_jobs(term)
+        # logger.info(f"Found {len(new_jobs)} jobs")
+        # jobs += new_jobs
+        # logger.info('-' * 50)
         
     return jobs
 
