@@ -150,7 +150,7 @@ def jobs_to_text(jobs):
     return txt
 
 
-def send_jobs(jobs):
+def send_jobs(jobs, subject):
     smtp_server = os.getenv('SMTP_SERVER')
     smtp_port = os.getenv('SMTP_PORT')
     smtp_user = os.getenv('SMTP_USER')
@@ -159,7 +159,7 @@ def send_jobs(jobs):
     receiver_email = os.getenv('RECEIVER_EMAIL')
 
     message = MIMEMultipart("alternative")
-    message['subject'] = 'remote job search results'
+    message['subject'] = subject
     message['from'] = from_email
     message['to'] = receiver_email
 
@@ -194,12 +194,13 @@ def filter_titles(jobs, searches):
     """
 
     jobs_to_keep = []
+    jobs_to_reject = []
     for keywords in searches:
         logger.debug(f"Filtering {keywords}")
         for job in jobs:
             keywords_list = keywords.lower().split(' ')
             title_list = job['title'].lower().split(' ')
-            logger.debug(f"Controling if {keywords_list} is in {title_list}")
+            logger.debug(f"Controlling if {keywords_list} is in {title_list}")
             if all(item in title_list for item in keywords_list):
                 logger.debug("-" * 50)
                 logger.debug(f"{keywords_list} in {title_list}")
@@ -210,7 +211,7 @@ def filter_titles(jobs, searches):
 
 def main():
     
-   # Extract jobs from web sites and save them in a list
+    # Extract jobs from web sites and save them in a list
     logger.info("###############  Searching Jobs  ###############")
     jobs = find_jobs(config.searches)
     
@@ -238,7 +239,6 @@ def main():
         single_jobs.remove(old_job)
 
     logger.info(f"Removed {before - len(single_jobs)} jobs")
-    
 
     # Keep only the good titles
     logger.info("Filtering job titles...")
@@ -246,14 +246,14 @@ def main():
 
     logger.info(f"Removed {before - len(single_jobs)} jobs")
     
-    # Save jobs 
-    jobs_to_csv(single_jobs)
-
     # Send jobs by email
     logger.info("###############  Sending Results  ###############")
     logger.info(f"Sending {len(single_jobs)} jobs.")
-    send_jobs(single_jobs)
-    
+    send_jobs(single_jobs, 'remote job search results')
+
+    # Save jobs
+    jobs_to_csv(single_jobs)
+
 
 if __name__ == '__main__':
     load_dotenv(verbose=False)
