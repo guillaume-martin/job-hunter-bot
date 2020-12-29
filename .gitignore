@@ -1,5 +1,6 @@
 # ide files
 .idea/
+*.py~
 .empty
 .vscode
 

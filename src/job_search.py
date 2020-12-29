@@ -65,6 +65,13 @@ def find_jobs(searches):
         jobs += new_jobs
         logger.info('-' * 50)
 
+        # Get data jobs from Remotive
+        logger.info("Loading Remotive Data jobs...")
+        new_jobs = remotive.get_jobs_by_category('Data')
+        logger.info(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+        logger.info('-' * 50)
+
         # Get jobs from wwr
         logger.info("Searching We Work Remotely jobs...")
         new_jobs = wwr.get_jobs(term)
@@ -205,6 +212,8 @@ def filter_titles(jobs, searches):
                 logger.debug("-" * 50)
                 logger.debug(f"{keywords_list} in {title_list}")
                 jobs_to_keep.append(job)
+            else:
+                jobs_to_reject.append(job)
 
     return jobs_to_keep
 

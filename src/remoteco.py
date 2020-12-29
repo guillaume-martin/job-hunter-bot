@@ -40,7 +40,9 @@ def load_jobs(term):
 
     jobs_list = soup.find_all('li', class_='job_listing')
     print(f"found {len(jobs_list)} jobs")
+
     return jobs_list
+
 
 def get_jobs(term):
 
