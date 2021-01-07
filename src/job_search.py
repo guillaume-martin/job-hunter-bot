@@ -101,11 +101,11 @@ def find_jobs(searches):
         logger.info('-' * 50)
 
         # Get jobs from 104
-        logger.info("Searching 104")
-        new_jobs = tw104.get_jobs(term)
-        logger.info(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        logger.info('-' * 50)
+        # logger.info("Searching 104")
+        # new_jobs = tw104.get_jobs(term)
+        # logger.info(f"Found {len(new_jobs)} jobs")
+        # jobs += new_jobs
+        # logger.info('-' * 50)
 
         # # Get jobs from Indeed
         # logger.info("Searching Indeed")
@@ -200,8 +200,8 @@ def filter_titles(jobs, searches):
         A list of search terms
     """
 
-    jobs_to_keep = []
-    jobs_to_reject = []
+    jobs_to_keep = set()
+    jobs_to_reject = set()
     for keywords in searches:
         logger.debug(f"Filtering {keywords}")
         for job in jobs:
@@ -211,11 +211,13 @@ def filter_titles(jobs, searches):
             if all(item in title_list for item in keywords_list):
                 logger.debug("-" * 50)
                 logger.debug(f"{keywords_list} in {title_list}")
-                jobs_to_keep.append(job)
+                jobs_to_keep.add(job)
             else:
-                jobs_to_reject.append(job)
+                jobs_to_reject.add(job)
 
-    return jobs_to_keep
+    send_jobs(list(jobs_to_reject), 'Rejected jobs')
+
+    return list(jobs_to_keep)
 
 
 def main():

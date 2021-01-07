@@ -86,23 +86,6 @@ def get_jobs(term):
     }
 
     logger.debug(f"payload = {payload}")
-    # r = requests.request('POST', BASE_URL, headers=HEADERS, data=json.dumps(payload))
-
-    # response = json.loads(r.content)
-    # results = response['results']
-    # jobs_list = results[0]['hits']
-
-    # for job in jobs_list:
-    #     if job['candidate_required_location'] == 'Anywhere':
-            
-    #         date_published = datetime.utcfromtimestamp(job['publication_date'])
-            
-    #         jobs.append({
-    #             "company":job['company_name'],
-    #             "title": job['title'],
-    #             "date_published": datetime.strftime(date_published, '%Y-%m-%d'),
-    #             "url": job['url']
-    #         })
 
     jobs = load_jobs(payload)
 
