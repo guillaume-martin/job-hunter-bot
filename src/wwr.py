@@ -24,7 +24,7 @@ logger.addHandler(stream_handler)
 
 BASE_URL = 'https://weworkremotely.com/remote-jobs'
 
-REGION = 'Anywhere (100% Remote) Only'
+REGION = '0' #'Anywhere (100% Remote) Only'
 JOB_TYPE = 'Full-Time'
 
 
@@ -63,7 +63,7 @@ def publication_time(job):
 
     time = time_tag['datetime']
     formatted_time = datetime.strftime(parse(time), '%Y-%m-%d')
-    
+
 
     return formatted_time
 
