@@ -217,7 +217,7 @@ def filter_titles(jobs, searches):
                 if job not in jobs_to_reject:
                     jobs_to_reject.append(job)
 
-    send_jobs(jobs_to_reject, 'Rejected jobs')
+    #send_jobs(jobs_to_reject, 'Rejected jobs')
 
     return jobs_to_keep
 
