@@ -13,13 +13,13 @@ from email.mime.multipart import MIMEMultipart
 from dotenv import load_dotenv
 
 import config
-import remotive
-import wwr
-import remoteok
-import worknomads
-import remoteco
-import indeed
-import tw104
+from scrappers import remotive
+from scrappers import wwr
+from scrappers import remoteok
+from scrappers import worknomads
+from scrappers import remoteco
+from scrappers import indeed
+from scrappers import tw104
 
 
 # Setup paths
