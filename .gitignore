@@ -3,6 +3,7 @@
 *.py~
 .empty
 .vscode
+*.swp
 
 # notebooks
 .ipynb_checkpoints
