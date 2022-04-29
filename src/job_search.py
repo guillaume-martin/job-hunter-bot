@@ -2,17 +2,14 @@
 """
 # -*- coding: utf-8 -*-
 import os
-import ssl
 import logging
-import smtplib
 from pathlib import Path
 from datetime import datetime
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 
 from dotenv import load_dotenv
 
 import config
+from mailer import send_email
 from scrappers import remotive
 from scrappers import wwr
 from scrappers import remoteok
@@ -20,7 +17,6 @@ from scrappers import worknomads
 from scrappers import remoteco
 from scrappers import indeed
 from scrappers import tw104
-
 
 # Setup paths
 script_dir = Path(__file__).parent
@@ -45,7 +41,7 @@ logger.addHandler(stream_handler)
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
-        The jobs are stored in a list of dictionary.
+        The jobs are stored in a list of dictionaries.
         Each dictionary is a job post:
         {
             "company": "Acme, Inc.",
@@ -53,6 +49,16 @@ def find_jobs(searches):
             "url": "https://remotive.io/dir-engineer",
             "date_published": "2020-11-12"
         }
+    
+    Parameters
+    ----------
+    searches: list
+        List of keywords to search for on the different job boards.
+
+    Returns
+    -------
+    list
+        A list of jobs saved as dictionaries.
     """
     jobs = []
     for term in searches:
@@ -117,75 +123,40 @@ def find_jobs(searches):
     return jobs
 
 
-def jobs_to_csv(jobs):
-    
-    output = "company,title,date,url\n"
-    for job in jobs:
-        output += '"' + job['company'] + '",'
-        output += '"' + job['title'] + '",'
-        output += '"' + job['date_published'] + '",'
-        output += '"' + job['url'] + '"\n'
-    
-    with open(f'{output_dir}/{date}.csv', 'w') as file:
-        file.write(output)
-        
-
 def jobs_to_html(jobs):
+    """ Format jobs into an HTML output that can be sent
+
+    Parameters
+    ----------
+    jobs: list
+        A list of jobs saved as dictionaries. 
+        Each dictionary should contain the keys url, title, company, and date_published.
     
-    html = '<div>'
+    Returns
+    -------
+    str
+        An HTML script showing all the jobs
+    """
+
+    html = "<div>"
     
     for job in jobs:
+        url = job.get("url", "")
+        title = job.get("title", "Missing title")
+        company = job.get("company", "Missing employer")
+        date_published = job.get("date_published", f"Found on {date}")
+
         html +=  (
             "<p>"
-            f"<a href='{job['url']}'>{job['title']}</a>&nbsp@&nbsp"
-            f"{job['company']}&nbsp"
-            f"({job['date_published']})"
+            f"<a href='{url}'>{title}</a>&nbsp;&nbsp;"
+            f"{company}&nbsp;"
+            f"({date_published})"
             "</p>"
             )
     
-    html += '</div>'
+    html += "</div>"
         
     return html
-
-
-def jobs_to_text(jobs):
-
-    txt = ''
-    for job in jobs:
-        txt += f"{job['title']} @ {job['company']} ({job['date_published']}) - {job['url']}\n"
-
-    return txt
-
-
-def send_jobs(jobs, subject):
-    smtp_server = os.getenv('SMTP_SERVER')
-    smtp_port = os.getenv('SMTP_PORT')
-    smtp_user = os.getenv('SMTP_USER')
-    smtp_pwd = os.getenv('SMTP_PASSWORD')
-    from_email = os.getenv('FROM')
-    receiver_email = os.getenv('RECEIVER_EMAIL')
-
-    message = MIMEMultipart("alternative")
-    message['subject'] = subject
-    message['from'] = from_email
-    message['to'] = receiver_email
-
-    text = MIMEText(jobs_to_text(jobs), 'plain')
-    html = MIMEText(jobs_to_html(jobs), 'html')
-
-    message.attach(text)
-    message.attach(html)
-    context = ssl.create_default_context()
-
-    with smtplib.SMTP_SSL(smtp_server, smtp_port, context=context) as server:
-        logger.debug(f"Connect as {smtp_user} : {smtp_pwd}")
-        server.login(smtp_user, smtp_pwd)
-        logger.info(f"Sending email to {receiver_email}")
-        server.sendmail(
-            smtp_user,
-            receiver_email,
-            message.as_string()
-        )
 
 
 def filter_titles(jobs, searches):
@@ -262,10 +233,9 @@ def main():
     # Send jobs by email
     logger.info("###############  Sending Results  ###############")
     logger.info(f"Sending {len(single_jobs)} jobs.")
-    send_jobs(single_jobs, 'remote job search results')
-
-    # Save jobs
-    jobs_to_csv(single_jobs)
+    subject = f"New Remote Jobs for {date}"
+    content = jobs_to_html(single_jobs)
+    send_email(subject, content)
 
 
 if __name__ == '__main__':

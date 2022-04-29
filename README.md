@@ -3,12 +3,17 @@ Settings
 add a `.env` file in the src folder.
 
 ```
-# SMTP settings
-SMTP_SERVER=
-SMTP_PORT=
-SMTP_USER=
-SMTP_PASSWORD=
+# Pepipost API key
+API_KEY=
+
+# Email settings
+FROM_EMAIL=
+FROM_NAME=
+TO_EMAIL=
+TO_NAME=
+
 
 # Email the results are sent to
 RECEIVER_EMAIL=
+
 ```
