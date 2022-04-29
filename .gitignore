@@ -12,12 +12,15 @@
 # logs
 logs
 
+# Virtual environment
+venv
 .env
 
-
+# Python stuff
 __pycache__
+.coverage
 
-
+# directories
 drafts/
 output/
 notebooks/
