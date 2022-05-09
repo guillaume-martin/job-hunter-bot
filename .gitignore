@@ -11,12 +11,18 @@
 # logs
 logs
 
+# Virtual environment
 .env
 
 
+# Pytest
+.coverage
+
+# Python
 __pycache__
 
 
+# Local development stuff
 drafts/
 output/
 notebooks/
