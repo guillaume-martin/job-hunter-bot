@@ -16,11 +16,15 @@ logs
 venv
 .env
 
-# Python stuff
-__pycache__
+
+# Pytest
 .coverage
 
-# directories
+# Python
+__pycache__
+
+
+# Local development stuff
 drafts/
 output/
 notebooks/
