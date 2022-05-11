@@ -5,9 +5,10 @@ searches = [
     'dba',
     'postgresql',
     'postgres',
-    'database',
     'sql'
     'python',
+    'backend',
+    'fastapi',
 ]
 
 # Number of days since the job was published
