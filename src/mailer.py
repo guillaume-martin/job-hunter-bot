@@ -38,11 +38,11 @@ def send_email(subject=None, content=None):
     body.personalizations[0].to[0].name = os.getenv("TO_NAME")
     body.personalizations[0].to[0].email = os.getenv("TO_EMAIL")
 
-    print("=' * 50")
+    print("=" * 50)
     print(body)
     try:
         result = mail_send_controller.create_generatethemailsendrequest(body)
-        print(f"Email sent successfully:\n{result}")
+        print(f"Request sent to API: {result}")
     except APIException as e:
         print(f"Failed to send email:\n{e}")
 
