@@ -1,6 +1,5 @@
 import os
 
-from dotenv import load_dotenv
 from pepipost.pepipost_client import PepipostClient
 from pepipost.models.send import Send
 from pepipost.models.mfrom import From
@@ -9,8 +8,6 @@ from pepipost.models.type_enum import TypeEnum
 from pepipost.exceptions.api_exception import APIException
 from pepipost.models.personalizations import Personalizations
 from pepipost.models.email_struct import EmailStruct
-
-load_dotenv(verbose=False)
 
 def send_email(subject=None, content=None):
     """ Sends an email using the Pepipost API

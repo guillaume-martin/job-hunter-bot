@@ -1,4 +1,3 @@
-import logging
 from datetime import date,  timedelta
 from urllib.parse import urlparse, parse_qs, urlencode
 
@@ -6,20 +5,6 @@ import requests
 from bs4 import BeautifulSoup
 
 from config import since
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
-
-# file_handler = logging.FileHandler('../logs/job_search.log')
-# file_handler.setFormatter(formatter)
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-# logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-
 
 def load_jobs(job_title, location, since=1):
     """ Creates a soup of all jobs returned by search """

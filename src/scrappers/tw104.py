@@ -1,17 +1,7 @@
-import logging
 from datetime import date
 
 import requests
 from bs4 import BeautifulSoup
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-logger.addHandler(stream_handler)
 
 
 search_url = 'https://www.104.com.tw/jobs/search/'
