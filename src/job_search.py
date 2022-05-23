@@ -4,13 +4,13 @@
 import os
 from datetime import datetime
 
-import config
-from mailer import send_email
-from scrappers import remotive
-from scrappers import wwr
-from scrappers import remoteok
-from scrappers import worknomads
-from scrappers import remoteco
+from src.config import searches, since
+from src.mailer import send_email
+from src.scrappers import remotive
+from src.scrappers import wwr
+from src.scrappers import remoteok
+from src.scrappers import worknomads
+from src.scrappers import remoteco
 
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
@@ -83,7 +83,7 @@ def find_jobs(searches):
         jobs += new_jobs
         print('-' * 50)
 
-    return jobs
+    return jobs 
 
 
 def jobs_to_html(jobs):
@@ -158,7 +158,7 @@ def main():
     
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
-    jobs = find_jobs(config.searches)
+    jobs = find_jobs(searches)
     
     print("###############  Cleaning Job List  ###############")
 
@@ -177,7 +177,7 @@ def main():
     for job in single_jobs:
         date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
         days_since_published = (datetime.now() - date_published).days
-        if days_since_published > config.since:
+        if days_since_published > since:
             old_jobs.append(job)
 
     for old_job in old_jobs:
@@ -187,7 +187,7 @@ def main():
 
     # Keep only the titles that contain a keyword
     print("Filtering job titles...")
-    single_jobs = filter_titles(single_jobs, config.searches)
+    single_jobs = filter_titles(single_jobs, searches)
 
     print(f"Removed {before - len(single_jobs)} jobs")
     
@@ -198,6 +198,9 @@ def main():
     content = jobs_to_html(single_jobs)
     send_email(subject, content)
 
+
+def lambda_handler(event, context):
+    main()
 
 if __name__ == '__main__':
     main()
