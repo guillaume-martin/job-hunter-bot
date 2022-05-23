@@ -2,41 +2,18 @@
 """
 # -*- coding: utf-8 -*-
 import os
-import logging
-from pathlib import Path
 from datetime import datetime
 
-from dotenv import load_dotenv
+from src.config import searches, since
+from src.mailer import send_email
+from src.scrappers import remotive
+from src.scrappers import wwr
+from src.scrappers import remoteok
+from src.scrappers import worknomads
+from src.scrappers import remoteco
 
-import config
-from mailer import send_email
-from scrappers import remotive
-from scrappers import wwr
-from scrappers import remoteok
-from scrappers import worknomads
-from scrappers import remoteco
-from scrappers import indeed
-from scrappers import tw104
-
-# Setup paths
-script_dir = Path(__file__).parent
-main_dir = (script_dir / '..').resolve()
-logs_dir = (main_dir / 'logs').resolve()
-output_dir = (main_dir / 'output').resolve()
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
-file_handler = logging.FileHandler(f'{logs_dir}/{date}.log')
-file_handler.setFormatter(formatter)
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
 
 
 def find_jobs(searches):
@@ -62,65 +39,51 @@ def find_jobs(searches):
     """
     jobs = []
     for term in searches:
-        logger.info(f"=============== {term} ===============")
+        print(f"=============== {term} ===============")
 
         # Get jobs from Remotive
-        logger.info("Searching Remotive jobs...")
+        print("Searching Remotive jobs...")
         new_jobs = remotive.get_jobs(term)
-        logger.info(f"Found {len(new_jobs)} jobs")
+        print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-        logger.info('-' * 50)
+        print('-' * 50)
 
         # Get data jobs from Remotive
-        logger.info("Loading Remotive Data jobs...")
+        print("Loading Remotive Data jobs...")
         new_jobs = remotive.get_jobs_by_category('Data')
-        logger.info(f"Found {len(new_jobs)} jobs")
+        print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-        logger.info('-' * 50)
+        print('-' * 50)
 
         # Get jobs from wwr
-        logger.info("Searching We Work Remotely jobs...")
+        print("Searching We Work Remotely jobs...")
         new_jobs = wwr.get_jobs(term)
-        logger.info(f"Found {len(new_jobs)} jobs")
+        print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-        logger.info('-' * 50)
+        ('-' * 50)
         
         # Get jobs from remoteok
-        logger.info("Searching remote | OK...")
+        print("Searching remote | OK...")
         new_jobs = remoteok.get_jobs(term)
-        logger.info(f"Found {len(new_jobs)} jobs")
+        print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-        logger.info('-' * 50)
+        print('-' * 50)
         
         # Get jobs from worknomads
-        logger.info("Searching worknomads")
+        print("Searching worknomads")
         new_jobs = worknomads.get_jobs(term)
-        logger.info(f"Found {len(new_jobs)} jobs")
+        print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-        logger.info('-' * 50)
+        print('-' * 50)
 
         # Get jobs from remote.co
-        logger.info("Searching remote.co")
+        print("Searching remote.co")
         new_jobs = remoteco.get_jobs(term)
-        logger.info(f"Found {len(new_jobs)} jobs")
+        print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-        logger.info('-' * 50)
+        print('-' * 50)
 
-        # Get jobs from 104
-        # logger.info("Searching 104")
-        # new_jobs = tw104.get_jobs(term)
-        # logger.info(f"Found {len(new_jobs)} jobs")
-        # jobs += new_jobs
-        # logger.info('-' * 50)
-
-        # # Get jobs from Indeed
-        # logger.info("Searching Indeed")
-        # new_jobs = indeed.get_jobs(term)
-        # logger.info(f"Found {len(new_jobs)} jobs")
-        # jobs += new_jobs
-        # logger.info('-' * 50)
-        
-    return jobs
+    return jobs 
 
 
 def jobs_to_html(jobs):
@@ -174,21 +137,19 @@ def filter_titles(jobs, searches):
     jobs_to_keep = []
     jobs_to_reject = []
     for keywords in searches:
-        logger.debug(f"Filtering {keywords}")
+        print(f"Filtering {keywords}")
         for job in jobs:
             keywords_list = keywords.lower().split(' ')
             title_list = job['title'].lower().split(' ')
-            logger.debug(f"Controlling if {keywords_list} is in {title_list}")
+            print(f"Controlling if {keywords_list} is in {title_list}")
             if all(item in title_list for item in keywords_list):
-                logger.debug("-" * 50)
-                logger.debug(f"{keywords_list} in {title_list}")
+                print("-" * 50)
+                print(f"{keywords_list} in {title_list}")
                 if job not in jobs_to_keep:
                     jobs_to_keep.append(job)
             else:
                 if job not in jobs_to_reject:
                     jobs_to_reject.append(job)
-
-    #send_jobs(jobs_to_reject, 'Rejected jobs')
 
     return jobs_to_keep
 
@@ -196,48 +157,50 @@ def filter_titles(jobs, searches):
 def main():
     
     # Extract jobs from web sites and save them in a list
-    logger.info("###############  Searching Jobs  ###############")
-    jobs = find_jobs(config.searches)
+    print("###############  Searching Jobs  ###############")
+    jobs = find_jobs(searches)
     
-    logger.info("###############  Cleaning Job List  ###############")
+    print("###############  Cleaning Job List  ###############")
 
     # Remove duplicates
-    logger.info("Removing duplicates...")
+    print("Removing duplicates...")
     single_jobs = []
     for job in jobs:
         if job not in single_jobs:
             single_jobs.append(job)
-    logger.info(f"Removed {len(jobs) - len(single_jobs)} jobs.")
+    print(f"Removed {len(jobs) - len(single_jobs)} jobs.")
             
     # Remove older posts
-    logger.info("Removing older jobs...")
+    print("Removing older jobs...")
     before = len(single_jobs)
     old_jobs = []
     for job in single_jobs:
         date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
         days_since_published = (datetime.now() - date_published).days
-        if days_since_published > config.since:
+        if days_since_published > since:
             old_jobs.append(job)
 
     for old_job in old_jobs:
         single_jobs.remove(old_job)
 
-    logger.info(f"Removed {before - len(single_jobs)} jobs")
+    print(f"Removed {before - len(single_jobs)} jobs")
 
-    # Keep only the good titles
-    logger.info("Filtering job titles...")
-    single_jobs = filter_titles(single_jobs, config.searches)
+    # Keep only the titles that contain a keyword
+    print("Filtering job titles...")
+    single_jobs = filter_titles(single_jobs, searches)
 
-    logger.info(f"Removed {before - len(single_jobs)} jobs")
+    print(f"Removed {before - len(single_jobs)} jobs")
     
     # Send jobs by email
-    logger.info("###############  Sending Results  ###############")
-    logger.info(f"Sending {len(single_jobs)} jobs.")
+    print("###############  Sending Results  ###############")
+    print(f"Sending {len(single_jobs)} jobs.")
     subject = f"New Remote Jobs for {date}"
     content = jobs_to_html(single_jobs)
     send_email(subject, content)
 
 
+def lambda_handler(event, context):
+    main()
+
 if __name__ == '__main__':
-    load_dotenv(verbose=False)
     main()

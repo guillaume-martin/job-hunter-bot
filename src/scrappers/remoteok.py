@@ -1,22 +1,8 @@
-import logging
 from dateutil.parser import parse
 from datetime import datetime
 
 import requests
 from bs4 import BeautifulSoup
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
-
-# file_handler = logging.FileHandler('../logs/job_search.log')
-# file_handler.setFormatter(formatter)
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-# logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
 
 
 BASE_URL = 'https://remoteok.io'
@@ -46,8 +32,7 @@ def get_jobs(term):
     jobs = []
    
     query_url = f"{BASE_URL}/remote-{term}-jobs?location={LOCATION}"
-    logger.info(f"query_url = {query_url}")
-
+    
     r = requests.get(query_url, headers=HEADERS)
     
     soup = BeautifulSoup(r.content, 'lxml')
