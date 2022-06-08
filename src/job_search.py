@@ -35,7 +35,8 @@ def find_jobs(searches):
     Returns
     -------
     list
-        A list of jobs saved as dictionaries.
+        A list of jobs saved as dictionaries wchich keys are "company", "title",
+        "date_published", "url"
     """
     jobs = []
     for term in searches:
