@@ -13,7 +13,7 @@ TO_EMAIL=
 TO_NAME=
 
 
-# Email the results are sent to
+# Email address the results are sent to
 RECEIVER_EMAIL=
 
 ```
