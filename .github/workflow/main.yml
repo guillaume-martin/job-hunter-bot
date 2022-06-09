@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
     push:
-        branches: [ feature/setup-deploy ]
+        branches: [ setup_deploy ]
 
 
 jobs:
