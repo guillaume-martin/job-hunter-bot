@@ -35,17 +35,20 @@ jobs:
 
       # Step 5
       - name: Activate and Install Dependencies into Virtual Env
-        run: python -m venv venv && source venv/bin/activate && pip3 install -r requirements.txt
+        run: |
+          python -m venv venv
+          source venv/bin/activate 
+          pip3 install -r requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
 
       # Step 6
-      - name: Activate venv and Run Test
-        run: . venv/bin/activate && pytest
+      - name: Run Tests
+        run: pytest
 
       # Step 7
       - name: Create zipfile archive of dependencies
         run: | 
-          cd ./venv/lib/python3.9/site-packages
+          cd venv/lib/python3.9/site-packages
           zip -r9 ../../../../remote-bot.zip .
 
       # Step 8
