@@ -9,6 +9,12 @@ searches = [
     'python',
     'backend',
     'fastapi',
+    'data analyst',
+    'data engineer',
+    'data manager',
+    'data',
+    'product manager', 
+    'support',
 ]
 
 # Number of days since the job was published
