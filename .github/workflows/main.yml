@@ -48,6 +48,9 @@ jobs:
       # Step 7
       - name: Create zipfile archive of dependencies
         run: | 
+          ls
+          echo "-----------------------------"
+          ls ./venv/lib
           cd ./venv/lib/python3.9/site-packages
           zip -r9 ../../../../remote-bot.zip .
 
