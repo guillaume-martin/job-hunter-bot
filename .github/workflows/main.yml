@@ -43,7 +43,9 @@ jobs:
 
       # Step 6
       - name: Run Tests
-        run: pytest
+        run: |
+            venv/bin/activate
+            pytest
 
       # Step 7
       - name: Create zipfile archive of dependencies
