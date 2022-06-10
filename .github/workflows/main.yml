@@ -17,7 +17,7 @@ jobs:
       - name: Set up Python
         uses: actions/checkout@v2
         with:
-          python-version: 3.9
+          python-version: 3.8
           architecture: x64
 
       # Step 3
@@ -51,7 +51,7 @@ jobs:
           ls
           echo "-----------------------------"
           ls ./venv/lib
-          cd ./venv/lib/python3.9/site-packages
+          cd ./venv/lib/python3.8/site-packages
           zip -r9 ../../../../remote-bot.zip .
 
       # Step 8
