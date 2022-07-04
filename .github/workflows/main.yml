@@ -63,8 +63,8 @@ jobs:
             path: remote-bot.zip
 
   continuous-deployment:
-      runs-on: ubuntu-latest
       needs: [continuous-integration]
+      runs-on: ubuntu-latest
       if: github.ref == 'refs/heads/main'
       steps:
           # Step 1
