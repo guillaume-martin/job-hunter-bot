@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "feature/h-actions" ]
+    branches: [ "feature/gh-actions" ]
 
 
 jobs:
