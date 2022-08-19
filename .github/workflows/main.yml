@@ -56,38 +56,38 @@ jobs:
         run: cd ./src && zip -g ../remote-bot.zip -r .
 
       # Step 9 
-      - name: Upload zip file arifact
+      - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
         with:
             name: remote-bot
             path: remote-bot.zip
 
   continuous-deployment:
-      needs: [continuous-integration]
+    needs: [continuous-integration]
       runs-on: ubuntu-latest
       if: github.ref == 'refs/heads/main'
       steps:
-          # Step 1
-          - name: Install AWS CLI
-            uses: unfor19/install-aws-cli-action@v1
-            with:
-                version: 1
-            env: 
-                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        # Step 1
+        - name: Install AWS CLI
+          uses: unfor19/install-aws-cli-action@v1
+          with:
+            version: 1
+          env: 
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
         # Step 2
-          - name: Download Lambda remote-bot.zip
-            uses: actions/download-artifact@v2
-            with:
-                name: remote-bot
+        - name: Download Lambda remote-bot.zip
+          uses: actions/download-artifact@v2
+          with:
+            name: remote-bot
 
         # Step 3
-          - name: Update Lambda function
-            run: aws lambda update-function-code --function-name remote-bot --zip-file fileb://remote-bot.zip --publish
-            env:
-                AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+        - name: Update Lambda function
+          run: aws lambda update-function-code --function-name remote-bot --zip-file fileb://remote-bot.zip --publish
+          env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
