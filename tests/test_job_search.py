@@ -1,5 +1,5 @@
 import pytest
-from src.job_search import jobs_to_html, filter_titles
+from job_search import jobs_to_html, filter_titles
 
 
 def test_jobs_to_html_returns_string():
