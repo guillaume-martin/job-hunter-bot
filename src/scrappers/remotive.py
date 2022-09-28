@@ -21,7 +21,7 @@ HEADERS = {
     'Referer':'https://remotive.com/'
     }
 
-LOCATIONS = '[["locations:Worldwide","locations:APAC"]]'
+LOCATIONS = '["locations:Worldwide","locations:APAC"]'
 
 
 def load_jobs(payload: Dict) -> List:
@@ -61,7 +61,7 @@ def get_jobs(term:str) -> List:
     term_encoded = urllib.parse.quote(term)
     locations_encoded = urllib.parse.quote(LOCATIONS)
     params = (
-        f"facetFilters={locations_encoded}&"
+        f"facetFilters=%5B{locations_encoded}%5D&"
         "facets=&"
         "maxValuesPerFacet=1000&"
         "page=0&"
@@ -80,9 +80,9 @@ def get_jobs(term:str) -> List:
     return jobs
 
 
-def get_jobs_by_category(category):
+def get_jobs_by_category(category: str) -> List:
     """ Search jobs in a category on remotive.io 
-  
+    
     Parameters
     ----------
     category: String
@@ -93,24 +93,22 @@ def get_jobs_by_category(category):
     List
         A list of dictionaries with jobs details    
     """
+    locations_encoded = urllib.parse.quote(LOCATIONS)
 
+    params = (
+        "facetFilters="
+        f"%5B{locations_encoded}%2C%"
+        f"5B%22category%3A{category}%22%5D%5D&"
+    )
+    
     payload = {
-        "requests":[
+        "requests": [
             {
-                "indexName":"live_jobs",
-                f"params":"query=&page=0&maxValuesPerFacet=1000&facets=%5B%22us_only%22%2C%22category%22%5D&tagFilters=&facetFilters=%5B%5B%22us_only%3Afalse%22%5D%2C%5B%22category%3A{category}%22%5D%5D"
+                "indexName": "live_jobs",
+                "params": params
             },
-            {
-                "indexName":"live_jobs",
-                f"params":"query=&page=0&maxValuesPerFacet=1000&hitsPerPage=1&attributesToRetrieve=%5B%5D&attributesToHighlight=%5B%5D&attributesToSnippet=%5B%5D&tagFilters=&analytics=false&clickAnalytics=false&facets=us_only&facetFilters=%5B%5B%22category%3A{Category}%22%5D%5D"
-            },
-            {
-                "indexName":"live_jobs",
-                "params":"query=&page=0&maxValuesPerFacet=1000&hitsPerPage=1&attributesToRetrieve=%5B%5D&attributesToHighlight=%5B%5D&attributesToSnippet=%5B%5D&tagFilters=&analytics=false&clickAnalytics=false&facets=%5B%22category%22%5D&facetFilters=%5B%5B%22us_only%3Afalse%22%5D%5D"
-            }
         ]
     }
 
     jobs = load_jobs(payload)
-
     return jobs
