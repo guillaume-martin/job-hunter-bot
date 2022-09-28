@@ -5,7 +5,7 @@ searches = [
     'dba',
     'postgresql',
     'postgres',
-    'sql'
+    'sql',
     'python',
     'data analyst',
     'data engineer',
