@@ -43,7 +43,7 @@ def publication_time(job):
     if time_tag is None:
         # Try to get the data from the job details
         r = requests.get(f"{BASE_URL}/{details_url(job)}")
-        soup = BeautifulSoup(r.content, 'lxml')
+        soup = BeautifulSoup(r.content, 'html.parser')
         time_tag = soup.find('time')
 
     time = time_tag['datetime']
@@ -113,9 +113,13 @@ def get_jobs(term, region=REGION, job_type=JOB_TYPE):
     r = requests.get(query_url)
 
     if r.status_code == 200:
-        soup = BeautifulSoup(r.content, 'lxml')
+        soup = BeautifulSoup(r.content, 'html.parser')
         jobs_list = soup.find_all('li', class_='feature')
-
+    else:
+        print(f"Request failed: {r.status_code} - {r.reason}")
+        print(f"Query: {query_url}")
+        return []
+        
     jobs = []
     for job in jobs_list:
         jobs.append(job_details(job))

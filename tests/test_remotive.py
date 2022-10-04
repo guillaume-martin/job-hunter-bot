@@ -1,5 +1,5 @@
 import pytest
-from src.scrappers import remotive
+from scrappers import remotive
 
 
 def test_get_jobs_returns_list():

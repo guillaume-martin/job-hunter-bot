@@ -1,80 +1,60 @@
-from datetime import date
+from urllib.parse import urlparse
+from datetime import datetime, date, timedelta
 
 import requests
 from bs4 import BeautifulSoup
+import dateutil.parser as parser
 
 
 search_url = 'https://www.104.com.tw/jobs/search/'
 
 
-def get_job_title(job):
-    try:
-        title = job.find('a', class_='js-job-link').text.strip()
-    except:
-        title = ''
+
+def _published_date(job_date):
+    clean_date = job_date.replace(" ", "")
+    parsed_date = parser.parse(clean_date)    
     
-    return title
+    return parsed_date.date()
 
 
-def get_company_name(job):
-    try:
-        company_name = job.find('ul', class_='b-list-inline').find('a').text.strip()
-    except:
-        company_name = ''
-
-    return company_name
-
-
-def get_published_date(job):
-    try:
-        raw_date = job.find('span', class_='b-tit__date').text.strip()
-        day = int(raw_date.split('/')[1])
-        month = int(raw_date.split('/')[0])
-        yr = date.today().year
-        published_date = date(yr, month, day).strftime('%Y-%m-%d')
-    except:
-        published_date = date.today().strftime('%Y-%m-%d')
-    return published_date
-
-
-def get_job_url(job):
-    try:
-        url = "https://" + job.find('a', class_='js-job-link')['href']
-    except:
-        url = ''
-
-    return url
+def _clean_job_link(link):
+    parsed = urlparse(link)
+    clean_link = "https://" + parsed.netloc + parsed.path
+    return clean_link
 
 
 def get_jobs(term):
-    parameters = {
-        'ro': '0',
-        'isnew': '7',
-        'kwop': '7',
-        'keyword': f'"{term}"',
-        'order': '15',
-        'asc': '0',
-        'sctp': 'M',
-        'scmin': '50000',
-        'scstrict': '1',
-        'scneg': '0',
-        'page': '1',
-        'mode': 's'
-    }
+    area = "6001001000,6001002000,6001004000"
+    isnew = 3
+    url  = (
+        "https://www.104.com.tw/jobs/search/?"
+        f"isnew={isnew}&"
+        "kwop=1&"
+        f"keyword={term}&"
+        f"area={area}"
+        "&mode=l&langFlag=0&langStatus=0&recommendJob=0&hotJob=0"
+    )
+    jobs_list = []
 
-    jobs = []
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, 'html.parser')
 
-    r = requests.get(search_url, parameters)
-    soup = BeautifulSoup(r.content, 'lxml')
+    jobs_items = soup.find_all("article", {"class":"js-job-item"})
+    yesterday = date.today() - timedelta(days = 1)
 
-    jobs_list = soup.find_all('article', class_='job-list-item')
+    for item in jobs_items:
+        job = item.find("a", {"class":"js-job-link"})
+        job_title = job["title"]
+        job_link = _clean_job_link(job["href"])
+        job_date = item.find("li", {"class":"job-mode__date"}).text
+        pub_date = _published_date(job_date)
+        company = item.find("li", {"class":"job-mode__company"}).find("a").text
+        if pub_date == yesterday:
+            jobs_list.append({
+                'title': job_title,
+                'company': company,
+                'date_published': pub_date,
+                'url': job_link
+            })
 
-    for job in jobs_list:
-        jobs.append({
-            'title': get_job_title(job),
-            'company': get_company_name(job),
-            'date_published': get_published_date(job),
-            'url': get_job_url(job)
-        })
-
-    return jobs
+    return jobs_list
