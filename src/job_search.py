@@ -4,13 +4,13 @@
 import os
 from datetime import datetime
 
-from config import searches, since
-from mailer import send_email
-from scrappers import remotive
-from scrappers import wwr
-from scrappers import remoteok
-from scrappers import worknomads
-from scrappers import remoteco
+from .config import searches, since
+from .mailer import send_email
+from .scrappers import remotive
+from .scrappers import wwr
+from .scrappers import remoteok
+from .scrappers import worknomads
+from .scrappers import remoteco
 
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')

@@ -11,6 +11,7 @@ searches = [
     'data engineer',
     'data manager',
     'analytics engineer',
+    'dataops'
 ]
 
 # Number of days since the job was published
