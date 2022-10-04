@@ -24,9 +24,10 @@ venv
 
 # Python
 __pycache__
-
+.mypy_cache/
 
 # Local development stuff
 drafts/
 output/
 notebooks/
+zap/
