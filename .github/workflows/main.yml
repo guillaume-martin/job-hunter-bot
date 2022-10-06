@@ -68,7 +68,8 @@ jobs:
   continuous-deployment:
     needs: [continuous-integration]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # ! This could be the reason the job is skipped. Try to change 'main' with the branch name 
+    if: github.ref == 'refs/heads/feature/gh-actions'
     steps:
       # Step 1
       - name: Install AWS CLI
