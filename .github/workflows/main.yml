@@ -68,7 +68,6 @@ jobs:
   continuous-deployment:
     needs: [continuous-integration]
     runs-on: ubuntu-latest
-    # ! This could be the reason the job is skipped. Try to change 'main' with the branch name 
     if: github.ref == 'refs/heads/feature/gh-actions'
     steps:
       # Step 1
@@ -88,10 +87,18 @@ jobs:
           name: remote-bot
 
       # Step 3
-      - name: Update Lambda function
-        run: aws lambda update-function-code --function-name remote-bot --zip-file fileb://remote-bot.zip --publish
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      # - name: Update Lambda function
+      #   run: aws lambda update-function-code --function-name remote-bot --zip-file fileb://remote-bot.zip --publish
+      #   env:
+      #     AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      - name: deploy zip to aws lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws_region: ${{ secrets.AWS_DEFAULT_REGION }}
+          function_name: remote-bot
+          zip_file: remote-bot.zip    
 
