@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "feature/gh-actions" ]
+    branches: [ "master" ]
 
 
 jobs:
@@ -68,7 +68,7 @@ jobs:
   continuous-deployment:
     needs: [continuous-integration]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/feature/gh-actions'
+    if: github.ref == 'refs/heads/master'
     steps:
       # Step 1
       - name: Install AWS CLI
