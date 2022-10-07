@@ -75,17 +75,8 @@ jobs:
         uses: unfor19/install-aws-cli-action@v1
         with:
           version: 1
-        # env: 
-        #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        #   AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
       # Step 2
-      - name: Download Lambda remote-bot.zip
-        uses: actions/download-artifact@v2
-        with:
-          name: remote-bot
-
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -94,21 +85,11 @@ jobs:
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       # Step 3
-      # https://dev.to/nobleobioma/deploy-node-js-to-aws-lambda-using-github-actions-5a82
-      # https://github.com/BiteSizeAcademy/github-action-lambda
-      # https://github.com/appleboy/lambda-action
+      - name: Download Lambda remote-bot.zip
+        uses: actions/download-artifact@v2
+        with:
+          name: remote-bot
+
+      # Step 4
       - name: Update Lambda function
         run: aws lambda update-function-code --function-name remote-bot --zip-file fileb://remote-bot.zip --publish
-        # env:
-        #   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        #   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        #   AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-      # - name: deploy zip to aws lambda
-      #   uses: appleboy/lambda-action@master
-      #   with:
-      #     aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws_region: ${{ secrets.AWS_DEFAULT_REGION }}
-      #     function_name: remote-bot
-      #     zip_file: remote-bot.zip    
-
