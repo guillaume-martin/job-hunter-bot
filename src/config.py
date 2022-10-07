@@ -5,12 +5,13 @@ searches = [
     'dba',
     'postgresql',
     'postgres',
-    'sql'
+    'sql',
     'python',
     'data analyst',
     'data engineer',
     'data manager',
     'analytics engineer',
+    'dataops'
 ]
 
 # Number of days since the job was published
