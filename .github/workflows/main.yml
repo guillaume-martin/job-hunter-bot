@@ -56,7 +56,8 @@ jobs:
 
       # Step 8
       - name: Add app to zip file
-        run: cd ./src && zip -g ../remote-bot.zip -r .
+        # run: cd ./src && zip -g ../remote-bot.zip -r .
+        run: zip -g ./remote-bot.zip -r src
 
       # Step 9 
       - name: Upload zip file artifact
