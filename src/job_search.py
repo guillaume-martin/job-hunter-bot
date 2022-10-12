@@ -4,6 +4,7 @@
 import os
 from datetime import datetime
 
+<<<<<<< HEAD
 from .config import searches, since
 from .mailer import send_email
 from .scrappers import remotive
@@ -11,6 +12,16 @@ from .scrappers import wwr
 from .scrappers import remoteok
 from .scrappers import worknomads
 from .scrappers import remoteco
+=======
+from config import searches, since
+from mailer import send_email
+from scrappers import remotive
+from scrappers import wwr
+from scrappers import remoteok
+from scrappers import worknomads
+from scrappers import remoteco
+from scrappers import tw104
+>>>>>>> feature/104-scraper
 
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
@@ -77,13 +88,12 @@ def find_jobs(searches):
         jobs += new_jobs
         print('-' * 50)
 
-    # Get data jobs from Remotive
-    print("Loading Remotive Data jobs...")
-    new_jobs = remotive.get_jobs_by_category('Data')
-    print(f"Found {len(new_jobs)} jobs")
-    jobs += new_jobs
-    print('-' * 50)
-
+        # Get jobs from 104
+        print("Searching 104.com.tw")
+        new_jobs = tw104.get_jobs(term)
+        print(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+        print('-' * 50)
 
     return jobs 
 
