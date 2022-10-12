@@ -4,15 +4,6 @@
 import os
 from datetime import datetime
 
-<<<<<<< HEAD
-from .config import searches, since
-from .mailer import send_email
-from .scrappers import remotive
-from .scrappers import wwr
-from .scrappers import remoteok
-from .scrappers import worknomads
-from .scrappers import remoteco
-=======
 from config import searches, since
 from mailer import send_email
 from scrappers import remotive
@@ -21,7 +12,6 @@ from scrappers import remoteok
 from scrappers import worknomads
 from scrappers import remoteco
 from scrappers import tw104
->>>>>>> feature/104-scraper
 
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
