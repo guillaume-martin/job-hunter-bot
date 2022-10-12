@@ -11,6 +11,7 @@ from scrappers import wwr
 from scrappers import remoteok
 from scrappers import worknomads
 from scrappers import remoteco
+from scrappers import tw104
 
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
@@ -80,6 +81,13 @@ def find_jobs(searches):
         # Get jobs from remote.co
         print("Searching remote.co")
         new_jobs = remoteco.get_jobs(term)
+        print(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+        print('-' * 50)
+
+        # Get jobs from 104
+        print("Searching 104.com.tw")
+        new_jobs = tw104.get_jobs(term)
         print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         print('-' * 50)
