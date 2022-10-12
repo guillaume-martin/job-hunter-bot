@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import json
-from dateutil.parser import parse
 from datetime import datetime
 
+from dateutil.parser import parse
 import requests
 
 

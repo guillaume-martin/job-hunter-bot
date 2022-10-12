@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import urllib
 from datetime import datetime
-from dateutil.parser import parse
 
-import requests
 from bs4 import BeautifulSoup
+from dateutil.parser import parse
+import requests
 
 
 BASE_URL = 'https://weworkremotely.com/remote-jobs'
