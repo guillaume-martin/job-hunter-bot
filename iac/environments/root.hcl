@@ -10,11 +10,14 @@ locals {
 
   name = replace("${local.project}/${local.environment}/${local.component}", "_", "-")
 
+  component = replace(regex("^.*${local.environment}/(.*)$", path_relative_to_include())[0], "/[^a-zA-Z0-9]/", "-")
+
   statefile = "${local.name}/terraform.tfstate"
 
   default_tags = {
     "Name"      = local.name
     "project"   = local.project
+    "component" = local.component
     "statefile" = local.statefile
   }
 }
