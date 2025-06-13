@@ -1,4 +1,4 @@
 local {
   environment = "develop"
-  aws_region  = "ap-northeast-3"
+  aws_region  = "ap-east-2"  # Taipei
 }
