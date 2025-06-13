@@ -1,4 +1,4 @@
 local {
-  aws_profile = ""
+  aws_profile = "default"
   aws_project = "remote-bot"
 }
