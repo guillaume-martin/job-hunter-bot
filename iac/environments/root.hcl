@@ -6,7 +6,7 @@ locals {
   environment = local.environment_vars.locals.environment
   aws_region  = local.environment_vars.locals.aws_region
   aws_profile = local.common_vars.locals.aws_profile
-  project     = local.common_vars.locals.project
+  project     = local.common_vars.locals.aws_project
 
   name = replace("${local.project}/${local.environment}/${local.component}", "_", "-")
 
@@ -22,9 +22,9 @@ locals {
   }
 }
 
-terraform {
-
-}
+#terraform {
+#
+#}
 
 remote_state {
  backend = "local"
@@ -48,13 +48,13 @@ provider "aws" {
   profile = "${local.aws_profile}"
 
   default_tags {
-    tags = ${jsonencode(local.tags)}
+    tags = ${jsonencode(local.default_tags)}
   }
 }
 EOF
 }
 
 inputs = merge(
-  local,common_vars.local,
+  local.common_vars.locals,
   local.environment_vars.locals,
 )
