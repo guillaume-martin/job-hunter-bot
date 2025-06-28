@@ -102,6 +102,12 @@ def get_jobs(term, region=REGION, job_type=JOB_TYPE):
     -------
 
     """
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
+        'Accept':'application/json, text/plain, */*',  
+        'Accept-Language':'en',
+        'Accept-Encoding':'gzip, deflate', 
+    }
 
     query_url = (
         f"{BASE_URL}/search?"
@@ -110,7 +116,7 @@ def get_jobs(term, region=REGION, job_type=JOB_TYPE):
         f"&job_listing_type[]={urllib.parse.quote(job_type)}"
         )
 
-    r = requests.get(query_url)
+    r = requests.get(query_url, headers=headers)
 
     if r.status_code == 200:
         soup = BeautifulSoup(r.content, 'html.parser')
