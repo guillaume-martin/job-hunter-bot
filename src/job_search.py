@@ -71,12 +71,14 @@ def find_jobs(searches):
         jobs += new_jobs
         print('-' * 50)
 
+        # 2025-06-29: removed remote.co because it is a paying service now.
+        # I cannot get job informations without login.
         # Get jobs from remote.co
-        print("Searching remote.co")
-        new_jobs = remoteco.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print('-' * 50)
+        # print("Searching remote.co")
+        # new_jobs = remoteco.get_jobs(term)
+        # print(f"Found {len(new_jobs)} jobs")
+        # jobs += new_jobs
+        # print('-' * 50)
 
         # Get jobs from 104
         print("Searching 104.com.tw")
