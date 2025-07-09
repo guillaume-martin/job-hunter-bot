@@ -1,45 +1,62 @@
-import os
+import boto3
+from botocore.exceptions import ClientError
 
-from pepipost.pepipost_client import PepipostClient
-from pepipost.models.send import Send
-from pepipost.models.mfrom import From
-from pepipost.models.content import Content
-from pepipost.models.type_enum import TypeEnum 
-from pepipost.exceptions.api_exception import APIException
-from pepipost.models.personalizations import Personalizations
-from pepipost.models.email_struct import EmailStruct
+AWS_REGION = "us-east-1"
+SENDER = "remote-bot.6brvb@slmail.me"
+RECIPIENT = "remote-bot.6brvb@slmail.me"
 
-def send_email(subject=None, content=None):
-    """ Sends an email using the Pepipost API
-    """
 
-    client = PepipostClient(os.getenv("API_KEY"))
 
-    mail_send_controller = client.mail_send 
+def assume_role(role_arn, session_name):
+    sts_client = boto3.client("sts")
+    response = sts_client.assume_role(
+        RoleArn=role_arn,
+        RoleSessionName=session_name
+    )
 
-    body = Send()
-    body.mfrom = From()
-    body.mfrom.email = os.getenv("FROM_EMAIL")
-    body.mfrom.name = os.getenv("FROM_NAME")
-    body.subject = subject
+    return response["Credentials"]
 
-    body.content = []
-    body.content.append(Content())
-    body.content[0].mtype = TypeEnum.HTML
-    body.content[0].value = content
+role_arn = "arn:aws:iam::434679992493:role/LambdaSESRole"
+session_name = "RemoteBotMailerSession"
 
-    body.personalizations = []
-    body.personalizations.append(Personalizations())
-    body.personalizations[0].to = []
-    body.personalizations[0].to.append(EmailStruct())
-    body.personalizations[0].to[0].name = os.getenv("TO_NAME")
-    body.personalizations[0].to[0].email = os.getenv("TO_EMAIL")
+# Assume the role
+credentials = assume_role(role_arn, session_name)
 
-    print("=" * 50)
-    print(body)
+# Create an SES client using temporary credentials
+ses_client = boto3.client(
+    "ses", 
+    region_name=AWS_REGION,
+    aws_access_key_id=credentials["AccessKeyId"],
+    aws_secret_access_key=credentials["SecretAccessKey"],
+    aws_session_token=credentials["SessionToken"]
+)
+
+def send_email(subject, content):
     try:
-        result = mail_send_controller.create_generatethemailsendrequest(body)
-        print(f"Request sent to API: {result}")
-    except APIException as e:
-        print(f"Failed to send email:\n{e}")
+        response = ses_client.send_email(
+            Source=SENDER,
+            Destination={
+                "ToAddresses": [RECIPIENT],
+            },
+            Message={
+                "Subject": {
+                    "Data": subject,
+                    "Charset": "UTF-8"
+                },
+                "Body": {
+                    "Text": {
+                        "Data": "",
+                        "Charset": "UTF-8"
+                    },
+                    "Html": {
+                        "Data": content,
+                        "Charset": "UTF-8"
+                    }
+                }
+            }
+        )
+    except ClientError as e:
+        print(f"Error: {e.response['Error']['Message']}")
+    else:
+        print(f"Email sent! Message ID: {response['MessageId']}")
 
