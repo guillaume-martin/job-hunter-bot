@@ -10,7 +10,6 @@ from scrappers import remotive
 from scrappers import wwr
 from scrappers import remoteok
 from scrappers import worknomads
-from scrappers import remoteco
 from scrappers import tw104
 
 
@@ -67,13 +66,6 @@ def find_jobs(searches):
         # Get jobs from worknomads
         print("Searching worknomads")
         new_jobs = worknomads.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print('-' * 50)
-
-        # Get jobs from remote.co
-        print("Searching remote.co")
-        new_jobs = remoteco.get_jobs(term)
         print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         print('-' * 50)
@@ -177,10 +169,14 @@ def main():
     before = len(single_jobs)
     old_jobs = []
     for job in single_jobs:
-        date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
-        days_since_published = (datetime.now() - date_published).days
-        if days_since_published > since:
-            old_jobs.append(job)
+        try:
+            date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
+            days_since_published = (datetime.now() - date_published).days
+            if days_since_published > since:
+                old_jobs.append(job)
+        except ValueError:
+            date_published = job["date_published"]
+            continue
 
     for old_job in old_jobs:
         single_jobs.remove(old_job)
