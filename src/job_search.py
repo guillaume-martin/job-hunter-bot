@@ -179,10 +179,14 @@ def main():
     before = len(single_jobs)
     old_jobs = []
     for job in single_jobs:
-        date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
-        days_since_published = (datetime.now() - date_published).days
-        if days_since_published > since:
-            old_jobs.append(job)
+        try:
+            date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
+            days_since_published = (datetime.now() - date_published).days
+            if days_since_published > since:
+                old_jobs.append(job)
+        except ValueError:
+            date_published = job["date_published"]
+            continue
 
     for old_job in old_jobs:
         single_jobs.remove(old_job)
