@@ -1,27 +1,34 @@
 # -*- coding: utf-8 -*-
 import urllib
+import time
 from datetime import datetime
 
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
-import requests
+from selenium import webdriver
+from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.firefox.options import Options
 
 
-BASE_URL = 'https://weworkremotely.com/remote-jobs'
+# Selenium configuration
+FIREFOX_PATH = "/opt/firefox/firefox-bin"
+GECKODRIVER_PATH = "/usr/local/bin/geckodriver" # Search configuration
 
-REGION = '0' #'Anywhere (100% Remote) Only'
-JOB_TYPE = 'Full-Time'
-
+# Search configuration
+BASE_URL = 'https://weworkremotely.com'
+REGION = "taiwan"
 
 def details_url(job):
     """ Returns the url to the job details
     """
     links = job.find_all('a')
-    url = ''
-    for link in links:
-        href = link['href']
-        if 'remote-jobs' in href:
-            url = href.split('/')[2]
+    try:
+        url = BASE_URL + "/"
+        url += [link for link in links if "listings" in link][0]
+    except IndexError:
+        url = ""
+        pass 
 
     return url
 
@@ -57,7 +64,6 @@ def missing_date(job):
     """ Attempts to get a publication date from the job details
     """
 
-
     date_published = publication_time(soup)
 
     return date_published
@@ -67,24 +73,25 @@ def job_details(job):
     """ Creates a dictionary with the basic job information
     """
 
-    company = job.find('span', class_='company').text
-    title = job.find('span', class_='title').text
+    company = job.find('p', class_='new-listing__company-name').text
+    title = job.find('h4', class_='new-listing__header__title').text
     # region = job.find('span', class_='region_company')
-    date_published = publication_time(job)
+    # date_published = publication_time(job)
     job_url = f"{BASE_URL}/{details_url(job)}"
 
     details = {
         "company": company,
         "title": title,
         # "region": region,
-        "date_published": date_published,
+        #"date_published": date_published,
+        "date_published": "",
         "url": job_url
         }
 
     return details
 
 
-def get_jobs(term, region=REGION, job_type=JOB_TYPE):
+def get_jobs(term, region=REGION):
     """ Returns the list of jobs from the search result
 
     Parameters:
@@ -95,37 +102,38 @@ def get_jobs(term, region=REGION, job_type=JOB_TYPE):
     region: String
         The geographic region of the jobs
 
-    job_type: String
-        The type of contract (contract or full time)
-
     Returns:
     -------
 
     """
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
-        'Accept':'application/json, text/plain, */*',  
-        'Accept-Language':'en',
-        'Accept-Encoding':'gzip, deflate', 
-    }
+    # Setup Firefox options
+    firefox_options = Options()
+    firefox_options.add_argument("--headless")
+    firefox_options.add_argument("--no-sandbox")
+    firefox_options.add_argument("--disable-dev-shm-usage")
+    firefox_options.binary_location = FIREFOX_PATH
 
-    query_url = (
-        f"{BASE_URL}/search?"
-        f"term={urllib.parse.quote(term)}"
-        f"&region[]={urllib.parse.quote(region)}"
-        f"&job_listing_type[]={urllib.parse.quote(job_type)}"
-        )
+    # Specify the path to Geckodriver if not in PATH
+    service = Service(GECKODRIVER_PATH)
 
-    r = requests.get(query_url, headers=headers)
+    # Start a new browser session
+    driver = webdriver.Firefox(service=service, options=firefox_options)
 
-    if r.status_code == 200:
-        soup = BeautifulSoup(r.content, 'html.parser')
-        jobs_list = soup.find_all('li', class_='feature')
-    else:
-        print(f"Request failed: {r.status_code} - {r.reason}")
-        print(f"Query: {query_url}")
-        return []
-        
+    try:
+        search_url = BASE_URL + "/remote-jobs/search" + f"?term={term}"
+
+        driver.get(search_url)
+        # Wait for the page to load
+        time.sleep(5)
+
+        page_content = driver.page_source
+
+    finally:
+        driver.quit()
+
+    soup = BeautifulSoup(page_content, "html.parser")
+    jobs_list = soup.find_all('li', class_='feature')
+       
     jobs = []
     for job in jobs_list:
         jobs.append(job_details(job))
