@@ -15,6 +15,7 @@ logs
 # Virtual environment
 venv
 .env
+.venv
 
 # Archives
 *.zip
