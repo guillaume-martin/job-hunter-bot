@@ -1,7 +1,7 @@
 
 # Variables
 IMAGE_NAME = remote-bot
-TAG = test
+TAG = latest
 DOCKERFILE_PATH = ./docker/Dockerfile
 
 # Build target
