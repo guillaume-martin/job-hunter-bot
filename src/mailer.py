@@ -9,7 +9,8 @@ AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 # Mailer configuration
 SENDER = os.getenv("SENDER")
 RECIPIENT = os.getenv("RECIPIENT")
-
+ROLE_ARN = os.getenv("ROLE_ARN")
+SESSION_NAME = os.getenv("SESSION_NAME")
 
 def assume_role(role_arn, session_name):
     sts_client = boto3.client("sts")
@@ -20,8 +21,8 @@ def assume_role(role_arn, session_name):
 
     return response["Credentials"]
 
-role_arn = "arn:aws:iam::434679992493:role/LambdaSESRole"
-session_name = "RemoteBotMailerSession"
+role_arn = ROLE_ARN
+session_name = SESSION_NAME
 
 # Assume the role
 credentials = assume_role(role_arn, session_name)
