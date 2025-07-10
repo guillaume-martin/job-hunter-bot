@@ -1,7 +1,9 @@
 """ Searches jobs offers on a selection of web sites
 """
 # -*- coding: utf-8 -*-
-import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from datetime import datetime
 
 from config import searches, since
@@ -54,7 +56,7 @@ def find_jobs(searches):
         new_jobs = wwr.get_jobs(term)
         print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
-        ('-' * 50)
+        print('-' * 50)
         
         # Get jobs from remoteok
         print("Searching remote | OK...")
