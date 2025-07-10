@@ -1,10 +1,14 @@
+import os
+
 import boto3
 from botocore.exceptions import ClientError
 
-AWS_REGION = "us-east-1"
-SENDER = "remote-bot.6brvb@slmail.me"
-RECIPIENT = "remote-bot.6brvb@slmail.me"
+# AWS configuration
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 
+# Mailer configuration
+SENDER = os.getenv("SENDER")
+RECIPIENT = os.getenv("RECIPIENT")
 
 
 def assume_role(role_arn, session_name):
@@ -32,6 +36,7 @@ ses_client = boto3.client(
 )
 
 def send_email(subject, content):
+
     try:
         response = ses_client.send_email(
             Source=SENDER,
