@@ -1,6 +1,7 @@
 beautifulsoup4
 boto3
 dotenv
+lxml
 pytest
 python-dateutil
 python-dotenv
