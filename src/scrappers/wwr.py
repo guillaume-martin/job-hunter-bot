@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import urllib
-import time
 from datetime import datetime
+import os
+import time
+import urllib
 
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
@@ -12,8 +13,8 @@ from selenium.webdriver.firefox.options import Options
 
 
 # Selenium configuration
-FIREFOX_PATH = "/opt/firefox/firefox-bin"
-GECKODRIVER_PATH = "/usr/local/bin/geckodriver" # Search configuration
+FIREFOX_PATH = os.getenv("FIREFOX_PATH")
+GECKODRIVER_PATH = os.getenv("GECKODRIVER_PATH")
 
 # Search configuration
 BASE_URL = 'https://weworkremotely.com'
