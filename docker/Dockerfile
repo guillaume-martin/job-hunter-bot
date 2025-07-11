@@ -17,4 +17,4 @@ COPY requirements.txt ./src/requirements.txt
 # Install  environment
 RUN pip install -r ./src/requirements.txt
 
-ENTRYPOINT ["python", "~/src/job_search.py"]
+ENTRYPOINT ["python", "./src/job_search.py"]
