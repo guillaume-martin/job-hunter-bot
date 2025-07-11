@@ -11,4 +11,4 @@ build:
 run:
 	docker run -i --rm -v ~/.aws:/home/appuser/.aws $(IMAGE_NAME):$(TAG)
 
-.PHONY: build
+.PHONY: build run
