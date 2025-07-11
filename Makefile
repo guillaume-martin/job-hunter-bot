@@ -8,5 +8,7 @@ DOCKERFILE_PATH = ./docker/Dockerfile
 build:
 	docker build -t $(IMAGE_NAME):$(TAG) -f $(DOCKERFILE_PATH) .
 
+run:
+	docker run -i --rm -v ~/.aws:/root/.aws $(IMAGE_NAME):$(TAG)
 
 .PHONY: build
