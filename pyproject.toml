@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "remote-bot"
+version = "0.1.0"
+description = "Bot to fetch opened remote positions"
+authors = ["Guillaume Martin"]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.14"
+beautifulsoup4 = "4.13.4"
+boto3 = "1.39.8"
+python-dotenv = "1.1.1"
+lxml = "6.0.0"
+requests = "2.32.4"
+selenium = "4.34.2"
+urllib3 = "2.5.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "8.4.1"
