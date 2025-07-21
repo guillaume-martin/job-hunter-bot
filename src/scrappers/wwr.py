@@ -26,7 +26,7 @@ def details_url(job):
     links = job.find_all('a')
     try:
         url = BASE_URL + "/"
-        url += [link for link in links if "listings" in link][0]
+        url += [link["href"] for link in links if "listings" in link["href"]][0]
     except IndexError:
         url = ""
         pass 
