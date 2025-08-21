@@ -50,11 +50,16 @@ def publication_time(job):
             str: The formatted publication date as a string in 'YYYY-MM-DD' format.
     """
     
-    date_tag = job.find('p', class_='new-listging__header__icons__date')
-    days_str = date_tag.text.strip().replace('d', '')
+    date_tag = job.find('p', class_='new-listing__header__icons__date')
+    try:
+        days_str = date_tag.text.strip().replace('d', '')
+    except AttributeError as e:
+        print(f"Error extracting date from job: {e}")
+        # If we cannot find the date, we assume it's a new post.
+        days_str = "New"
 
     # New posts are marked as "NEW".
-    if days_str == "NEW":
+    if days_str == "New":
         days_since_posted = 0
     else:
         days_since_posted = int(days_str)
