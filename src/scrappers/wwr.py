@@ -21,12 +21,18 @@ BASE_URL = 'https://weworkremotely.com'
 REGION = "taiwan"
 
 def details_url(job):
-    """ Returns the url to the job details
-    """
+    """ Extracts and returns the full URL to the job details page from a BeautifulSoup job element.
+    Args:
+        job (bs4.element.Tag): A BeautifulSoup tag representing a job listing, expected to contain anchor tags.
+    Returns:
+        str: The absolute URL to the job details page if found, otherwise an empty string.
+    """ 
+    
     links = job.find_all('a')
     try:
-        url = BASE_URL + "/"
-        url += [link for link in links if "listings" in link][0]
+        url = BASE_URL
+        url += [link["href"] for link in links if link["href"].startswith("/remote-jobs/")][0]
+        url = urllib.parse.urljoin(BASE_URL, url)
     except IndexError:
         url = ""
         pass 
@@ -62,23 +68,39 @@ def publication_time(job):
 
 
 def missing_date(job):
-    """ Attempts to get a publication date from the job details
+    """
+    Attempts to extract the publication date from the given job details.
+
+    Args:
+        job: The job details object or HTML element containing job information.
+
+    Returns:
+        The publication date if found, otherwise None.
     """
 
-    date_published = publication_time(soup)
-
+    date_published = publication_time(job)
     return date_published
 
 
 def job_details(job):
-    """ Creates a dictionary with the basic job information
     """
+    Extracts job details from a BeautifulSoup job listing element.
 
+    Args:
+        job (bs4.element.Tag): A BeautifulSoup Tag object representing a job listing.
+
+    Returns:
+        dict: A dictionary containing the extracted job details:
+            - company (str): The name of the company.
+            - title (str): The job title.
+            - date_published (str): The date the job was published (currently empty).
+            - url (str): The URL to the job details page.
+    """
     company = job.find('p', class_='new-listing__company-name').text
     title = job.find('h4', class_='new-listing__header__title').text
     # region = job.find('span', class_='region_company')
     # date_published = publication_time(job)
-    job_url = f"{BASE_URL}/{details_url(job)}"
+    job_url = details_url(job)
 
     details = {
         "company": company,
@@ -93,20 +115,17 @@ def job_details(job):
 
 
 def get_jobs(term, region=REGION):
-    """ Returns the list of jobs from the search result
-
-    Parameters:
-    ----------
-    term: String
-        The keyword searched.
-
-    region: String
-        The geographic region of the jobs
-
-    Returns:
-    -------
-
     """
+    Scrapes job listings from the WWR (We Work Remotely) website based on a search term and region.
+    
+    Args:
+        term (str): The search keyword to filter job listings.
+        region (str, optional): The region to filter job listings. Defaults to REGION.
+    
+    Returns:
+        list: A list of job details extracted from the search results.
+    """
+
     # Setup Firefox options
     firefox_options = Options()
     firefox_options.add_argument("--headless")
