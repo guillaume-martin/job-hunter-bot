@@ -66,21 +66,6 @@ def publication_time(job):
     return formatted_time
 
 
-def missing_date(job):
-    """
-    Attempts to extract the publication date from the given job details.
-
-    Args:
-        job: The job details object or HTML element containing job information.
-
-    Returns:
-        The publication date if found, otherwise None.
-    """
-
-    date_published = publication_time(job)
-    return date_published
-
-
 def job_details(job):
     """
     Extracts job details from a BeautifulSoup job listing element.
