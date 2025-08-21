@@ -100,7 +100,7 @@ def job_details(job):
     title = job.find('h4', class_='new-listing__header__title').text
     # region = job.find('span', class_='region_company')
     # date_published = publication_time(job)
-    job_url = f"{BASE_URL}/{details_url(job)}"
+    job_url = details_url(job)
 
     details = {
         "company": company,
@@ -117,9 +117,11 @@ def job_details(job):
 def get_jobs(term, region=REGION):
     """
     Scrapes job listings from the WWR (We Work Remotely) website based on a search term and region.
+    
     Args:
         term (str): The search keyword to filter job listings.
         region (str, optional): The region to filter job listings. Defaults to REGION.
+    
     Returns:
         list: A list of job details extracted from the search results.
     """
