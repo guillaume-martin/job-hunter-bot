@@ -20,7 +20,7 @@ Dependencies:
     ValueError: If date string is not a valid ISO 8601 format in to_utc().
 """
 import requests
-from datetimne import datetime, timezone
+from datetime import datetime, timezone
 
 
 API_URL = "https://trulyremote.co/api/getListing"
@@ -45,7 +45,7 @@ def to_utc(date_str):
     return dt.astimezone(timezone.utc)
 
 
-def request_jobs(endpoint: str, term: str, locations: List):
+def request_jobs(endpoint: str, term: str, locations: list):
     """
     Sends a POST request to the specified endpoint to retrieve job listings based on a search term and locations.
 
@@ -68,22 +68,21 @@ def request_jobs(endpoint: str, term: str, locations: List):
     
 
 
-def get_jobs(term:str) -> List:
-    def get_jobs(term: str) -> List:
-        """
-        Fetches job listings matching the given search term from a remote API.
-        Args:
-            term (str): The search term to filter job listings.
-        Returns:
-            List[dict]: A list of dictionaries, each representing a job with the following keys:
-                - 'title': The job title (str).
-                - 'company': The company name (str).
-                - 'url': The URL to apply for the job (str).
-                - 'date_published': The UTC ISO formatted publish date (str).
-        Notes:
-            - If no jobs are found or the API request fails, an empty list is returned.
-            - The function expects the API response to contain a "records" key with job entries.
-        """
+def get_jobs(term:str) -> list:
+    """
+    Fetches job listings matching the given search term from a remote API.
+    Args:
+        term (str): The search term to filter job listings.
+    Returns:
+        List[dict]: A list of dictionaries, each representing a job with the following keys:
+            - 'title': The job title (str).
+            - 'company': The company name (str).
+            - 'url': The URL to apply for the job (str).
+            - 'date_published': The UTC ISO formatted publish date (str).
+    Notes:
+        - If no jobs are found or the API request fails, an empty list is returned.
+        - The function expects the API response to contain a "records" key with job entries.
+    """
 
     jobs = []
 
@@ -94,7 +93,13 @@ def get_jobs(term:str) -> List:
     jobs_list = data.get("records", [])
     for job in jobs_list:
         job_data = job["fields"]
-        utc_publish_date = to_utc(job_data["publishDate"])
+ 
+        # Sometimes job posts don't have a publish date, use last modified date instead
+        try:
+            publish_date = job_data["publishDate"]
+        except KeyError:
+            publish_date = job_data.get("lastModifiedOn")
+        utc_publish_date = to_utc(publish_date)
         
         jobs.append({
             "title": job_data.get("role", "unknown"),
