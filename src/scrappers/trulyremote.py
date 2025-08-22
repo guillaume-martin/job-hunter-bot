@@ -105,7 +105,7 @@ def get_jobs(term:str) -> list:
             "title": job_data.get("role", "unknown"),
             "company": job_data.get("companyName", ["unknown"][0]),
             "url": job_data.get("roleApplyURL", "unknown"),
-            "date_published": utc_publish_date.isoformat()
+            "date_published": datetime.strftime(utc_publish_date, "%Y-%m-%d")
         })
     
     return jobs
