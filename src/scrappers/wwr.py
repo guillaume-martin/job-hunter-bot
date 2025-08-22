@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import time
 import urllib
@@ -41,45 +41,34 @@ def details_url(job):
 
 
 def publication_time(job):
-    """ Returns the formatted publication time of the post
-
-    The time is displayed in a <time> tag:
-    <time datetime="2020-10-15T02:33:05Z"
-          data-local="time"
-          data-format="%b %e"
-          title="October 15, 2020 at 10:33am TST"
-          data-localized=""
-          aria-label="Oct 15">Oct 15</time>
-    The method extracts the value of the datetime argument and
-    format it as yyyy-mm-dd
-    """
-    time_tag = job.find('time')
-    if time_tag is None:
-        # Try to get the data from the job details
-        r = requests.get(f"{BASE_URL}/{details_url(job)}")
-        soup = BeautifulSoup(r.content, 'html.parser')
-        time_tag = soup.find('time')
-
-    time = time_tag['datetime']
-    formatted_time = datetime.strftime(parse(time), '%Y-%m-%d')
-
-
-    return formatted_time
-
-
-def missing_date(job):
-    """
-    Attempts to extract the publication date from the given job details.
+    """ Extracts the publication date from a job listing element.
 
     Args:
-        job: The job details object or HTML element containing job information.
+        job (bs4.element.Tag): A BeautifulSoup Tag object representing a job listing.
 
     Returns:
-        The publication date if found, otherwise None.
+            str: The formatted publication date as a string in 'YYYY-MM-DD' format.
     """
+    
+    date_tag = job.find('p', class_='new-listing__header__icons__date')
+    try:
+        days_str = date_tag.text.strip().replace('d', '')
+    except AttributeError as e:
+        print(f"Error extracting date from job: {e}")
+        # If we cannot find the date, we assume it's a new post.
+        days_str = "New"
 
-    date_published = publication_time(job)
-    return date_published
+    # New posts are marked as "NEW".
+    if days_str == "New":
+        days_since_posted = 0
+    else:
+        days_since_posted = int(days_str)
+    
+    date_published = datetime.now() - timedelta(days=days_since_posted)
+
+    formatted_time = date_published.strftime('%Y-%m-%d')
+    
+    return formatted_time
 
 
 def job_details(job):
@@ -99,15 +88,14 @@ def job_details(job):
     company = job.find('p', class_='new-listing__company-name').text
     title = job.find('h4', class_='new-listing__header__title').text
     # region = job.find('span', class_='region_company')
-    # date_published = publication_time(job)
+    date_published = publication_time(job)
     job_url = details_url(job)
 
     details = {
         "company": company,
         "title": title,
         # "region": region,
-        #"date_published": date_published,
-        "date_published": "",
+        "date_published": date_published,
         "url": job_url
         }
 
