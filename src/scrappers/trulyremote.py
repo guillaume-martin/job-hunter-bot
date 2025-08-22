@@ -24,7 +24,6 @@ from datetimne import datetime, timezone
 
 
 API_URL = "https://trulyremote.co/api/getListing"
-
 LOCATIONS = ["Anywhere in the world","Asia"]
 
 
