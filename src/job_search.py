@@ -8,11 +8,14 @@ from datetime import datetime
 
 from config import searches, since
 from mailer import send_email
-from scrappers import remotive
-from scrappers import wwr
-from scrappers import remoteok
-from scrappers import worknomads
-from scrappers import tw104
+from scrappers import (
+    remotive,
+    wwr,
+    remoteok,
+    worknomads,
+    tw104,
+    trulyremote,
+)
 
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
@@ -78,6 +81,13 @@ def find_jobs(searches):
         print(f"Found {len(new_jobs)} jobs")
         jobs += new_jobs
         print('-' * 50)
+
+        # Get jobs from trulyremote
+        print("Searching trulyremote...")
+        new_jobs = trulyremote.get_jobs(term)
+        print(f"Found {len(new_jobs)} jobs")
+        jobs += new_jobs
+        print("-" * 50)
 
     return jobs 
 
