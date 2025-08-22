@@ -96,7 +96,6 @@ def job_details(job):
         "title": title,
         # "region": region,
         "date_published": date_published,
-        "date_published": "",
         "url": job_url
         }
 
