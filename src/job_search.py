@@ -47,47 +47,21 @@ def find_jobs(searches):
     for term in searches:
         print(f"=============== {term} ===============")
 
-        # Get jobs from Remotive
-        print("Searching Remotive jobs...")
-        new_jobs = remotive.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print('-' * 50)
+        scrappers = [
+            ("Remotive", remotive),
+            ("We Work Remotely", wwr),
+            ("remote | OK", remoteok),
+            ("worknomads", worknomads),
+            ("104.com.tw", tw104),
+            ("trulyremote", trulyremote),
+        ]
 
-        # Get jobs from wwr
-        print("Searching We Work Remotely jobs...")
-        new_jobs = wwr.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print('-' * 50)
-        
-        # Get jobs from remoteok
-        print("Searching remote | OK...")
-        new_jobs = remoteok.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print('-' * 50)
-        
-        # Get jobs from worknomads
-        print("Searching worknomads")
-        new_jobs = worknomads.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print('-' * 50)
-
-        # Get jobs from 104
-        print("Searching 104.com.tw")
-        new_jobs = tw104.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print('-' * 50)
-
-        # Get jobs from trulyremote
-        print("Searching trulyremote...")
-        new_jobs = trulyremote.get_jobs(term)
-        print(f"Found {len(new_jobs)} jobs")
-        jobs += new_jobs
-        print("-" * 50)
+        for name, scrapper in scrappers:
+            print(f"Searching {name} jobs...")
+            new_jobs = scrapper.get_jobs(term)
+            print(f"Found {len(new_jobs)} jobs")
+            jobs += new_jobs
+            print('-' * 50)
 
     return jobs 
 
