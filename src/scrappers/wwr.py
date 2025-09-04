@@ -136,6 +136,10 @@ def get_jobs(term, region=REGION):
 
         page_content = driver.page_source
 
+    except TimeoutError:
+        print("Loading took too much time!")
+        page_content = ""
+
     finally:
         driver.quit()
 
