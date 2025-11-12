@@ -86,7 +86,11 @@ def job_details(job):
             - url (str): The URL to the job details page.
     """
     company = job.find('p', class_='new-listing__company-name').text
-    title = job.find('h4', class_='new-listing__header__title').text
+    try:
+        title = job.find('h4', class_='new-listing__header__title').text
+    except AttributeError:
+        title = "Title Not Found"
+
     # region = job.find('span', class_='region_company')
     date_published = publication_time(job)
     job_url = details_url(job)
