@@ -6,9 +6,9 @@ load_dotenv()
 
 from datetime import datetime
 
-from config import searches, since, sites
-from mailer import send_email
-from scrappers.scraper_factory import get_scraper
+from .config import searches, since, sites
+from .mailer import send_email
+from .scrappers.scraper_factory import get_scraper
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
