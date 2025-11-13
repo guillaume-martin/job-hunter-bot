@@ -1,5 +1,5 @@
 import pytest
-from job_search import jobs_to_html, filter_titles
+import src.job_search as job_search
 
 
 def test_jobs_to_html_returns_string():
@@ -16,7 +16,7 @@ def test_jobs_to_html_returns_string():
     ]
 
     # Exercise
-    result = jobs_to_html(jobs)
+    result = job_search.jobs_to_html(jobs)
 
     # Verify
     assert isinstance(result, str)
@@ -29,8 +29,8 @@ def test_filter_titles_returns_list():
     jobs = []
     searches = []
 
-    # Exercise 
-    result = filter_titles(jobs, searches)
+    # Exercise
+    result = job_search.filter_titles(jobs, searches)
 
     # Verify
     assert isinstance(result, list)
@@ -56,7 +56,40 @@ def test_filter_titles_removes_unwanted():
     searches = ["database", "python"]
 
     # Exercise
-    result = filter_titles(jobs, searches)
+    result = job_search.filter_titles(jobs, searches)
 
     # Verify
     result = [job_1]
+    assert result == [job_1]
+
+def test_find_jobs_calls_scrappers(monkeypatch):
+    """ find_jobs should call the configured scrapers and return combined results """
+    # setup
+    calls = []
+
+    class FakeScraper:
+        def __init__(self, site):
+            self.site = site
+
+        def get_jobs(self, term):
+            calls.append((self.site, term))
+            return []
+
+    def fake_get_scraper(site):
+        return FakeScraper(site)
+
+    search = ["python", "sql"]
+
+    # Patch job_search module-level symbols that find_jobs uses
+    monkeypatch.setattr(job_search, "get_scraper", fake_get_scraper)
+    monkeypatch.setattr(job_search, "sites", ["siteA", "siteB"])
+
+    # Exercise
+    results = job_search.find_jobs(searches=search)
+
+    # Verify
+    expected_calls = [(s, t) for t in search for s in job_search.sites]
+    assert calls == expected_calls
+
+
+# TODO test find_jobs returns expected results from scrapers
