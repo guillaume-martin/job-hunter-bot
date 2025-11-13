@@ -11,15 +11,13 @@ class BaseScraper(ABC):
         """Fetch and return jobs for a given serch term."""
         pass
 
-    @abstractmethod
     def _build_search_url(self, term):
         """Construct the search URL for the given term."""
-        pass
+        raise NotImplementedError("This scrapper does not use URL based search.")
 
-    @abstractmethod
     def _build_api_payload(self, term):
         """Construct the API payload for the given term."""
-        pass
+        raise NotImplementedError("This scrapper does not use API based search.")
 
     def _extract_job_details(self, job_element):
         """Extract job details from a job element. To be implemented by subclasses."""
