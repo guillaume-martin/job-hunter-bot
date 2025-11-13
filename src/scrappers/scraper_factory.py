@@ -1,4 +1,4 @@
-from remotive import RemotiveScraper
+from .remotive import RemotiveScraper
 
 
 def get_scraper(site_name: str):
