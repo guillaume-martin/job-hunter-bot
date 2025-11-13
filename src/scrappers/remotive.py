@@ -5,7 +5,7 @@ import json
 from typing import Dict, List 
 import urllib
 
-from base_scraper import BaseScraper
+from .base_scraper import BaseScraper
 
 from requests import request
 
