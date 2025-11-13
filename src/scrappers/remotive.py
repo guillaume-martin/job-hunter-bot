@@ -53,16 +53,16 @@ class RemotiveScraper(BaseScraper):
 
         return payload
 
-    def _extract_company(self, job_element):
+    def extract_company(self, job_element):
         return job_element.get("company_name", "unknown")
 
-    def _extract_title(self, job_element):
+    def extract_title(self, job_element):
         return job_element.get("title", "unknown")
 
-    def _extract_url(self, job_element):
+    def extract_url(self, job_element):
         return job_element.get("url", "unknown")
 
-    def _extract_date_published(self, job_element):
+    def extract_date_published(self, job_element):
         utc_pub_date = datetime.utcfromtimestamp(job_element['publication_date'])
         date_published = datetime.strftime(utc_pub_date, '%Y-%m-%d')
         return date_published
