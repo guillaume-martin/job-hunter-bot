@@ -6,17 +6,9 @@ load_dotenv()
 
 from datetime import datetime
 
-from config import searches, since
+from config import searches, since, sites
 from mailer import send_email
-from scrappers import (
-    remotive,
-    wwr,
-    remoteok,
-    worknomads,
-    tw104,
-    trulyremote,
-)
-
+from scrappers.scraper_factory import get_scraper
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
@@ -47,21 +39,10 @@ def find_jobs(searches):
     for term in searches:
         print(f"=============== {term} ===============")
 
-        scrappers = [
-            ("Remotive", remotive),
-            ("We Work Remotely", wwr),
-            ("remote | OK", remoteok),
-            ("worknomads", worknomads),
-            ("104.com.tw", tw104),
-            ("trulyremote", trulyremote),
-        ]
-
-        for name, scrapper in scrappers:
-            print(f"Searching {name} jobs...")
+        for site in sites:
+            scrapper = get_scraper(site)
             new_jobs = scrapper.get_jobs(term)
-            print(f"Found {len(new_jobs)} jobs")
             jobs += new_jobs
-            print('-' * 50)
 
     return jobs 
 
