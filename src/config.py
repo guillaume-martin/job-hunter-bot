@@ -26,6 +26,7 @@ searches = [
 
 sites = [
     'remotive',
+    'trulyremote'
 ]
 
 # Number of days since the job was published
