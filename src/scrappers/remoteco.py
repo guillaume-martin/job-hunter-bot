@@ -3,47 +3,50 @@
 
 import json
 
-import requests
+from .base_scraper import BaseScraper
+
+from requests import request
 from bs4 import BeautifulSoup
 
 
 AJAX_URL = "https://remote.co/jm-ajax/get_listings/"
 
 
-def load_jobs(term):
+class RemoteCoScraper(BaseScraper):
+    """ Scraper for remote.co jobs """
+    def __init__(self):
+        super().__init__(base_url="https://remote.co/remote-jobs/", name="Remote.co")
 
-    payload = {
-        'search_keywords': term,
-        'per_page': 50,
-        'orderby':'date',
-        'order': 'DESC',
-        'page': 1,
-        'show_pagination': 'false'
-    }
+    def _build_api_payload(self, term):
+        payload = {
+            'search_keywords': term,
+            'per_page': 50,
+            'orderby':'date',
+            'order': 'DESC',
+            'page': 1,
+            'show_pagination': 'false'
+        }
+        return payload
 
-    r = requests.get(AJAX_URL, payload)
-    results = json.loads(r.content)
-    soup = BeautifulSoup(results['html']    , 'lxml')
+    def extract_company(self, job_element):
+        return job_element.find('div', class_='company').text.strip()
 
-    jobs_list = soup.find_all('li', class_='job_listing')
-    print(f"found {len(jobs_list)} jobs")
+    def extract_title(self, job_element):
+        return job_element.find('h3').text.strip()
 
-    return jobs_list
+    def extract_url(self, job_element):
+        return job_element.find('a')['href']
 
+    def extract_date_published(self, job_element):
+        return job_element.find('time')['datetime']
 
-def get_jobs(term):
+    def get_jobs(self, term):
+        r = request("POST", AJAX_URL, params=self._build_api_payload(term))
+        results = json.loads(r.content)
+        soup = BeautifulSoup(results['html'], 'lxml')
+        jobs_list = soup.find_all('li', class_='job_listing')
 
-    jobs = []
+        for job in jobs_list:
+            job_details = self._extract_job_details(job)
+            self.jobs.append(job_details)   
 
-    jobs_list = load_jobs(term)
-
-    for job in jobs_list:
-
-        jobs.append({
-            'title': job.find('h3').text.strip(),
-            'company': job.find('div', class_='company').text.strip(),
-            'url': job.find('a')['href'],
-            'date_published': job.find('time')['datetime']
-        })
-    
-    return jobs    
