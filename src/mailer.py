@@ -12,6 +12,10 @@ RECIPIENT = os.getenv("RECIPIENT")
 ROLE_ARN = os.getenv("ROLE_ARN")
 SESSION_NAME = os.getenv("SESSION_NAME")
 
+if not all([SENDER, RECIPIENT, ROLE_ARN, SESSION_NAME]):
+    raise ValueError("Missing required environment variables. Check your .env file.")
+
+
 def assume_role(role_arn, session_name):
     sts_client = boto3.client("sts")
     response = sts_client.assume_role(

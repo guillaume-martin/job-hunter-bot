@@ -2,21 +2,13 @@
 """
 # -*- coding: utf-8 -*-
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv("src/.env")
 
 from datetime import datetime
 
-from config import searches, since
-from mailer import send_email
-from scrappers import (
-    remotive,
-    wwr,
-    remoteok,
-    worknomads,
-    tw104,
-    trulyremote,
-)
-
+from .config import searches, since, sites
+from .mailer import send_email
+from .scrappers.scraper_factory import get_scraper
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
@@ -47,21 +39,12 @@ def find_jobs(searches):
     for term in searches:
         print(f"=============== {term} ===============")
 
-        scrappers = [
-            ("Remotive", remotive),
-            ("We Work Remotely", wwr),
-            ("remote | OK", remoteok),
-            ("worknomads", worknomads),
-            ("104.com.tw", tw104),
-            ("trulyremote", trulyremote),
-        ]
-
-        for name, scrapper in scrappers:
-            print(f"Searching {name} jobs...")
-            new_jobs = scrapper.get_jobs(term)
-            print(f"Found {len(new_jobs)} jobs")
-            jobs += new_jobs
-            print('-' * 50)
+        for site in sites:
+            print(f"Searching jobs on {site}...")
+            scrapper = get_scraper(site)
+            scrapper.get_jobs(term)
+            print(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
+            jobs += scrapper.jobs
 
     return jobs 
 
@@ -170,16 +153,20 @@ def main():
     print(f"Removed {before - len(single_jobs)} jobs")
 
     # Keep only the titles that contain a keyword
-    print("Filtering job titles...")
-    single_jobs = filter_titles(single_jobs, searches)
+    # print("Filtering job titles...")
+    # single_jobs = filter_titles(single_jobs, searches)
 
-    print(f"Removed {before - len(single_jobs)} jobs")
+    # print(f"Removed {before - len(single_jobs)} jobs")
     
     # Send jobs by email
     print("###############  Sending Results  ###############")
     print(f"Sending {len(single_jobs)} jobs.")
     subject = f"New Remote Jobs for {date}"
-    content = jobs_to_html(single_jobs)
+    if len(single_jobs) == 0:
+        content = "<p>No new jobs found</p>"
+    else:
+        content = jobs_to_html(single_jobs)
+
     send_email(subject, content)
 
 
