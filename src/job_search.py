@@ -2,7 +2,7 @@
 """
 # -*- coding: utf-8 -*-
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv("src/.env")
 
 from datetime import datetime
 
@@ -41,8 +41,8 @@ def find_jobs(searches):
 
         for site in sites:
             scrapper = get_scraper(site)
-            new_jobs = scrapper.get_jobs(term)
-            jobs += new_jobs
+            scrapper.get_jobs(term)
+            jobs += scrapper.jobs
 
     return jobs 
 
@@ -151,16 +151,20 @@ def main():
     print(f"Removed {before - len(single_jobs)} jobs")
 
     # Keep only the titles that contain a keyword
-    print("Filtering job titles...")
-    single_jobs = filter_titles(single_jobs, searches)
+    # print("Filtering job titles...")
+    # single_jobs = filter_titles(single_jobs, searches)
 
-    print(f"Removed {before - len(single_jobs)} jobs")
+    # print(f"Removed {before - len(single_jobs)} jobs")
     
     # Send jobs by email
     print("###############  Sending Results  ###############")
     print(f"Sending {len(single_jobs)} jobs.")
     subject = f"New Remote Jobs for {date}"
-    content = jobs_to_html(single_jobs)
+    if len(single_jobs) == 0:
+        content = "<p>No new jobs found</p>"
+    else:
+        content = jobs_to_html(single_jobs)
+
     send_email(subject, content)
 
 
