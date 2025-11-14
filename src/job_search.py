@@ -40,8 +40,10 @@ def find_jobs(searches):
         print(f"=============== {term} ===============")
 
         for site in sites:
+            print(f"Searching jobs on {site}...")
             scrapper = get_scraper(site)
             scrapper.get_jobs(term)
+            print(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
             jobs += scrapper.jobs
 
     return jobs 
