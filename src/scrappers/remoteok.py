@@ -2,6 +2,7 @@ from dateutil.parser import parse
 from datetime import datetime
 
 from .base_scraper import BaseScraper
+
 from requests import request
 from bs4 import BeautifulSoup
 
