@@ -73,7 +73,7 @@ def test_find_jobs_calls_scrappers(monkeypatch):
 
         def get_jobs(self, term):
             calls.append((self.site, term))
-            return []
+            self.jobs = []
 
     def fake_get_scraper(site):
         return FakeScraper(site)
