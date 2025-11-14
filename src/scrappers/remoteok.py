@@ -1,12 +1,14 @@
 from dateutil.parser import parse
 from datetime import datetime
 
-import requests
+from .base_scraper import BaseScraper
+
+from requests import request
 from bs4 import BeautifulSoup
 
 
-BASE_URL = 'https://remoteok.io'
-LOCATION = 'worldwide'
+BASE_URL = "https://remoteok.com"
+LOCATIONS = ["Worldwide", "region_AS", "TW"]
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -15,44 +17,55 @@ HEADERS = {
     'Upgrade-Insecure-Requests': '1',
     'DNT': '1',
     'Sec-GPC': '1',
-    'Host': 'remoteok.io',
+    'Host': 'remoteok.com',
     }
 
-def publication_time(job):
-    time_tag = job.find('time')
+class RemoteOkScraper(BaseScraper):
+    def __init__(self):
+        super().__init__(base_url=BASE_URL, name='RemoteOK')
 
-    time = time_tag['datetime']
-    formatted_time = datetime.strftime(parse(time), '%Y-%m-%d')
+    def _build_search_url(self, term):
+        search_url = f"{self.base_url}/?location={",".join(LOCATIONS)}&search={term}&action=get_jobs"
+        return search_url
 
-    return formatted_time
+    def extract_company(self, job_element):
+        company = job_element.find('h3').text
+        company = company.replace("\n", "").strip()
+        company = company.replace("\t", "").strip()
 
+        return company
 
-def get_jobs(term):
-    
-    jobs = []
-   
-    query_url = f"{BASE_URL}/remote-{term}-jobs?location={LOCATION}"
-    
-    r = requests.get(query_url, headers=HEADERS)
-    
-    soup = BeautifulSoup(r.content, 'lxml')
+    def extract_title(self, job_element):
+        title = job_element.find('h2').text
+        title = title.replace("\n", "").strip()
+        title = title.replace("\t", "").strip()
 
-    jobs_list = soup.find_all('tr', class_='job')
+        return title
 
-    for job in jobs_list:
-        title = job.find('h2').text
-        company = job.find('h3').text
-        date_published = publication_time(job)   
+    def extract_url(self, job_element):
         try:
-            url = BASE_URL + job.find('td', class_='source').find('a')['href']
+            url = self.base_url + job_element.find("td", class_="source").find("a")["href"]
         except:
-            url = 'no URL'
-        
-        jobs.append({
-            'title': title,
-            'company': company,
-            'date_published': date_published,
-            'url': url
-            })
-        
-    return jobs
+            url = "no URL"
+        return url
+
+    def extract_date_published(self, job_element):
+        time_tag = job_element.find("time")
+        time = time_tag["datetime"]
+        formatted_time = datetime.strftime(parse(time), "%Y-%m-%d")
+        return formatted_time
+
+    def get_jobs(self, term: str) -> list:
+        search_url = self._build_search_url(term)
+        r = request("GET", search_url, headers=HEADERS)
+        soup = BeautifulSoup(r.content, "lxml")
+
+        self.jobs = [
+            {
+                "title": self.extract_title(job),
+                "company": self.extract_company(job),
+                "date_published": self.extract_date_published(job),
+                "url": self.extract_url(job),
+            }
+            for job in soup.find_all("tr", class_="job")
+        ]
