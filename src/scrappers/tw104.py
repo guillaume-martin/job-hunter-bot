@@ -1,4 +1,4 @@
-from urllib.parse import urlparse
+import urllib
 
 from .base_scraper import BaseScraper
 
