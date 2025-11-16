@@ -1,60 +1,53 @@
 from urllib.parse import urlparse
-from datetime import datetime, date, timedelta
 
-import requests
-from bs4 import BeautifulSoup
-import dateutil.parser as parser
+from .base_scraper import BaseScraper
 
-
-search_url = 'https://www.104.com.tw/jobs/search/'
+from requests import request
 
 
+BASE_URL = "https://www.104.com.tw/jobs/search/api/jobs?"
+RESULTS_PER_PAGE = 100
 
-def _published_date(job_date):
-    clean_date = job_date.replace(" ", "")
-    parsed_date = parser.parse(clean_date)    
+
+
+class Tw104Scraper(BaseScraper):
+    """ Scraper for 104.com.tw jobs. """
+    def __init__(self):
+        super().__init__(base_url=BASE_URL, name="104")
+
+    def _build_search_url(self, term):
+        return f"{BASE_URL}jobsource=joblist_search&keyword={urllib.parse.quote(self.term)}&mode=s&order=15&page=1&page-size={RESULTS_PER_PAGE}&searchJobs=1"
+
+    def extract_company(self, job_element):
+        return job_element.get("custName", "unknown")
     
-    return parsed_date.date()
+    def extract_title(self, job_element):
+        return job_element.get("jobName", "unknown")
+    
+    def extract_url(self, job_element):
+        return job_element.get("link", {}).get("job", "unknown")
+    
+    def extract_date_published(self, job_element):
+        date_int = int(job_element.get("appearDate", 0))
+        published_date = f"{date_int // 10000}-{(date_int // 100) % 100:02}-{date_int % 100:02}"
+        return published_date
+    
+    def get_jobs(self, term:str) -> list:
+        search_url = self._build_search_url(term) 
 
-
-def _clean_job_link(link):
-    parsed = urlparse(link)
-    clean_link = "https://" + parsed.netloc + parsed.path
-    return clean_link
-
-
-def get_jobs(term):
-    area = "6001001000,6001002000,6001004000"
-    isnew = 3
-    url  = (
-        "https://www.104.com.tw/jobs/search/?"
-        f"isnew={isnew}&"
-        "kwop=1&"
-        f"keyword={term}&"
-        f"area={area}"
-        "&mode=l&langFlag=0&langStatus=0&recommendJob=0&hotJob=0"
-    )
-    jobs_list = []
-
-    r = requests.get(url)
-    soup = BeautifulSoup(r.content, 'html.parser')
-
-    jobs_items = soup.find_all("article", {"class":"js-job-item"})
-    yesterday = date.today() - timedelta(days = 1)
-
-    for item in jobs_items:
-        job = item.find("a", {"class":"js-job-link"})
-        job_title = job["title"]
-        job_link = _clean_job_link(job["href"])
-        job_date = item.find("li", {"class":"job-mode__date"}).text
-        pub_date = _published_date(job_date)
-        company = item.find("li", {"class":"job-mode__company"}).find("a").text
-        if pub_date == yesterday:
-            jobs_list.append({
-                'title': job_title,
-                'company': company,
-                'date_published': pub_date,
-                'url': job_link
-            })
-
-    return jobs_list
+        headers = {
+            "Host": "www.104.com.tw",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Referer": f"https://www.104.com.tw/jobs/search/?jobsource=joblist_search&keyword={term.replace(" ", "+")}&mode=s&page=1&order=16",
+        }
+        
+        r = request("GET", search_url, headers=headers)
+        if r.status_code == 200:
+            response = r.json()
+            jobs_list = response.get("data", [])
+            
+            for job in jobs_list:
+                job_details = self._extract_job_details(job)
+                self.jobs.append(job_details)
