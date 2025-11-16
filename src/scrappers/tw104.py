@@ -16,7 +16,7 @@ class Tw104Scraper(BaseScraper):
         super().__init__(base_url=BASE_URL, name="104")
 
     def _build_search_url(self, term):
-        return f"{BASE_URL}jobsource=joblist_search&keyword={urllib.parse.quote(self.term)}&mode=s&order=15&page=1&page-size={RESULTS_PER_PAGE}&searchJobs=1"
+        return f"{BASE_URL}jobsource=joblist_search&keyword={urllib.parse.quote(term)}&mode=s&order=15&page=1&page-size={RESULTS_PER_PAGE}&searchJobs=1"
 
     def extract_company(self, job_element):
         return job_element.get("custName", "unknown")
