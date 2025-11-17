@@ -44,7 +44,7 @@ class BaseScraper(ABC):
         filtered_jobs = []
         for job in self.jobs:
             job_date = datetime.strptime(job['date_published'], "%Y-%m-%d")
-            if job_date >= cutoff_date:
+            if job_date.date() >= cutoff_date.date():
                 filtered_jobs.append(job)
         self.jobs = filtered_jobs
 
