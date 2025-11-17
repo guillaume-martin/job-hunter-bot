@@ -52,18 +52,18 @@ jobs:
       - name: Create zipfile archive of dependencies
         run: | 
           cd ./venv/lib/python3.8/site-packages
-          zip -r9 ../../../../remote-bot.zip .
+          zip -r9 ../../../../job-hunter-bot.zip .
 
       # Step 8
       - name: Add app to zip file
-        run: cd ./src && zip -g ../remote-bot.zip -r .
+        run: cd ./src && zip -g ../job-hunter-bot.zip -r .
         
       # Step 9 
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
         with:
-            name: remote-bot
-            path: remote-bot.zip
+            name: job-hunter-bot
+            path: job-hunter-bot.zip
 
   continuous-deployment:
     needs: [continuous-integration]
@@ -85,11 +85,11 @@ jobs:
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
       # Step 3
-      - name: Download Lambda remote-bot.zip
+      - name: Download Lambda job-hunter-bot.zip
         uses: actions/download-artifact@v2
         with:
-          name: remote-bot
+          name: job-hunter-bot
 
       # Step 4
       - name: Update Lambda function
-        run: aws lambda update-function-code --function-name remote-bot --zip-file fileb://remote-bot.zip --publish
+        run: aws lambda update-function-code --function-name job-hunter-bot --zip-file fileb://job-hunter-bot.zip --publish

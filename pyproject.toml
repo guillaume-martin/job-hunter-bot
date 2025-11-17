@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "remote-bot"
+name = "job-hunter-bot"
 version = "0.1.0"
 description = "Bot to fetch opened remote positions"
 authors = ["Guillaume Martin"]

@@ -1,6 +1,6 @@
 
 # Variables
-IMAGE_NAME = remote-bot
+IMAGE_NAME = job-hunter-bot
 TAG = latest
 DOCKERFILE_PATH = ./docker/Dockerfile
 

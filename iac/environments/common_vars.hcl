@@ -1,4 +1,4 @@
 locals {
   aws_profile = "default"
-  aws_project = "remote-bot"
+  aws_project = "job-hunter-bot"
 }
