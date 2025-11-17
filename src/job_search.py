@@ -23,7 +23,7 @@ def find_jobs(searches):
             "url": "https://remotive.io/dir-engineer",
             "date_published": "2020-11-12"
         }
-    
+
     Parameters
     ----------
     searches: list
@@ -40,13 +40,24 @@ def find_jobs(searches):
         print(f"=============== {term} ===============")
 
         for site in sites:
+            print("-" * 20)
             print(f"Searching jobs on {site}...")
             scrapper = get_scraper(site)
             scrapper.get_jobs(term)
+
+            # Remove duplicate jobs
+            print("Removing duplicate jobs...")
+            scrapper.remove_duplicates()
+
+            # Remove older jobs
+            print(f"Removing jobs older than {since} days...")
+            scrapper.remove_older_jobs(since)
+
             print(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
+
             jobs += scrapper.jobs
 
-    return jobs 
+    return jobs
 
 
 def jobs_to_html(jobs):
@@ -55,9 +66,9 @@ def jobs_to_html(jobs):
     Parameters
     ----------
     jobs: list
-        A list of jobs saved as dictionaries. 
+        A list of jobs saved as dictionaries.
         Each dictionary should contain the keys url, title, company, and date_published.
-    
+
     Returns
     -------
     str
@@ -65,7 +76,7 @@ def jobs_to_html(jobs):
     """
 
     html = "<div>"
-    
+
     for job in jobs:
         url = job.get("url", "")
         title = job.get("title", "Missing title")
@@ -79,20 +90,20 @@ def jobs_to_html(jobs):
             f"({date_published})"
             "</p>"
             )
-    
+
     html += "</div>"
-        
+
     return html
 
 
 def filter_titles(jobs, searches):
     """ Remove all jobs that don't have any keyword in their title
-    
+
     Parameters
     ----------
     jobs: List
-        The list of jobs to process    
-    
+        The list of jobs to process
+
     searches: List
         A list of search terms
     """
@@ -118,54 +129,27 @@ def filter_titles(jobs, searches):
 
 
 def main():
-    
+
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
     jobs = find_jobs(searches)
-    
-    print("###############  Cleaning Job List  ###############")
 
-    # Remove duplicates
-    print("Removing duplicates...")
-    single_jobs = []
-    for job in jobs:
-        if job not in single_jobs:
-            single_jobs.append(job)
-    print(f"Removed {len(jobs) - len(single_jobs)} jobs.")
-            
-    # Remove older posts
-    print("Removing older jobs...")
-    before = len(single_jobs)
-    old_jobs = []
-    for job in single_jobs:
-        try:
-            date_published = datetime.strptime(job['date_published'], '%Y-%m-%d')
-            days_since_published = (datetime.now() - date_published).days
-            if days_since_published > since:
-                old_jobs.append(job)
-        except ValueError:
-            date_published = job["date_published"]
-            continue
-
-    for old_job in old_jobs:
-        single_jobs.remove(old_job)
-
-    print(f"Removed {before - len(single_jobs)} jobs")
+    # print("###############  Cleaning Job List  ###############")
 
     # Keep only the titles that contain a keyword
     # print("Filtering job titles...")
     # single_jobs = filter_titles(single_jobs, searches)
 
     # print(f"Removed {before - len(single_jobs)} jobs")
-    
+
     # Send jobs by email
     print("###############  Sending Results  ###############")
-    print(f"Sending {len(single_jobs)} jobs.")
-    subject = f"New Remote Jobs for {date}"
-    if len(single_jobs) == 0:
-        content = "<p>No new jobs found</p>"
+    print(f"Sending {len(jobs)} jobs.")
+    subject = f"New Jobs Openings for {date}"
+    if len(jobs) == 0:
+        content = "<p>No new jobs found.</p>"
     else:
-        content = jobs_to_html(single_jobs)
+        content = jobs_to_html(jobs)
 
     send_email(subject, content)
 
