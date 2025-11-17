@@ -30,7 +30,7 @@ class BaseScraper(ABC):
             "date_published": self.extract_date_published(job_element)
         }
     
-    def _remove_duplicates(self):
+    def remove_duplicates(self):
         """Removes duplicate jobs"""
         single_jobs = []
         for jobs in self.jobs:
@@ -38,7 +38,7 @@ class BaseScraper(ABC):
                 single_jobs.append(jobs)
         self.jobs = single_jobs
 
-    def _remove_older_jobs(self, days_threshold: int) -> None:
+    def remove_older_jobs(self, days_threshold: int) -> None:
         """Removes jobs older than the specified number of days."""
         cutoff_date = datetime.now() - timedelta(days=days_threshold)
         filtered_jobs = []
