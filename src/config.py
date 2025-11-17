@@ -25,6 +25,7 @@ searches = [
 ]
 
 sites = [
+    "104",
     "remoteok"
     "remotive",
     "trulyremote"
