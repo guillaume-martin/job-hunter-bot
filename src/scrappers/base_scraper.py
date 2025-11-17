@@ -27,7 +27,16 @@ class BaseScraper(ABC):
             "url": self.extract_url(job_element),
             "date_published": self.extract_date_published(job_element)
         }
+    
+    def _remove_duplicates(self):
+        """Removes duplicate jobs"""
+        single_jobs = []
+        for jobs in self.jobs:
+            if jobs not in single_jobs:
+                single_jobs.append(jobs)
+        self.jobs = single_jobs
 
+    
     @abstractmethod
     def extract_company(self, job_element):
         pass
