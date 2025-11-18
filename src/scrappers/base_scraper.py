@@ -31,7 +31,6 @@ class BaseScraper(ABC):
                 filtered_jobs.append(job)
         self.jobs = filtered_jobs
 
-
     def _extract_job_details(self, job_element) -> Dict[str, Any]:
         """Extract job details from a job element. To be implemented by subclasses."""
         return {
@@ -41,6 +40,7 @@ class BaseScraper(ABC):
             "date_published": self.extract_date_published(job_element)
         }
     
+
     def _build_search_url(self, term: str) -> str:
         """Construct the search URL for the given term."""
         raise NotImplementedError("This scrapper does not use URL based search.")
@@ -65,4 +65,8 @@ class BaseScraper(ABC):
     def extract_date_published(self, job_element) -> str:
         pass
 
+    @abstractmethod
+    def extract_job_description(self, job_url: str) -> str:
+        """Extract job description from the job URL."""
+        pass
 
