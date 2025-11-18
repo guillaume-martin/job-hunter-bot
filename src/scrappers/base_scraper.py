@@ -13,23 +13,6 @@ class BaseScraper(ABC):
         """Fetch and return jobs for a given serch term."""
         pass
 
-    def _build_search_url(self, term: str) -> str:
-        """Construct the search URL for the given term."""
-        raise NotImplementedError("This scrapper does not use URL based search.")
-
-    def _build_api_payload(self, term: str) -> dict:
-        """Construct the API payload for the given term."""
-        raise NotImplementedError("This scrapper does not use API based search.")
-
-    def _extract_job_details(self, job_element) -> Dict[str, Any]:
-        """Extract job details from a job element. To be implemented by subclasses."""
-        return {
-            "company": self.extract_company(job_element), 
-            "title": self.extract_title(job_element),
-            "url": self.extract_url(job_element),
-            "date_published": self.extract_date_published(job_element)
-        }
-    
     def remove_duplicates(self) -> None:
         """Removes duplicate jobs"""
         single_jobs = []
@@ -48,6 +31,24 @@ class BaseScraper(ABC):
                 filtered_jobs.append(job)
         self.jobs = filtered_jobs
 
+
+    def _extract_job_details(self, job_element) -> Dict[str, Any]:
+        """Extract job details from a job element. To be implemented by subclasses."""
+        return {
+            "company": self.extract_company(job_element), 
+            "title": self.extract_title(job_element),
+            "url": self.extract_url(job_element),
+            "date_published": self.extract_date_published(job_element)
+        }
+    
+    def _build_search_url(self, term: str) -> str:
+        """Construct the search URL for the given term."""
+        raise NotImplementedError("This scrapper does not use URL based search.")
+
+    def _build_api_payload(self, term: str) -> dict:
+        """Construct the API payload for the given term."""
+        raise NotImplementedError("This scrapper does not use API based search.")
+    
     @abstractmethod
     def extract_company(self, job_element) -> str:
         pass
