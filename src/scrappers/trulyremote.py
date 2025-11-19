@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 
 from .base_scraper import BaseScraper
 
+from bs4 import BeautifulSoup
 from requests import request
 
 
@@ -33,7 +34,7 @@ class TrulyRemoteScraper(BaseScraper):
         return job_element.get("role", "unknown")
 
     def extract_url(self, job_element):
-        return job_element.get("roleApplyURL", "unknown") 
+        return job_element.get("roleApplyURL", "unknown")
 
     def extract_date_published(self, job_element):
         # Sometimes job posts don't have a publish date, use last modified date instead
@@ -54,12 +55,33 @@ class TrulyRemoteScraper(BaseScraper):
         else:
             print(f"Error: {r.status_code} - {r.text}")
             jobs_list = []
-        
+
         for job in jobs_list:
             job_data = job["fields"]
             job_details = self._extract_job_details(job_data)
             self.jobs.append(job_details)
-        
+
+    def extract_job_description(self, job_url: str) -> str:
+        translation_table = str.maketrans({
+            "\n": " ",
+            "\r": " ",
+            "\t": " "
+        })
+
+        r = request("GET", job_url, allow_redirects=True)
+        soup = BeautifulSoup(r.content, "lxml")
+
+        # Trulyremote is an aggregator. The jobs URLs point to different sites like
+        # lever.co, greenhouse.io, etc... We need to search for all possible <div> classes.
+        description_div = soup.select_one("div.job__description, div.description, div.posting-page")
+
+        if description_div:
+            description = description_div.text.translate(translation_table).strip()
+        else:
+            description = "No description available"
+
+        return description
+
 
 def to_utc(date_str):
     """
