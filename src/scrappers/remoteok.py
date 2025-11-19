@@ -71,7 +71,6 @@ class RemoteOkScraper(BaseScraper):
             description = "No description available."
         return description
 
-
     def get_jobs(self, term: str) -> list:
         search_url = self._build_search_url(term)
         r = request("GET", search_url, headers=HEADERS)
