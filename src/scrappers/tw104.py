@@ -9,7 +9,6 @@ BASE_URL = "https://www.104.com.tw/jobs/search/api/jobs?"
 RESULTS_PER_PAGE = 100
 
 
-
 class Tw104Scraper(BaseScraper):
     """ Scraper for 104.com.tw jobs. """
     def __init__(self):
@@ -51,3 +50,33 @@ class Tw104Scraper(BaseScraper):
             for job in jobs_list:
                 job_details = self._extract_job_details(job)
                 self.jobs.append(job_details)
+
+    def extract_job_description(self, job_url: str) -> str:
+        translation_table = str.maketrans({
+            "\n": " ",
+            "\r": " ",
+            "\t": " "
+        })
+
+        # Get the job id from the job's URL
+        job_id = job_url.split("/")[-1]
+
+        request_url = f"https://www.104.com.tw/job/ajax/content/{job_id}"
+        headers = {
+            "Host": "www.104.com.tw",
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.5",
+            "Connection": "keep-alive",
+            "Referer": f"https://www.104.com.tw/job/{job_id}",
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin"
+        }
+
+        r = request("GET", request_url, headers=headers)
+        data = r.json()["data"]
+        job_description = data["jobDetail"]["jobDescription"]
+        description = job_description.translate(translation_table).strip()
+        
+        return description
