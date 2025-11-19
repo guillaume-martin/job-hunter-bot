@@ -53,6 +53,12 @@ def find_jobs(searches):
             print(f"Removing jobs older than {since} days...")
             scrapper.remove_older_jobs(since)
 
+            # Extract job descriptions
+            print("Extracting job descriptions...")
+            for job in scrapper.jobs:
+                description = scrapper.extract_job_description(job['url'])
+                job['description'] = description
+
             print(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
 
             jobs += scrapper.jobs

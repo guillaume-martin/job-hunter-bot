@@ -55,6 +55,22 @@ class RemoteOkScraper(BaseScraper):
         formatted_time = datetime.strftime(parse(time), "%Y-%m-%d")
         return formatted_time
 
+    def extract_job_description(self, job_url: str) -> str:
+        translation_table = str.maketrans({
+            "\n": " ",
+            "\r": " ",
+            "\t": " "
+        })
+
+        r = request("GET", job_url, headers=HEADERS, allow_redirects=True)
+        soup = BeautifulSoup(r.content, "lxml")
+        description_div = soup.select_one("div.html, div.markdown")
+        if description_div:
+            description = description_div.text.replace("\\n", "").translate(translation_table).strip()
+        else:
+            description = "No description available."
+        return description
+
     def get_jobs(self, term: str) -> list:
         search_url = self._build_search_url(term)
         r = request("GET", search_url, headers=HEADERS)
