@@ -70,7 +70,11 @@ class TrulyRemoteScraper(BaseScraper):
 
         r = request("GET", job_url, allow_redirects=True)
         soup = BeautifulSoup(r.content, "lxml")
+
+        # Trulyremote is an aggregator. The jobs URLs point to different sites like
+        # lever.co, greenhouse.io, etc... We need to search for all possible <div> classes.
         description_div = soup.select_one("div.job__description, div.description, div.posting-page")
+
         if description_div:
             description = description_div.text.translate(translation_table).strip()
         else:
