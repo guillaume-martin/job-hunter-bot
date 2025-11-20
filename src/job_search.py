@@ -101,39 +101,6 @@ def jobs_to_html(jobs):
 
     return html
 
-
-def filter_titles(jobs, searches):
-    """ Remove all jobs that don't have any keyword in their title
-
-    Parameters
-    ----------
-    jobs: List
-        The list of jobs to process
-
-    searches: List
-        A list of search terms
-    """
-
-    jobs_to_keep = []
-    jobs_to_reject = []
-    for keywords in searches:
-        print(f"Filtering {keywords}")
-        for job in jobs:
-            keywords_list = keywords.lower().split(' ')
-            title_list = job['title'].lower().split(' ')
-            print(f"Controlling if {keywords_list} is in {title_list}")
-            if all(item in title_list for item in keywords_list):
-                print("-" * 50)
-                print(f"{keywords_list} in {title_list}")
-                if job not in jobs_to_keep:
-                    jobs_to_keep.append(job)
-            else:
-                if job not in jobs_to_reject:
-                    jobs_to_reject.append(job)
-
-    return jobs_to_keep
-
-
 def main():
 
     # Extract jobs from web sites and save them in a list
@@ -142,11 +109,8 @@ def main():
 
     # print("###############  Cleaning Job List  ###############")
 
-    # Keep only the titles that contain a keyword
-    # print("Filtering job titles...")
-    # single_jobs = filter_titles(single_jobs, searches)
+    # Add logic for removing non relevant jobs here (ai analyzer)
 
-    # print(f"Removed {before - len(single_jobs)} jobs")
 
     # Send jobs by email
     print("###############  Sending Results  ###############")
