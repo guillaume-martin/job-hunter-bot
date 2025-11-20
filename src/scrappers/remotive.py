@@ -80,6 +80,9 @@ class RemotiveScraper(BaseScraper):
             job_details = self._extract_job_details(job)
             self.jobs.append(job_details)
 
+    def extract_job_description(self, job_url: str) -> str:
+        pass
+
 
 def get_jobs_by_category(category: str) -> List:
     """ Search jobs in a category on remotive.io 
