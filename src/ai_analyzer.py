@@ -105,10 +105,14 @@ class AIAnalyzer:
             )
             response.raise_for_status()   # Raises HTTPError for 4XX/5XX responses
             result = response.json()
-            analysis = json.loads(result["choices"][0]["message"]["content"])
-
-            return analysis
-
+            content = result["choices"][0]["message"]["content"]
+            
+            # Check if result["choices"][0]["message"]["content"] is already a dict before parsing.
+            try:
+                return json.loads(content) if isinstance(content, str) else content
+            except json.JSONDecodeError:
+                return content  # Fallback: return raw content
+            
         except RequestException as e:
             print(f"API request failed: {e}")
             return None
