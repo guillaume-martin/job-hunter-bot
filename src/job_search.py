@@ -108,7 +108,7 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
             rejected_jobs.append(job)
             continue
 
-        # We select jobs with a score over the threshold and jobs thatn
+        # We select jobs with a score over the threshold and jobs that
         # need to be evaluated manually.
         if int(job_score) >= apply_threshold or job["evaluation"] == "manual":
             selected_jobs.append(job)
