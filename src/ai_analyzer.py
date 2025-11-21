@@ -7,11 +7,11 @@ from requests.exceptions import RequestException
 
 class AIAnalyzer:
     def __init__(
-            self, 
+            self,
             api_key: str,
-            model: str, 
-            api_url: str, 
-            prompt_file: str = "prompt.txt", 
+            model: str,
+            api_url: str,
+            prompt_file: str = "prompt.txt",
             temperature: float = 0.7,
             timeout: int = 60
     ) -> None:
@@ -70,7 +70,7 @@ class AIAnalyzer:
 
     def analyze_job(self, resume: str, job_description: str) -> Optional[Dict]:
         """Query the AI API to analyze a job description against a resume.
-        
+
             Args:
                 resume: Resume text.
                 job_description: Job description text
@@ -83,7 +83,7 @@ class AIAnalyzer:
 
         try:
             message = self._build_message(resume, job_description)
-            
+
             payload = {
                 "model": self.model,
                 "messages": [
@@ -97,7 +97,7 @@ class AIAnalyzer:
             }
 
             response = request(
-                "POST", 
+                "POST",
                 url=self.api_url,
                 headers=self.headers,
                 json=payload,
@@ -108,10 +108,10 @@ class AIAnalyzer:
             analysis = json.loads(result["choices"][0]["message"]["content"])
 
             return analysis
-        
+
         except RequestException as e:
             print(f"API request failed: {e}")
             return None
         except (KeyError, json.JSONDecodeError) as e:
             print(f"Invalid API response: {e}")
-            return None       
+            return None
