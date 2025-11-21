@@ -27,6 +27,9 @@ venv
 __pycache__
 .mypy_cache/
 
+# Data files
+resume.txt
+
 # Local development stuff
 drafts/
 output/
