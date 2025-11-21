@@ -34,3 +34,12 @@ sites = [
 # Number of days since the job was published
 # Older jobs are dropped.
 since = 5
+
+# AI settings
+api_url = "https://api.mistral.ai/v1/chat/completions"
+model = "mistral-small-latest"
+temperature = 0.7
+timeout = 60
+prompt_file = "src/data/prompt.txt"
+resume_file = "src/data/resume.txt"
+apply_threshold = 50    # Minimum job `match_score` (0-100) required to select a job for application.
