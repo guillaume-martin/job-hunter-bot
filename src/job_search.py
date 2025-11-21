@@ -4,11 +4,15 @@
 from dotenv import load_dotenv
 load_dotenv("src/.env")
 
+import json
 from datetime import datetime
+import os
+from typing import Dict, List
 
-from .config import searches, since, sites
+from .config import searches, since, sites, api_url, model, temperature, timeout, prompt_file, resume_file, apply_threshold
 from .mailer import send_email
 from .scrappers.scraper_factory import get_scraper
+from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
@@ -66,6 +70,55 @@ def find_jobs(searches):
     return jobs
 
 
+def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
+    """Select the jobs that score over the application threshold
+
+        Args:
+            jobs: A list of jobs dictionaries.
+            analyzer: An AI analyzer instance.
+            resume: The resume text
+
+        Returns:
+            A list of selected jobs.
+    """
+    selected_jobs = []
+    rejected_jobs = []
+    print(f"Processing {len(jobs)} jobs...")
+
+    for job in jobs:
+        try:
+            if not job["description"]:
+                print("Jobs does not have a description.")
+                job["evaluation"] = "manual"
+                selected_jobs.append(job)
+                continue
+
+            eval_result = analyzer.analyze_job(resume, job["description"])
+            job["evaluation"] = eval_result
+
+        except Exception as e:
+            print(f"Failed to analyze job {job.get('title', 'Unknown')}: {e}")
+            job["evaluation"] = {"error": f"Analysis failed: {e}"}
+
+        # Only keep the jobs that are worth applying for:
+        try:
+            job_score = job["evaluation"]["match_score"].split("/")[0]
+        except KeyError as e:
+            print(f"Error: Missing {e} key in job.")
+            rejected_jobs.append(job)
+            continue
+
+        # We select jobs with a score over the threshold and jobs thatn
+        # need to be evaluated manually.
+        if int(job_score) >= apply_threshold or job["evaluation"] == "manual":
+            selected_jobs.append(job)
+        else:
+            rejected_jobs.append(job)
+
+
+    return selected_jobs, rejected_jobs
+
+
 def jobs_to_html(jobs):
     """ Format jobs into an HTML output that can be sent
 
@@ -81,23 +134,35 @@ def jobs_to_html(jobs):
         An HTML script showing all the jobs
     """
 
-    html = "<div>"
+    html = """
+        <style>
+        table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        }
+
+        td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+        </style>
+    """
+
+    html += "<div><table><tr><th>Title</th><th>Company</th><th>Score</th><th>Date Published</th><th>Missing Required Skills</tr>"
 
     for job in jobs:
         url = job.get("url", "")
         title = job.get("title", "Missing title")
         company = job.get("company", "Missing employer")
         date_published = job.get("date_published", f"Found on {date}")
+        evaluation = job.get("evaluation", "Missing evaluation")
+        score = evaluation.get("match_score", "Missing score")
+        missing_required = ", ".join(evaluation.get("missing_required", "Missing missing_required"))
 
-        html +=  (
-            "<p>"
-            f"<a href='{url}'>{title}</a>&nbsp;&nbsp;"
-            f"{company}&nbsp;"
-            f"({date_published})"
-            "</p>"
-            )
+        html += f"<tr><td><a href='{url}'>{title}</a></td><td>{company}</td><td>{score}</td><td>{date_published}</td><td>{missing_required}</tr>"
 
-    html += "</div>"
+    html += "</table></div>"
 
     return html
 
@@ -107,19 +172,42 @@ def main():
     print("###############  Searching Jobs  ###############")
     jobs = find_jobs(searches)
 
-    # print("###############  Cleaning Job List  ###############")
+    print("###############  Selecting Jobs  ###############")
+    analyzer = AIAnalyzer(
+        api_key=os.getenv("AI_API_KEY"),
+        model = model,
+        api_url=api_url,
+        prompt_file=prompt_file,
+        temperature=temperature,
+        timeout=timeout
+    )
 
-    # Add logic for removing non relevant jobs here (ai analyzer)
+    # Load resume once (e.g., from a file or environment variable)
+    with open(resume_file, "r", encoding="utf-8") as f:
+        resume = f.read()
+
+    selected_jobs, rejected_jobs = select_jobs(jobs, analyzer, resume)
 
 
     # Send jobs by email
     print("###############  Sending Results  ###############")
-    print(f"Sending {len(jobs)} jobs.")
+    print(f"Sending {len(selected_jobs)} jobs.")
     subject = f"New Jobs Openings for {date}"
-    if len(jobs) == 0:
+    if len(selected_jobs) == 0:
         content = "<p>No new jobs found.</p>"
     else:
-        content = jobs_to_html(jobs)
+        content = jobs_to_html(selected_jobs)
+
+    send_email(subject, content)
+
+    # Send rejected jobs for QA
+    print("###############  Sending Rejected Jobs  ###############")
+    print(f"Sending {len(rejected_jobs)} jobs.")
+    subject = f"Rejected jobs for {date}"
+    if len(rejected_jobs) == 0:
+        content = "<p>No jobs were rejected.</p>"
+    else:
+        content = jobs_to_html(rejected_jobs)
 
     send_email(subject, content)
 
