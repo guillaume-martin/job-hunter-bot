@@ -156,7 +156,7 @@ def jobs_to_html(jobs):
         title = job.get("title", "Missing title")
         company = job.get("company", "Missing employer")
         date_published = job.get("date_published", f"Found on {date}")
-        evaluation = job.get("evaluation", "Missing evaluation")
+        evaluation = job.get("evaluation", {})
         score = evaluation.get("match_score", "Missing score")
         missing_required = ", ".join(evaluation.get("missing_required", "Missing missing_required"))
 
