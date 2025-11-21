@@ -36,12 +36,8 @@ sites = [
 since = 5
 
 # AI settings
-api_url = "https://openrouter.ai/api/v1/chat/completions"
 api_url = "https://api.mistral.ai/v1/chat/completions"
 model = "mistral-small-latest"
-# model = "mistralai/mistral-7b-instruct:free"
-# model = "mistralai/mistral-small-24b-instruct-2501:free"
-# model = "openai/gpt-oss-20b:free"
 temperature = 0.7
 timeout = 60
 prompt_file = "src/data/prompt.txt"
