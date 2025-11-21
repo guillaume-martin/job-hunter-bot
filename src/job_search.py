@@ -158,7 +158,7 @@ def jobs_to_html(jobs):
         date_published = job.get("date_published", f"Found on {date}")
         evaluation = job.get("evaluation", {})
         score = evaluation.get("match_score", "Missing score")
-        missing_required = ", ".join(evaluation.get("missing_required", "Missing missing_required"))
+        missing_required = ", ".join(evaluation.get("missing_required", []))
 
         html += f"<tr><td><a href='{url}'>{title}</a></td><td>{company}</td><td>{score}</td><td>{date_published}</td><td>{missing_required}</tr>"
 
