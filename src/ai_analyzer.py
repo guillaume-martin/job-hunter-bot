@@ -45,8 +45,8 @@ class AIAnalyzer:
         Returns:
             Formatted message string.
         """
-        assert len(resume) > 0
-        assert len(job_description) > 0
+        if not resume or not job_description:
+            raise ValueError("Resume and job description must not be empty")
 
         translation_table = str.maketrans({
             "\n": " ",
@@ -78,8 +78,8 @@ class AIAnalyzer:
             Returns:
                 Full API response as a dictionary, or None if an error occurs.
         """
-        assert len(resume) > 0
-        assert len(job_description) > 0
+        if not resume or not job_description:
+           raise ValueError("Resume and job description must not be empty")
 
         try:
             message = self._build_message(resume, job_description)
