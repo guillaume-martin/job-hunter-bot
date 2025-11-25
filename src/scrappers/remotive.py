@@ -90,13 +90,17 @@ class RemotiveScraper(BaseScraper):
             "\t": " "
         })
 
-        r = request("GET", job_url, headers=HEADERS)
+        try:
+            r = request("GET", job_url, headers=HEADERS)
 
-        if r.status_code == 200:
-            soup = BeautifulSoup(r.content, "lxml")
-            description_div = soup.find_all("div", class_="left")[0]
-            job_description = description_div.text.translate(translation_table).strip()
-        else:
+            if r.status_code == 200:
+                soup = BeautifulSoup(r.content, "lxml")
+                description_div = soup.find_all("div", class_="left")[0]
+                job_description = description_div.text.translate(translation_table).strip()
+            else:
+                job_description = "No description available"
+        except Exception as e:
+            print(f"Failed to extract job description for {job_url}: {e}")
             job_description = "No description available"
 
         return job_description
