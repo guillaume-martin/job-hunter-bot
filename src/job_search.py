@@ -69,6 +69,34 @@ def find_jobs(searches):
 
     return jobs
 
+def remove_duplicates(jobs: List[Dict]) -> List[Dict]:
+    """emoves duplicate jobs based on their URLs.
+
+    Jobs with missing or duplicate URLs are removed. Only the first occurrence
+    of each URL is kept. Jobs with "missing" URLs are skipped.
+
+    Args:
+        jobs (List[Dict]): List of all jobs as dictionaries
+
+    Returns:
+        List[Dict]: List of unique jobs as dictionaries
+    """
+    single_jobs = []
+    seen_urls = set()               # Set of jobs URLs that have already been seen 
+    seen_companies_titles = set()   # Set of companies/titles pairs that have already been seen 
+
+    for job in jobs:
+        job_url = job.get("url", "missing")
+        company_title = f"{job.get('company', '')}|{job.get('title', '')}"
+        if job_url != "missing" and job_url not in seen_urls:
+            single_jobs.append(job)
+            seen_urls.add(job_url)
+            seen_companies_titles.add(company_title)
+        elif company_title not in seen_companies_titles:
+            single_jobs.append(job)
+            seen_companies_titles.add(company_title)
+
+    return single_jobs
 
 def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
     """Select the jobs that score over the application threshold
