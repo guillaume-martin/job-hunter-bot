@@ -142,7 +142,6 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
 
     return selected_jobs, rejected_jobs
 
-
 def jobs_to_html(jobs):
     """ Format jobs into an HTML output that can be sent
 
@@ -197,7 +196,7 @@ def main():
     jobs = find_jobs(searches)
 
     print("###############  Remove duplicate Jobs  ###############")
-    jobs = remove_duplicates(searches)
+    single_jobs = remove_duplicates(jobs)
 
     print("###############  Selecting Jobs  ###############")
     analyzer = AIAnalyzer(
@@ -213,7 +212,7 @@ def main():
     with open(resume_file, "r", encoding="utf-8") as f:
         resume = f.read()
 
-    selected_jobs, rejected_jobs = select_jobs(jobs, analyzer, resume)
+    selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
 
 
     # Send jobs by email
