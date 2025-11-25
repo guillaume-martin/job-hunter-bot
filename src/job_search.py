@@ -49,10 +49,6 @@ def find_jobs(searches):
             scrapper = get_scraper(site)
             scrapper.get_jobs(term)
 
-            # Remove duplicate jobs
-            print("Removing duplicate jobs...")
-            scrapper.remove_duplicates()
-
             # Remove older jobs
             print(f"Removing jobs older than {since} days...")
             scrapper.remove_older_jobs(since)
@@ -199,6 +195,9 @@ def main():
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
     jobs = find_jobs(searches)
+
+    print("###############  Remove duplicate Jobs  ###############")
+    jobs = remove_duplicates(searches)
 
     print("###############  Selecting Jobs  ###############")
     analyzer = AIAnalyzer(
