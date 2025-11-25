@@ -8,6 +8,7 @@ import urllib
 from .base_scraper import BaseScraper
 
 from requests import request
+from bs4 import BeautifulSoup
 
 
 BASE_URL = 'https://oqubrx6zeq-3.algolianet.com/1/indexes/*/queries'
@@ -81,7 +82,24 @@ class RemotiveScraper(BaseScraper):
             self.jobs.append(job_details)
 
     def extract_job_description(self, job_url: str) -> str:
-        pass
+        """Extracts the job description from the job url
+        """
+        translation_table = str.maketrans({
+            "\n": " ",
+            "\r": " ",
+            "\t": " "
+        })
+
+        r = request("GET", job_url, headers=HEADERS)
+
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.content, "lxml")
+            description_div = soup.find_all("div", class_="left")[0]
+            job_description = description_div.text.translate(translation_table).strip()
+        else:
+            job_description = "No description available"
+
+        return job_description
 
 
 def get_jobs_by_category(category: str) -> List:
