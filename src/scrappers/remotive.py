@@ -2,12 +2,13 @@
 
 from datetime import datetime
 import json
-from typing import Dict, List 
+from typing import Dict, List
 import urllib
 
 from .base_scraper import BaseScraper
 
 from requests import request
+from bs4 import BeautifulSoup
 
 
 BASE_URL = 'https://oqubrx6zeq-3.algolianet.com/1/indexes/*/queries'
@@ -17,9 +18,9 @@ HEADERS = {
     'x-algolia-api-key': '8ad949132d497255ffc04accd141f083',
     'x-algolia-application-id': 'OQUBRX6ZEQ',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
-    'Accept':'application/json, text/plain, */*',  
+    'Accept':'application/json, text/plain, */*',
     'Accept-Language':'en',
-    'Accept-Encoding':'gzip, deflate', 
+    'Accept-Encoding':'gzip, deflate',
     'Referer':'https://remotive.com/'
     }
 
@@ -27,13 +28,21 @@ LOCATIONS = '["locations:Worldwide","locations:APAC"]'
 
 class RemotiveScraper(BaseScraper):
     """ Scraper for remotive.io jobs """
+
+    TRANSLATION_TABLE = str.maketrans({
+        "\n": " ",
+        "\r": " ",
+        "\t": " "
+     })
+
+
     def __init__(self):
         super().__init__(base_url=BASE_URL, name="Remotive")
 
     def _build_search_url(self, term):
         return BASE_URL
 
-    def __build_api_payload(self, term: str) -> Dict: 
+    def __build_api_payload(self, term: str) -> Dict:
         term_encoded = urllib.parse.quote(term)
         locations_encoded = urllib.parse.quote(LOCATIONS)
         params = (
@@ -43,7 +52,7 @@ class RemotiveScraper(BaseScraper):
             "page=0&"
             f"query=%22{term_encoded}%22&tagFilters="
         )
-    
+
         payload = {
             "requests":[{
                 "indexName":"live_jobs",
@@ -66,9 +75,9 @@ class RemotiveScraper(BaseScraper):
         utc_pub_date = datetime.utcfromtimestamp(job_element['publication_date'])
         date_published = datetime.strftime(utc_pub_date, '%Y-%m-%d')
         return date_published
-   
+
     def get_jobs(self, term:str) -> list:
-        search_url = self._build_search_url(term) 
+        search_url = self._build_search_url(term)
         payload = self.__build_api_payload(term)
 
         r = request("POST", search_url, headers=HEADERS, data=json.dumps(payload))
@@ -80,10 +89,34 @@ class RemotiveScraper(BaseScraper):
             job_details = self._extract_job_details(job)
             self.jobs.append(job_details)
 
+    def extract_job_description(self, job_url: str) -> str:
+        """Extract the job description from the job URL
+
+        Args:
+            job_url (str): URL to the job posting
+
+        Returns:
+            str: Extracted job description, or default message if extraction fails
+        """
+        try:
+            r = request("GET", job_url, headers=HEADERS, timeout=20)
+
+            if r.status_code == 200:
+                soup = BeautifulSoup(r.content, "lxml")
+                description_div = soup.find_all("div", class_="left")[0]
+                job_description = description_div.text.translate(TRANSLATION_TABLE).strip()
+            else:
+                job_description = "No description available"
+        except Exception as e:
+            print(f"Failed to extract job description for {job_url}: {e}")
+            job_description = "No description available"
+
+        return job_description
+
 
 def get_jobs_by_category(category: str) -> List:
-    """ Search jobs in a category on remotive.io 
-    
+    """ Search jobs in a category on remotive.io
+
     Parameters
     ----------
     category: String
@@ -92,7 +125,7 @@ def get_jobs_by_category(category: str) -> List:
     Returns
     -------
     List
-        A list of dictionaries with jobs details    
+        A list of dictionaries with jobs details
     """
     locations_encoded = urllib.parse.quote(LOCATIONS)
 
@@ -101,7 +134,7 @@ def get_jobs_by_category(category: str) -> List:
         f"%5B{locations_encoded}%2C%"
         f"5B%22category%3A{category}%22%5D%5D&"
     )
-    
+
     payload = {
         "requests": [
             {
