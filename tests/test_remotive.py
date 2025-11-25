@@ -2,7 +2,7 @@ import pytest
 import json
 from unittest.mock import patch, MagicMock
 
-from src.scrappers import remotive
+from src.scrappers.remotive import RemotiveScraper
 
 
 SAMPLE_RESPONSE = {
@@ -68,3 +68,53 @@ def test_get_jobs_list_contains_dictionaries():
         assert isinstance(job, dict)
 
 
+def test_extract_job_description_success():
+    """Test that extract_job_description returns the job description when the request succeeds."""
+    # Setup
+    scraper = RemotiveScraper()
+
+    # Mock a successful request with HTML content
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.content = """
+    <html>
+        <body>
+            <div class="left">Backend Engineer (Python, Django, PostgreSQL)</div>
+        </body>
+    </html>
+    """
+
+    with patch("requests.request", return_value=mock_response):
+        # Exercise
+        description = scraper.extract_job_description("http://example.com/job")
+
+        # Verify
+        assert description == "Backend Engineer (Python, Django, PostgreSQL)"
+
+def test_extract_job_description_failure():
+    """Test that extract_job_description returns 'No description available' when the request fails."""
+    # Setup
+    scraper = RemotiveScraper()
+
+    # Mock a failed request
+    mock_response = MagicMock()
+    mock_response.status_code = 404
+
+    with patch("requests.request", return_value=mock_response):
+        # Exercise
+        description = scraper.extract_job_description("http://example.com/job")
+
+        # Verify
+        assert description == "No description available"
+
+def test_extract_job_description_exception():
+    """Test that extract_job_description returns 'No description available' when an exception occurs."""
+    # Setup
+    scraper = RemotiveScraper()
+
+    # Exercise
+    with patch("requests.request", side_effect=Exception("Network error")):
+        description = scraper.extract_job_description("http://example.com/job")
+
+        # Verify
+        assert description == "No description available"
