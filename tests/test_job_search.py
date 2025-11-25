@@ -2,6 +2,47 @@ import pytest
 import src.job_search as job_search
 
 
+
+def test_remove_duplicates_with_urls():
+    """Test that remove_duplicates removes jobs with duplicate URLs."""
+
+    # Setup
+    jobs = [
+        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
+        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
+        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": "2024-06-02"},
+    ]
+
+    # Exercise
+    single_jobs_list = job_search.remove_duplicates(jobs)
+
+    # Verify
+    assert len(single_jobs_list) == 2
+    assert single_jobs_list == [
+        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
+        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": "2024-06-02"},
+    ]
+
+def test_remove_duplicates_with_missing_urls():
+    """Test that remove_duplicates remoces jobs with duplicate company + title"""
+
+    # Setup
+    jobs = [
+        {"url": "missing", "title": "Job 1", "company": "Acme"},
+        {"url": "missing", "title": "Job 1", "company": "Acme"},  # Duplicate
+        {"url": "missing", "title": "Job 2", "company": "Acme"},       
+    ]
+
+    # Exercise
+    single_jobs_list = job_search.remove_duplicates(jobs)
+
+    # Verify
+    assert len(single_jobs_list) == 2
+    assert single_jobs_list == [
+        {"url": "missing", "title": "Job 1", "company": "Acme"},
+        {"url": "missing", "title": "Job 2", "company": "Acme"},       
+    ]
+
 def test_jobs_to_html_returns_string():
     """ jobs_to_html should return a string containing the HTML script """
 
