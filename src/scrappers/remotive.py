@@ -91,7 +91,7 @@ class RemotiveScraper(BaseScraper):
         })
 
         try:
-            r = request("GET", job_url, headers=HEADERS)
+            r = request("GET", job_url, headers=HEADERS, timeout=20)
 
             if r.status_code == 200:
                 soup = BeautifulSoup(r.content, "lxml")
