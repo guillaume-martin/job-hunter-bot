@@ -1,3 +1,7 @@
+import argparse
+import os
+from unittest.mock import patch
+
 import src.job_search as job_search
 
 
@@ -94,3 +98,29 @@ def test_find_jobs_calls_scrappers(monkeypatch):
 
 
 # TODO test find_jobs returns expected results from scrapers
+
+
+def test_find_jobs_create_file(tmp_path):
+    """Test that job_search creates a file when the output is set to file"""
+
+    # Setting
+    output_file = tmp_path / "output.md"
+
+    # Mock the jobs and other dependencies
+    mock_jobs = [
+        {"url": "https://example.com/job1", "title": "Job 1", "company": "Acme", "evaluation": {"match_score": "85/100", "missing_required": []}},
+        {"url": "https://example.com/job2", "title": "Job 2", "company": "Acme", "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}},
+    ]
+
+    # Mock functions
+    with patch("src.job_search.find_jobs", return_value=mock_jobs), \
+         patch("src.job_search.remove_duplicates", return_value=mock_jobs), \
+         patch("src.job_search.select_jobs", return_value=(mock_jobs, [])), \
+         patch("argparse.ArgumentParser.parse_args", return_value=argparse.Namespace(output="file", file=str(output_file))):
+
+        # Exercise
+        job_search.main()
+
+    # Verify
+    # Check that the file exists
+    assert os.path.exists(output_file)
