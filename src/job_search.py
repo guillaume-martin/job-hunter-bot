@@ -257,7 +257,7 @@ def main():
     if output == "email":
     # Send jobs by email
         print("###############  Sending Results  ###############")
-        print(f"Sending {len(selected_jobs)} jobs.")
+        print(f"Sending {len(selected_jobs)} selected jobs.")
         subject = f"New Jobs Openings for {date}"
         if len(selected_jobs) == 0:
             content = "<p>No new jobs found.</p>"
@@ -268,7 +268,7 @@ def main():
 
         # Send rejected jobs for QA
         print("###############  Sending Rejected Jobs  ###############")
-        print(f"Sending {len(rejected_jobs)} jobs.")
+        print(f"Sending {len(rejected_jobs)} rejected jobs.")
         subject = f"Rejected jobs for {date}"
         if len(rejected_jobs) == 0:
             content = "<p>No jobs were rejected.</p>"
@@ -281,8 +281,11 @@ def main():
         print("###############  Saving Results to File ###############")
         print(f"Saving {len(selected_jobs)} jobs.")
         markdown = jobs_to_markdown(selected_jobs)
-        with open(file, "w") as f:
-            f.write(markdown)
+        try:
+            with open(file, "w") as f:
+                f.write(markdown)
+        except IOError as e:
+            print(f"Failed to write to file {file}: {e}")
 
 def lambda_handler(event, context):
     main()
