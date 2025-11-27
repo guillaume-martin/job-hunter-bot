@@ -231,7 +231,7 @@ def main():
         parser.error("--file is required when --output is 'file'")
     
     output = args.output
-    file = args.file
+    output_file = args.file
 
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
@@ -284,10 +284,10 @@ def main():
         print(f"Saving {len(selected_jobs)} selected jobs.")
         markdown = jobs_to_markdown(selected_jobs)
         try:
-            with open(file, "w", encoding="utf-8") as f:
+            with open(output_file, "w", encoding="utf-8") as f:
                 f.write(markdown)
         except IOError as e:
-            print(f"Failed to write to file {file}: {e}")
+            print(f"Failed to write to file {output_file}: {e}")
 
 def lambda_handler(event, context):
     main()
