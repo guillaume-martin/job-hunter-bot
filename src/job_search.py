@@ -4,6 +4,7 @@
 from dotenv import load_dotenv
 load_dotenv("src/.env")
 
+import argparse
 from datetime import datetime
 import os
 from typing import Dict, List
@@ -15,6 +16,11 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
+# Configure argument parser
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-f", "--file", required=False, help="Path to the output file")
+parser.add_argument("-o", "--outpout", choices=["email", "file"], default="email", required=True, help="Output type (Defautl to email).")
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -190,6 +196,10 @@ def jobs_to_html(jobs):
 
 def main():
 
+    # Parse arguments
+    args = parser.parse_args()
+    output = args.output
+
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
     jobs = find_jobs(searches)
@@ -213,29 +223,32 @@ def main():
 
     selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
 
-
+    if output == "email":
     # Send jobs by email
-    print("###############  Sending Results  ###############")
-    print(f"Sending {len(selected_jobs)} jobs.")
-    subject = f"New Jobs Openings for {date}"
-    if len(selected_jobs) == 0:
-        content = "<p>No new jobs found.</p>"
-    else:
-        content = jobs_to_html(selected_jobs)
+        print("###############  Sending Results  ###############")
+        print(f"Sending {len(selected_jobs)} jobs.")
+        subject = f"New Jobs Openings for {date}"
+        if len(selected_jobs) == 0:
+            content = "<p>No new jobs found.</p>"
+        else:
+            content = jobs_to_html(selected_jobs)
 
-    send_email(subject, content)
+        send_email(subject, content)
 
-    # Send rejected jobs for QA
-    print("###############  Sending Rejected Jobs  ###############")
-    print(f"Sending {len(rejected_jobs)} jobs.")
-    subject = f"Rejected jobs for {date}"
-    if len(rejected_jobs) == 0:
-        content = "<p>No jobs were rejected.</p>"
-    else:
-        content = jobs_to_html(rejected_jobs)
+        # Send rejected jobs for QA
+        print("###############  Sending Rejected Jobs  ###############")
+        print(f"Sending {len(rejected_jobs)} jobs.")
+        subject = f"Rejected jobs for {date}"
+        if len(rejected_jobs) == 0:
+            content = "<p>No jobs were rejected.</p>"
+        else:
+            content = jobs_to_html(rejected_jobs)
 
-    send_email(subject, content)
+        send_email(subject, content)
 
+    elif output == "file":
+        print("###############  Saving Results to File ###############")
+        print(f"Saving {len(selected_jobs)} jobs.")
 
 def lambda_handler(event, context):
     main()
