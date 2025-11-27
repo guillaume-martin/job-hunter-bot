@@ -208,7 +208,7 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
 
     for job in jobs:
         url = job.get("url", "")
-        title = job.get("title", "Missing title")
+        title = job.get("title", "Missing title").replace("|", "\\|")
         company = job.get("company", "Missing employer")
         date_published = job.get("date_published", f"Found on {date}")
         evaluation = job.get("evaluation", {})
