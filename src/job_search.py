@@ -20,7 +20,7 @@ date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-f", "--file", required=False, help="Path to the output file")
-parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=True, help="Output type (Defautl to email).")
+parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=True, help="Output type (Default to email).")
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
