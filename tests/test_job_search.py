@@ -124,3 +124,17 @@ def test_find_jobs_create_file(tmp_path):
     # Verify
     # Check that the file exists
     assert os.path.exists(output_file)
+
+def test_job_to_markdown_return_string():
+    """Test that file_to_markdown returns a file"""
+    # Setup
+    mock_jobs = [
+        {"url": "https://example.com/job1", "title": "Job 1", "company": "Acme", "evaluation": {"match_score": "85/100", "missing_required": []}},
+        {"url": "https://example.com/job2", "title": "Job 2", "company": "Acme", "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}},
+    ]
+
+    # Exercise
+    result = job_search.jobs_to_markdown(mock_jobs)
+
+    # Verify
+    assert isinstance(result, str)
