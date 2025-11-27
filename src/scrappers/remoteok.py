@@ -25,7 +25,7 @@ class RemoteOkScraper(BaseScraper):
         super().__init__(base_url=BASE_URL, name='RemoteOK')
 
     def _build_search_url(self, term):
-        search_url = f"{self.base_url}/?location={",".join(LOCATIONS)}&search={term}&action=get_jobs"
+        search_url = f"{self.base_url}/?location={','.join(LOCATIONS)}&search={term}&action=get_jobs"
         return search_url
 
     def extract_company(self, job_element):
