@@ -29,13 +29,6 @@ LOCATIONS = '["locations:Worldwide","locations:APAC"]'
 class RemotiveScraper(BaseScraper):
     """ Scraper for remotive.io jobs """
 
-    TRANSLATION_TABLE = str.maketrans({
-        "\n": " ",
-        "\r": " ",
-        "\t": " "
-     })
-
-
     def __init__(self):
         super().__init__(base_url=BASE_URL, name="Remotive")
 
@@ -98,13 +91,19 @@ class RemotiveScraper(BaseScraper):
         Returns:
             str: Extracted job description, or default message if extraction fails
         """
+        translation_table = str.maketrans({
+            "\n": " ",
+            "\r": " ",
+            "\t": " "
+        })
+
         try:
             r = request("GET", job_url, headers=HEADERS, timeout=20)
 
             if r.status_code == 200:
                 soup = BeautifulSoup(r.content, "lxml")
                 description_div = soup.find_all("div", class_="left")[0]
-                job_description = description_div.text.translate(TRANSLATION_TABLE).strip()
+                job_description = description_div.text.translate(translation_table).strip()
             else:
                 job_description = "No description available"
         except Exception as e:

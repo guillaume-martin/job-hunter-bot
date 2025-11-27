@@ -13,28 +13,6 @@ class BaseScraper(ABC):
         """Fetch and return jobs for a given serch term."""
         pass
 
-    def remove_duplicates(self) -> None:
-        """Removes duplicate jobs based on their URLs.
-
-        Jobs with missing or duplicate URLs are removed. Only the first occurrence
-        of each URL is kept. Jobs with "missing" URLs are skipped.
-        """
-        single_jobs = []
-        seen_urls = set()               # Set of jobs URLs that have already been seen 
-        seen_companies_titles = set()   # Set of companies/titles pairs that have already been seen 
-        for job in self.jobs:
-            job_url = job.get("url", "missing")
-            company_title = f"{job.get('company', '')}|{job.get('title', '')}"
-            if job_url != "missing" and job_url not in seen_urls:
-                single_jobs.append(job)
-                seen_urls.add(job_url)
-                seen_companies_titles.add(company_title)
-            elif company_title not in seen_companies_titles:
-                single_jobs.append(job)
-                seen_companies_titles.add(company_title)
-
-        self.jobs = single_jobs
-
     def remove_older_jobs(self, days_threshold: int) -> None:
         """Removes jobs older than the specified number of days."""
         cutoff_date = datetime.now() - timedelta(days=days_threshold)

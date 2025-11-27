@@ -24,48 +24,6 @@ class TestScraper(BaseScraper):
         pass
 
 
-def test_remove_duplicates_with_urls():
-    """Test that remove_duplicates removes jobs with duplicate URLs."""
-
-    # Setup
-    scraper = TestScraper("https://example.com", "ExampleScraper")
-    scraper.jobs = [
-        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
-        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
-        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": "2024-06-02"},
-    ]
-
-    # Exercise
-    scraper.remove_duplicates()
-
-    # Verify
-    assert len(scraper.jobs) == 2
-    assert scraper.jobs == [
-        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
-        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": "2024-06-02"},
-    ]
-
-def test_remove_duplicates_with_missing_urls():
-    """Test that remove_duplicates remoces jobs with duplicate company + title"""
-
-    # Setup
-    scraper = TestScraper("https://example.com", "ExampleScraper")
-    scraper.jobs = [
-        {"url": "missing", "title": "Job 1", "company": "Acme"},
-        {"url": "missing", "title": "Job 1", "company": "Acme"},  # Duplicate
-        {"url": "missing", "title": "Job 2", "company": "Acme"},       
-    ]
-
-    # Exercise
-    scraper.remove_duplicates()
-
-    # Verify
-    assert len(scraper.jobs) == 2
-    assert scraper.jobs == [
-        {"url": "missing", "title": "Job 1", "company": "Acme"},
-        {"url": "missing", "title": "Job 2", "company": "Acme"},       
-    ]
-
 def test_remove_older_jobs():
     """ The _remove_older_jobs method should remove jobs older than the specified threshold
     """
