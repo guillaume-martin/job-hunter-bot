@@ -16,11 +16,14 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
-# Configure argument parser
-parser = argparse.ArgumentParser()
+def make_parser() -> argparse.ArgumentParser:
+    """Configure argument parser"""
+    parser = argparse.ArgumentParser()
 
-parser.add_argument("-f", "--file", required=False, help="Path to the output file")
-parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=False, help="Output type (Default to email).")
+    parser.add_argument("-f", "--file", required=False, help="Path to the output file")
+    parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=False, help="Output type (Default to email).")
+
+    return parser
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -219,9 +222,8 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
 
     return markdown
 
-
 def main():
-
+    parser = make_parser()
     # Parse arguments
     args = parser.parse_args()
     # Make sure that the file path is provided when file output has been selected.
@@ -286,7 +288,6 @@ def main():
                 f.write(markdown)
         except IOError as e:
             print(f"Failed to write to file {file}: {e}")
-
 
 def lambda_handler(event, context):
     main()
