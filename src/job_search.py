@@ -194,6 +194,32 @@ def jobs_to_html(jobs):
 
     return html
 
+def jobs_to_markdowm(jobs: List[Dict]) -> str:
+    """Format the jobs into a Markdown output that can be saved in a file
+
+    Args:
+        jobs (List[Dict]): A list of jobs stored as dictionaries.
+
+    Returns:
+        str: A Markdown formatted string.
+    """
+    markdown = "|Title|Company|Match Score|Date Published|Missing Required Skills|\n"
+    markdown += "|-|-|-|-|-|\n"
+
+    for job in jobs:
+        url = job.get("url", "")
+        title = job.get("title", "Missing title")
+        company = job.get("company", "Missing employer")
+        date_published = job.get("date_published", f"Found on {date}")
+        evaluation = job.get("evaluation", {})
+        score = evaluation.get("match_score", "Missing score")
+        missing_required = ", ".join(evaluation.get("missing_required", []))
+
+        markdown += f"|[{title}]({url})|{company}|{score}|{date_published}|{missing_required}|\n"
+
+    return markdown
+
+
 def main():
 
     # Parse arguments
