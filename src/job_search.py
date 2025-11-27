@@ -284,7 +284,7 @@ def main():
         print(f"Saving {len(selected_jobs)} selected jobs.")
         markdown = jobs_to_markdown(selected_jobs)
         try:
-            with open(file, "w") as f:
+            with open(file, "w", encoding="utf-8") as f:
                 f.write(markdown)
         except IOError as e:
             print(f"Failed to write to file {file}: {e}")
