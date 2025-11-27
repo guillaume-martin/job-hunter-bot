@@ -4,7 +4,6 @@
 from dotenv import load_dotenv
 load_dotenv("src/.env")
 
-import json
 from datetime import datetime
 import os
 from typing import Dict, List
