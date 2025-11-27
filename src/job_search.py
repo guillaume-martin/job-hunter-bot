@@ -224,6 +224,10 @@ def main():
 
     # Parse arguments
     args = parser.parse_args()
+    # Make sure that the file path is provided when file output has been selected.
+    if args.output == "file" and not args.file:
+        parser.error("--file is required when --output is 'file'")
+    
     output = args.output
     file = args.file
 
