@@ -194,7 +194,7 @@ def jobs_to_html(jobs):
 
     return html
 
-def jobs_to_markdowm(jobs: List[Dict]) -> str:
+def jobs_to_markdown(jobs: List[Dict]) -> str:
     """Format the jobs into a Markdown output that can be saved in a file
 
     Args:
@@ -280,7 +280,7 @@ def main():
     elif output == "file":
         print("###############  Saving Results to File ###############")
         print(f"Saving {len(selected_jobs)} jobs.")
-        markdown = jobs_to_markdowm(selected_jobs)
+        markdown = jobs_to_markdown(selected_jobs)
         with open(file, "w") as f:
             f.write(markdown)
 
