@@ -20,7 +20,7 @@ date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 parser = argparse.ArgumentParser()
 
 parser.add_argument("-f", "--file", required=False, help="Path to the output file")
-parser.add_argument("-o", "--outpout", choices=["email", "file"], default="email", required=True, help="Output type (Defautl to email).")
+parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=True, help="Output type (Defautl to email).")
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -225,6 +225,7 @@ def main():
     # Parse arguments
     args = parser.parse_args()
     output = args.output
+    file = args.file
 
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
@@ -275,6 +276,9 @@ def main():
     elif output == "file":
         print("###############  Saving Results to File ###############")
         print(f"Saving {len(selected_jobs)} jobs.")
+        markdown = jobs_to_markdowm(selected_jobs)
+        with open(file, "w") as f:
+            f.write(markdown)
 
 def lambda_handler(event, context):
     main()
