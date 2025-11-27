@@ -4,7 +4,7 @@
 from dotenv import load_dotenv
 load_dotenv("src/.env")
 
-import json
+import argparse
 from datetime import datetime
 import os
 from typing import Dict, List
@@ -16,6 +16,14 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
+def make_parser() -> argparse.ArgumentParser:
+    """Configure argument parser"""
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-f", "--file", required=False, help="Path to the output file")
+    parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=False, help="Output type (Default to email).")
+
+    return parser
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -189,7 +197,41 @@ def jobs_to_html(jobs):
 
     return html
 
+def jobs_to_markdown(jobs: List[Dict]) -> str:
+    """Format the jobs into a Markdown output that can be saved in a file
+
+    Args:
+        jobs (List[Dict]): A list of jobs stored as dictionaries.
+
+    Returns:
+        str: A Markdown formatted string.
+    """
+    markdown = "|Title|Company|Match Score|Date Published|Missing Required Skills|\n"
+    markdown += "|-|-|-|-|-|\n"
+
+    for job in jobs:
+        url = job.get("url", "")
+        title = job.get("title", "Missing title").replace("|", "\\|")
+        company = job.get("company", "Missing employer")
+        date_published = job.get("date_published", f"Found on {date}")
+        evaluation = job.get("evaluation", {})
+        score = evaluation.get("match_score", "Missing score")
+        missing_required = ", ".join(evaluation.get("missing_required", []))
+
+        markdown += f"|[{title}]({url})|{company}|{score}|{date_published}|{missing_required}|\n"
+
+    return markdown
+
 def main():
+    parser = make_parser()
+    # Parse arguments
+    args = parser.parse_args()
+    # Make sure that the file path is provided when file output has been selected.
+    if args.output == "file" and not args.file:
+        parser.error("--file is required when --output is 'file'")
+    
+    output = args.output
+    output_file = args.file
 
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
@@ -214,29 +256,38 @@ def main():
 
     selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
 
-
+    if output == "email":
     # Send jobs by email
-    print("###############  Sending Results  ###############")
-    print(f"Sending {len(selected_jobs)} jobs.")
-    subject = f"New Jobs Openings for {date}"
-    if len(selected_jobs) == 0:
-        content = "<p>No new jobs found.</p>"
-    else:
-        content = jobs_to_html(selected_jobs)
+        print("###############  Sending Results  ###############")
+        print(f"Sending {len(selected_jobs)} selected jobs.")
+        subject = f"New Jobs Openings for {date}"
+        if len(selected_jobs) == 0:
+            content = "<p>No new jobs found.</p>"
+        else:
+            content = jobs_to_html(selected_jobs)
 
-    send_email(subject, content)
+        send_email(subject, content)
 
-    # Send rejected jobs for QA
-    print("###############  Sending Rejected Jobs  ###############")
-    print(f"Sending {len(rejected_jobs)} jobs.")
-    subject = f"Rejected jobs for {date}"
-    if len(rejected_jobs) == 0:
-        content = "<p>No jobs were rejected.</p>"
-    else:
-        content = jobs_to_html(rejected_jobs)
+        # Send rejected jobs for QA
+        print("###############  Sending Rejected Jobs  ###############")
+        print(f"Sending {len(rejected_jobs)} rejected jobs.")
+        subject = f"Rejected jobs for {date}"
+        if len(rejected_jobs) == 0:
+            content = "<p>No jobs were rejected.</p>"
+        else:
+            content = jobs_to_html(rejected_jobs)
 
-    send_email(subject, content)
+        send_email(subject, content)
 
+    elif output == "file":
+        print("###############  Saving Results to File ###############")
+        print(f"Saving {len(selected_jobs)} selected jobs.")
+        markdown = jobs_to_markdown(selected_jobs)
+        try:
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(markdown)
+        except IOError as e:
+            print(f"Failed to write to file {output_file}: {e}")
 
 def lambda_handler(event, context):
     main()
