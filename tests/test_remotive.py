@@ -31,7 +31,7 @@ def test_get_jobs_returns_list():
     """
 
     # Setup
-    scraper = remotive.RemotiveScraper()
+    scraper = RemotiveScraper()
 
     # Exercise
     # Mock the request function to return a fake response
@@ -40,12 +40,12 @@ def test_get_jobs_returns_list():
         mock_response.content = json.dumps(SAMPLE_RESPONSE).encode("utf-8")
         mock_request.return_value = mock_response
 
-        jobs = scraper.get_jobs("python")
+        scraper.get_jobs("python")
 
         # Verify
         # get_jobs() should return a list of 2 jobs
-        assert isinstance(jobs, list)
-        assert len(jobs) == 2
+        assert isinstance(scraper.jobs, list)
+        assert len(scraper.jobs) == 2
 
 
 def test_get_jobs_list_contains_dictionaries():
@@ -53,7 +53,7 @@ def test_get_jobs_list_contains_dictionaries():
     """
 
     # Setup
-    scraper = remotive.RemotiveScraper()
+    scraper = RemotiveScraper()
 
     # Exercise
     with patch("scrappers.remotive.request") as mock_request:
@@ -61,10 +61,10 @@ def test_get_jobs_list_contains_dictionaries():
         mock_response.content = json.dumps(SAMPLE_RESPONSE).encode("utf-8")
         mock_request.return_value = mock_response
 
-    jobs = scraper.get_jobs("python")
+    scraper.get_jobs("python")
 
     # Verify
-    for job in jobs:
+    for job in scraper.jobs:
         assert isinstance(job, dict)
 
 
