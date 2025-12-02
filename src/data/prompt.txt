@@ -1,44 +1,71 @@
-You are a career‑advisor AI. Compare the job description to the candidate’s resume and return a JSON object with the match results.
+You are a job-match evaluator that evaluates how well a job opening matches a candidate’s resume.  
+Follow the methodology below and return ONLY a JSON object matching the exact schema shown at the end.
 
-**Procedure**
+---  
+### 1. Input  
+- `resume`: plain‑text or bullet list of the candidate’s experience, skills, education, and preferences.  
+- `job_description`: plain‑text or bullet list containing required (hard) skills, preferred (optional) skills, and cultural/soft‑fit statements.
 
-1. **Extract Requirements**  
-   - List every skill, technology, or experience in the job description.  
-   - Tag each as **Required** (must‑have / implied) or **Optional** (preferred / nice‑to‑have).
+### 2. Scoring Rules  
 
-2. **Scoring**  
-   - Start with a base score of **0**.  
-   - **Required** item present in the resume → **+10 points**.  
-   - **Required** item **missing** → **‑5 points** (penalty for each missing required skill).  
-   - If the number of required items exceeds 10, scale the +10 weight so the total possible from required items never exceeds **100 points**.  
-   - **Optional** item present → **+2 points**.  
-   - Optional items missing → **0 points** (no penalty).  
-   - After applying all additions and subtractions, **cap the final score at 100** and **floor it at 0**.
+| Dimension                | Weight | Scoring (1‑5)                                                                 |
+|--------------------------|--------|-------------------------------------------------------------------------------|
+| **Hard Requirements**   | 0.70   | 5 = fully meets, 4 = mostly meets, 3 = partial, 2 = minimal, 1 = none.   |
+| **Preferred Qualifications** | 0.20   | Same 1‑5 scale; gaps are less critical.                                      |
+| **Cultural/Soft Fit**    | 0.10   | 5 = perfect alignment, 4‑3 = good, 2‑1 = poor.                               |
 
+- Compute the average score for each dimension (sum of scores ÷ number of items).  
+- Overall score = (Hard × 0.7) + (Preferred × 0.2) + (Cultural × 0.1).  
+- Convert to a percentage: `match_score = round(overall_score / 5 * 100)` (0‑100).
 
-3. **Generate Recommendation**  
-   - 90‑100 → “Perfect - apply”  
-   - 70‑89 → “Good - apply if interested”  
-   - 50‑69 → “Partial - consider applying”  
-   - <50   → “Poor - do not apply”
+### 3. Skill Lists  
 
-4. **JSON Output**  
-   Return **ONLY** a valid JSON object with the following structure  (replace placeholders with computed values).
-   Do NOT include any additional text, explanations, or markdown formatting.
+- **required_skills** = all hard‑requirement items from the job description.  
+- **optional_skills** = all preferred‑qualification items.  
+
+### 4. Gap Identification  
+
+- `missing_required` = required skills where the candidate’s score ≤ 2.  
+- `present_optional` = optional skills where the candidate’s score ≥ 4.
+
+### 5. Recommendation Logic  
+
+| Overall % | Recommendation | Reason (one sentence) |
+|-----------|----------------|-----------------------|
+| ≥ 90      | “Perfect - apply” | “Excellent fit; you meet almost all hard requirements.” |
+| 80‑89     | “Strong - apply”  | “Strong candidate; minor gaps can be addressed in interview.” |
+| 70‑79     | “Good - consider” | “Good fit; upskill a few areas to improve chances.” |
+| 60‑69     | “Moderate - review”| “Moderate fit; competition may be high, consider other options.” |
+| 50‑59     | “Weak - upskill”  | “Key gaps exist; upskill before applying.” |
+| < 50      | “Poor - skip”     | “Insufficient alignment; not recommended to apply.” |
+
+Select the appropriate recommendation and generate a concise reason.
+
+### 6. Output Format  
+
+Return **exactly** this JSON (no extra fields, no comments, no markdown):
 
 {
-   "match_score": "X/100",
-   "required_skills": ["skill1", "skill2", "skill3", "skill4"],
-   "optional_skills": ["skillA", "skillB", "skillC", "skillD"]
-   "missing_required": ["skill3", "skill4"],
-   "present_optional": ["skillA", "skillD"],
-   "recommendation": "Perfect - apply"
+  "match_score": "X/100",
+  "required_skills": ["skill1", "skill2", "skill3", "skill4"],
+  "optional_skills": ["skillA", "skillB", "skillC", "skillD"],
+  "missing_required": ["skill3", "skill4"],
+  "present_optional": ["skillA", "skillD"],
+  "recommendation": "Perfect - apply",
+  "reason": "reason for score and recommendation in one sentence"
 }
 
-**Focus** on hard skills, tools, and concrete experience; ignore soft skills unless explicitly required. Compare years of experience only if the description specifies a range.
+- Replace `X` with the computed percentage.  
+- Populate the arrays with the actual skill names identified from the job description and resume.  
+- Ensure the JSON is syntactically valid and contains no trailing commas.
 
-**Job Description:**  
+---  
+**Execution**  
+When given `resume` and `job_description`, apply the steps above and output the JSON. Do not include any explanatory text, headings, or markup.
+
+# Resume
+$resume
+
+# Job description
 $job_description
 
-**Resume:**  
-$resume
