@@ -7,6 +7,7 @@ load_dotenv("src/.env")
 import argparse
 from datetime import datetime
 import os
+from pathlib import Path
 from typing import Dict, List
 
 from .config import searches, since, sites, api_url, model, temperature, timeout, prompt_file, resume_file, apply_threshold
@@ -20,7 +21,8 @@ def make_parser() -> argparse.ArgumentParser:
     """Configure argument parser"""
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-f", "--file", required=False, help="Path to the output file")
+    parser.add_argument("-f", "--file", required=False, help="Name of the output file")
+    parser.add_argument("-p", "--path", required=False, default=os.getcwd(), help="Path to the folder where the file is saved (default to current directory).")
     parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=False, help="Output type (Default to email).")
 
     return parser
@@ -86,8 +88,8 @@ def remove_duplicates(jobs: List[Dict]) -> List[Dict]:
         List[Dict]: List of unique jobs as dictionaries
     """
     single_jobs = []
-    seen_urls = set()               # Set of jobs URLs that have already been seen 
-    seen_companies_titles = set()   # Set of companies/titles pairs that have already been seen 
+    seen_urls = set()               # Set of jobs URLs that have already been seen
+    seen_companies_titles = set()   # Set of companies/titles pairs that have already been seen
 
     for job in jobs:
         job_url = job.get("url", "missing")
@@ -229,8 +231,9 @@ def main():
     # Make sure that the file path is provided when file output has been selected.
     if args.output == "file" and not args.file:
         parser.error("--file is required when --output is 'file'")
-    
+
     output = args.output
+    output_path = args.path
     output_file = args.file
 
     # Extract jobs from web sites and save them in a list
@@ -240,21 +243,23 @@ def main():
     print("###############  Remove duplicate Jobs  ###############")
     single_jobs = remove_duplicates(jobs)
 
-    print("###############  Selecting Jobs  ###############")
-    analyzer = AIAnalyzer(
-        api_key=os.getenv("AI_API_KEY"),
-        model = model,
-        api_url=api_url,
-        prompt_file=prompt_file,
-        temperature=temperature,
-        timeout=timeout
-    )
+    # print("###############  Selecting Jobs  ###############")
+    # analyzer = AIAnalyzer(
+    #     api_key=os.getenv("AI_API_KEY"),
+    #     model = model,
+    #     api_url=api_url,
+    #     prompt_file=prompt_file,
+    #     temperature=temperature,
+    #     timeout=timeout
+    # )
 
-    # Load resume once (e.g., from a file or environment variable)
-    with open(resume_file, "r", encoding="utf-8") as f:
-        resume = f.read()
+    # # Load resume once (e.g., from a file or environment variable)
+    # with open(resume_file, "r", encoding="utf-8") as f:
+    #     resume = f.read()
 
-    selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
+    # selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
+    selected_jobs = single_jobs
+    rejected_jobs = []
 
     if output == "email":
     # Send jobs by email
@@ -282,12 +287,33 @@ def main():
     elif output == "file":
         print("###############  Saving Results to File ###############")
         print(f"Saving {len(selected_jobs)} selected jobs.")
+        prefix = datetime.now().strftime("%Y-%m-%d")
+        suffix = "selected"
+        path = Path(output_path)
+        file_stem = Path(output_file).stem
+        file_extension = Path(output_file).suffix
+        new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
+        full_path = path / new_filename
+
         markdown = jobs_to_markdown(selected_jobs)
         try:
-            with open(output_file, "w", encoding="utf-8") as f:
+            with open(full_path, "w", encoding="utf-8") as f:
                 f.write(markdown)
         except IOError as e:
-            print(f"Failed to write to file {output_file}: {e}")
+            print(f"Failed to write to file {full_path}: {e}")
+
+        print(f"Saving {len(rejected_jobs)} rejected jobs.")
+        suffix = "rejected"
+        new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
+        full_path = path / new_filename
+
+        markdown = jobs_to_markdown(rejected_jobs)
+        try:
+            with open(full_path, "w", encoding="utf-8") as f:
+                f.write(markdown)
+        except IOError as e:
+            print(f"Failed to write to file {full_path}: {e}")
+
 
 def lambda_handler(event, context):
     main()
