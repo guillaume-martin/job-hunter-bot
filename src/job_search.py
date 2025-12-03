@@ -241,7 +241,7 @@ def main(context: str) -> None:
     selected_jobs = single_jobs
     rejected_jobs = []
 
-    if output == "email":
+    if context == "cloud":
     # Send jobs by email
         print("###############  Sending Results  ###############")
         print(f"Sending {len(selected_jobs)} selected jobs.")
@@ -264,7 +264,7 @@ def main(context: str) -> None:
 
         send_email(subject, content)
 
-    elif output == "file":
+    elif context == "local":
         print("###############  Saving Results to File ###############")
         print(f"Saving {len(selected_jobs)} selected jobs.")
         prefix = datetime.now().strftime("%Y-%m-%d")
