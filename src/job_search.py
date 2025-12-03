@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 from typing import Dict, List
 
-from .config import searches, since, sites, api_url, model, temperature, timeout, prompt_file, resume_file, apply_threshold
+from .config import Config
 from .mailer import send_email
 from .scrappers.scraper_factory import get_scraper
 from .ai_analyzer import AIAnalyzer
@@ -40,18 +40,18 @@ def find_jobs(searches):
         "date_published", "url"
     """
     jobs = []
-    for term in searches:
+    for term in Config.SEARCHES:
         print(f"=============== {term} ===============")
 
-        for site in sites:
+        for site in Config.SITES:
             print("-" * 20)
             print(f"Searching jobs on {site}...")
             scrapper = get_scraper(site)
             scrapper.get_jobs(term)
 
             # Remove older jobs
-            print(f"Removing jobs older than {since} days...")
-            scrapper.remove_older_jobs(since)
+            print(f"Removing jobs older than {Config.SINCE} days...")
+            scrapper.remove_older_jobs(Config.SINCE)
 
             # Extract job descriptions
             print("Extracting job descriptions...")
@@ -134,7 +134,7 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
 
         # We select jobs with a score over the threshold and jobs that
         # need to be evaluated manually.
-        if int(job_score) >= apply_threshold or job["evaluation"] == "manual":
+        if int(job_score) >= Config.APPLY_THRESHOLD or job["evaluation"] == "manual":
             selected_jobs.append(job)
         else:
             rejected_jobs.append(job)
@@ -218,24 +218,24 @@ def main(context: str) -> None:
 
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
-    jobs = find_jobs(searches)
+    jobs = find_jobs(Config.SEARCHES)
 
     print("###############  Remove duplicate Jobs  ###############")
     single_jobs = remove_duplicates(jobs)
 
-    # print("###############  Selecting Jobs  ###############")
-    # analyzer = AIAnalyzer(
-    #     api_key=os.getenv("AI_API_KEY"),
-    #     model = model,
-    #     api_url=api_url,
-    #     prompt_file=prompt_file,
-    #     temperature=temperature,
-    #     timeout=timeout
-    # )
+    print("###############  Selecting Jobs  ###############")
+    analyzer = AIAnalyzer(
+        api_key=os.getenv("AI_API_KEY"),
+        model = Config.MODEL,
+        api_url=Config.API_URL,
+        prompt_file=Config.PROMPT_FILE,
+        temperature=Config.TEMPERATURE,
+        timeout=Config.TIMEOUT
+    )
 
-    # # Load resume once (e.g., from a file or environment variable)
-    # with open(resume_file, "r", encoding="utf-8") as f:
-    #     resume = f.read()
+    # Load resume once (e.g., from a file or environment variable)
+    with open(Config.RESUME_FILE, "r", encoding="utf-8") as f:
+        resume = f.read()
 
     # selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
     selected_jobs = single_jobs
@@ -269,9 +269,9 @@ def main(context: str) -> None:
         print(f"Saving {len(selected_jobs)} selected jobs.")
         prefix = datetime.now().strftime("%Y-%m-%d")
         suffix = "selected"
-        path = Path(output_path)
-        file_stem = Path(output_file).stem
-        file_extension = Path(output_file).suffix
+        path = Path(Config.OUTPUT_PATH)
+        file_stem = Path(Config.OUTPUT_FILE).stem
+        file_extension = Path(Config.OUTPUT_FILE).suffix
         new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
         full_path = path / new_filename
 
