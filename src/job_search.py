@@ -4,28 +4,68 @@
 from dotenv import load_dotenv
 load_dotenv("src/.env")
 
-import argparse
 from datetime import datetime
 import os
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Literal
 
-from .config import searches, since, sites, api_url, model, temperature, timeout, prompt_file, resume_file, apply_threshold
+from .config import Config
 from .mailer import send_email
 from .scrappers.scraper_factory import get_scraper
 from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
-def make_parser() -> argparse.ArgumentParser:
-    """Configure argument parser"""
-    parser = argparse.ArgumentParser()
+def send_results(
+    context: Literal["cloud", "local"],
+    selected_jobs: List[Dict],
+    rejected_jobs: List[Dict],
+    date: str,
+) -> None:
+    """Send or save job results based on the context (cloud or local)."""
+    if context == "cloud":
+        _send_jobs_by_email(selected_jobs, f"New Jobs Opening for {date}", date)
+        _send_jobs_by_email(rejected_jobs, f"Rejected jobs for {date}", date)
+    elif context == "local":
+        _save_jobs_to_file(selected_jobs, "selected", date)
+        _save_jobs_to_file(rejected_jobs, "rejected", date)
 
-    parser.add_argument("-f", "--file", required=False, help="Name of the output file")
-    parser.add_argument("-p", "--path", required=False, default=os.getcwd(), help="Path to the folder where the file is saved (default to current directory).")
-    parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=False, help="Output type (Default to email).")
+def _send_jobs_by_email(jobs: List[Dict], subject: str, date: str) -> None:
+    """Send jobs by email.
 
-    return parser
+    Args:
+        jobs: List of job dictionaries.
+        subject: Email subject.
+        date: Date string for logging.
+    """
+    print(f"###############  Sending {subject}  ###############")
+    print(f"Sending {len(jobs)} jobs.")
+    content: str = "<p>No jobs found.</p>" if not jobs else jobs_to_html(jobs)
+    send_email(subject, content)
+
+def _save_jobs_to_file(jobs: List[Dict], suffix: str, date: str) -> None:
+    """Save jobs to a file locally.
+
+    Args:
+        jobs: List of job dictionaries.
+        suffix: Suffix for the filename (e.g., "selected" or "rejected").
+        date: Date string for logging.
+    """
+    prefix = datetime.now().strftime("%Y-%m-%d")
+    path = Path(Config.OUTPUT_PATH)
+    file_stem = Path(Config.OUTPUT_FILE).stem
+    file_extension = Path(Config.OUTPUT_FILE).suffix
+    new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
+    full_path = path / new_filename
+    markdown = jobs_to_markdown(jobs)
+
+    print(f"###############  Saving {suffix.lower()} Jobs to File  ###############")
+    print(f"Saving {len(jobs)} {suffix} jobs.")
+    try:
+        with open(full_path, "w", encoding="utf-8") as f:
+            f.write(markdown)
+    except IOError as e:
+        print(f"Failed to write to file {full_path}: {e}")
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -50,18 +90,18 @@ def find_jobs(searches):
         "date_published", "url"
     """
     jobs = []
-    for term in searches:
+    for term in Config.SEARCHES:
         print(f"=============== {term} ===============")
 
-        for site in sites:
+        for site in Config.SITES:
             print("-" * 20)
             print(f"Searching jobs on {site}...")
             scrapper = get_scraper(site)
             scrapper.get_jobs(term)
 
             # Remove older jobs
-            print(f"Removing jobs older than {since} days...")
-            scrapper.remove_older_jobs(since)
+            print(f"Removing jobs older than {Config.SINCE} days...")
+            scrapper.remove_older_jobs(Config.SINCE)
 
             # Extract job descriptions
             print("Extracting job descriptions...")
@@ -144,7 +184,7 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
 
         # We select jobs with a score over the threshold and jobs that
         # need to be evaluated manually.
-        if int(job_score) >= apply_threshold or job["evaluation"] == "manual":
+        if int(job_score) >= Config.APPLY_THRESHOLD or job["evaluation"] == "manual":
             selected_jobs.append(job)
         else:
             rejected_jobs.append(job)
@@ -224,99 +264,40 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
 
     return markdown
 
-def main():
-    parser = make_parser()
-    # Parse arguments
-    args = parser.parse_args()
-    # Make sure that the file path is provided when file output has been selected.
-    if args.output == "file" and not args.file:
-        parser.error("--file is required when --output is 'file'")
-
-    output = args.output
-    output_path = args.path
-    output_file = args.file
+def main(context: str) -> None:
 
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
-    jobs = find_jobs(searches)
+    jobs = find_jobs(Config.SEARCHES)
 
     print("###############  Remove duplicate Jobs  ###############")
     single_jobs = remove_duplicates(jobs)
 
-    # print("###############  Selecting Jobs  ###############")
-    # analyzer = AIAnalyzer(
-    #     api_key=os.getenv("AI_API_KEY"),
-    #     model = model,
-    #     api_url=api_url,
-    #     prompt_file=prompt_file,
-    #     temperature=temperature,
-    #     timeout=timeout
-    # )
+    print("###############  Selecting Jobs  ###############")
+    analyzer = AIAnalyzer(
+        api_key=os.getenv("AI_API_KEY"),
+        model = Config.MODEL,
+        api_url=Config.API_URL,
+        prompt_file=Config.PROMPT_FILE,
+        temperature=Config.TEMPERATURE,
+        timeout=Config.TIMEOUT
+    )
 
-    # # Load resume once (e.g., from a file or environment variable)
-    # with open(resume_file, "r", encoding="utf-8") as f:
-    #     resume = f.read()
+    # Load resume once (e.g., from a file or environment variable)
+    with open(Config.RESUME_FILE, "r", encoding="utf-8") as f:
+        resume = f.read()
 
     # selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
     selected_jobs = single_jobs
     rejected_jobs = []
 
-    if output == "email":
-    # Send jobs by email
-        print("###############  Sending Results  ###############")
-        print(f"Sending {len(selected_jobs)} selected jobs.")
-        subject = f"New Jobs Openings for {date}"
-        if len(selected_jobs) == 0:
-            content = "<p>No new jobs found.</p>"
-        else:
-            content = jobs_to_html(selected_jobs)
-
-        send_email(subject, content)
-
-        # Send rejected jobs for QA
-        print("###############  Sending Rejected Jobs  ###############")
-        print(f"Sending {len(rejected_jobs)} rejected jobs.")
-        subject = f"Rejected jobs for {date}"
-        if len(rejected_jobs) == 0:
-            content = "<p>No jobs were rejected.</p>"
-        else:
-            content = jobs_to_html(rejected_jobs)
-
-        send_email(subject, content)
-
-    elif output == "file":
-        print("###############  Saving Results to File ###############")
-        print(f"Saving {len(selected_jobs)} selected jobs.")
-        prefix = datetime.now().strftime("%Y-%m-%d")
-        suffix = "selected"
-        path = Path(output_path)
-        file_stem = Path(output_file).stem
-        file_extension = Path(output_file).suffix
-        new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
-        full_path = path / new_filename
-
-        markdown = jobs_to_markdown(selected_jobs)
-        try:
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(markdown)
-        except IOError as e:
-            print(f"Failed to write to file {full_path}: {e}")
-
-        print(f"Saving {len(rejected_jobs)} rejected jobs.")
-        suffix = "rejected"
-        new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
-        full_path = path / new_filename
-
-        markdown = jobs_to_markdown(rejected_jobs)
-        try:
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(markdown)
-        except IOError as e:
-            print(f"Failed to write to file {full_path}: {e}")
+    send_results(context, selected_jobs, rejected_jobs, date)
 
 
 def lambda_handler(event, context):
-    main()
+    run_context = "cloud"
+    main(run_context)
 
 if __name__ == '__main__':
-    main()
+    run_context = "local"
+    main(run_context)
