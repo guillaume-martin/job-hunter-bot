@@ -295,9 +295,9 @@ def main(context: str) -> None:
 
 
 def lambda_handler(event, context):
-    context = "cloud"
-    main(context)
+    run_context = "cloud"
+    main(run_context)
 
 if __name__ == '__main__':
-    context = "local"
-    main(context)
+    run_context = "local"
+    main(run_context)
