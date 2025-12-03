@@ -224,7 +224,7 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
 
     return markdown
 
-def main():
+def main(context: str) -> None:
     parser = make_parser()
     # Parse arguments
     args = parser.parse_args()
@@ -316,7 +316,9 @@ def main():
 
 
 def lambda_handler(event, context):
-    main()
+    context = "cloud"
+    main(context)
 
 if __name__ == '__main__':
-    main()
+    context = "local"
+    main(context)
