@@ -23,7 +23,7 @@ def send_results(
     date: str,
 ) -> None:
     """Send or save job results based on the context (cloud or local)."""
-    if context == "cloud": 
+    if context == "cloud":
         _send_jobs_by_email(select_jobs, f"New Jobs Opening for {date}", date)
         _send_jobs_by_email(rejected_jobs, f"Rejected jobs for {date}", date)
     elif context == "local":
