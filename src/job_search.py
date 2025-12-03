@@ -7,7 +7,7 @@ load_dotenv("src/.env")
 from datetime import datetime
 import os
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Literal
 
 from .config import Config
 from .mailer import send_email
@@ -16,6 +16,56 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
+def send_results(
+    context: Literal["cloud", "local"],
+    selected_jobs: List[Dict],
+    rejected_jobs: List[Dict],
+    date: str,
+) -> None:
+    """Send or save job results based on the context (cloud or local)."""
+    if context == "cloud": 
+        _send_jobs_by_email(select_jobs, f"New Jobs Opening for {date}", date)
+        _send_jobs_by_email(rejected_jobs, f"Rejected jobs for {date}", date)
+    elif context == "local":
+        _save_jobs_to_file(select_jobs, "selected", date)
+        _save_jobs_to_file(rejected_jobs, "rejected", date)
+
+def _send_jobs_by_email(jobs: List[Dict], subject: str, date: str) -> None:
+    """Send jobs by email.
+
+    Args:
+        jobs: List of job dictionaries.
+        subject: Email subject.
+        date: Date string for logging.
+    """
+    print(f"###############  Sending {subject}  ###############")
+    print(f"Sending {len(jobs)} jobs.")
+    content: str = "<p>No jobs found.</p>" if not jobs else jobs_to_html(jobs)
+    send_email(subject, content)
+
+def _save_jobs_to_file(jobs: List[Dict], suffix: str, date: str) -> None:
+    """Save jobs to a file locally.
+
+    Args:
+        jobs: List of job dictionaries.
+        suffix: Suffix for the filename (e.g., "selected" or "rejected").
+        date: Date string for logging.
+    """
+    prefix = datetime.now().strftime("%Y-%m-%d")
+    path = Path(Config.OUTPUT_PATH)
+    file_stem = Path(Config.OUTPUT_FILE).stem
+    file_extension = Path(Config.OUTPUT_FILE).suffix
+    new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
+    full_path = path / new_filename
+    markdown = jobs_to_markdown(jobs)
+
+    print(f"###############  Saving {suffix.lower()} Jobs to File  ###############")
+    print(f"Saving {len(jobs)} {suffix} jobs.")
+    try:
+        with open(full_path, "w", encoding="utf-8") as f:
+            f.write(markdown)
+    except IOError as e:
+        print(f"Failed to write to file {full_path}: {e}")
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -241,58 +291,7 @@ def main(context: str) -> None:
     selected_jobs = single_jobs
     rejected_jobs = []
 
-    if context == "cloud":
-    # Send jobs by email
-        print("###############  Sending Results  ###############")
-        print(f"Sending {len(selected_jobs)} selected jobs.")
-        subject = f"New Jobs Openings for {date}"
-        if len(selected_jobs) == 0:
-            content = "<p>No new jobs found.</p>"
-        else:
-            content = jobs_to_html(selected_jobs)
-
-        send_email(subject, content)
-
-        # Send rejected jobs for QA
-        print("###############  Sending Rejected Jobs  ###############")
-        print(f"Sending {len(rejected_jobs)} rejected jobs.")
-        subject = f"Rejected jobs for {date}"
-        if len(rejected_jobs) == 0:
-            content = "<p>No jobs were rejected.</p>"
-        else:
-            content = jobs_to_html(rejected_jobs)
-
-        send_email(subject, content)
-
-    elif context == "local":
-        print("###############  Saving Results to File ###############")
-        print(f"Saving {len(selected_jobs)} selected jobs.")
-        prefix = datetime.now().strftime("%Y-%m-%d")
-        suffix = "selected"
-        path = Path(Config.OUTPUT_PATH)
-        file_stem = Path(Config.OUTPUT_FILE).stem
-        file_extension = Path(Config.OUTPUT_FILE).suffix
-        new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
-        full_path = path / new_filename
-
-        markdown = jobs_to_markdown(selected_jobs)
-        try:
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(markdown)
-        except IOError as e:
-            print(f"Failed to write to file {full_path}: {e}")
-
-        print(f"Saving {len(rejected_jobs)} rejected jobs.")
-        suffix = "rejected"
-        new_filename = f"{prefix}-{file_stem}-{suffix}{file_extension}"
-        full_path = path / new_filename
-
-        markdown = jobs_to_markdown(rejected_jobs)
-        try:
-            with open(full_path, "w", encoding="utf-8") as f:
-                f.write(markdown)
-        except IOError as e:
-            print(f"Failed to write to file {full_path}: {e}")
+    send_results(context, selected_jobs, rejected_jobs, date)
 
 
 def lambda_handler(event, context):
