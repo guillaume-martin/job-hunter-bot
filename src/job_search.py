@@ -4,7 +4,6 @@
 from dotenv import load_dotenv
 load_dotenv("src/.env")
 
-import argparse
 from datetime import datetime
 import os
 from pathlib import Path
@@ -17,15 +16,6 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
-def make_parser() -> argparse.ArgumentParser:
-    """Configure argument parser"""
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument("-f", "--file", required=False, help="Name of the output file")
-    parser.add_argument("-p", "--path", required=False, default=os.getcwd(), help="Path to the folder where the file is saved (default to current directory).")
-    parser.add_argument("-o", "--output", choices=["email", "file"], default="email", required=False, help="Output type (Default to email).")
-
-    return parser
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -225,16 +215,6 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
     return markdown
 
 def main(context: str) -> None:
-    parser = make_parser()
-    # Parse arguments
-    args = parser.parse_args()
-    # Make sure that the file path is provided when file output has been selected.
-    if args.output == "file" and not args.file:
-        parser.error("--file is required when --output is 'file'")
-
-    output = args.output
-    output_path = args.path
-    output_file = args.file
 
     # Extract jobs from web sites and save them in a list
     print("###############  Searching Jobs  ###############")
