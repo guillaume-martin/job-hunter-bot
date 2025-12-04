@@ -51,7 +51,7 @@ class Tw104Scraper(BaseScraper):
 
             for job in jobs_list:
                 job_details = self._extract_job_details(job)
-                job_url = self.extract_url(job_details)
+                job_url = job_details.get("url", "unknown")
                 job_id = job_url.split("/")[-1]
                 if self._is_new(job_id):
                     self.jobs.append(job_details)
