@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 import os
 import urllib
 
@@ -45,6 +46,8 @@ class Tw104Scraper(BaseScraper):
             "Referer": f"https://www.104.com.tw/jobs/search/?jobsource=joblist_search&keyword={term.replace(" ", "+")}&mode=s&page=1&order=16",
         }
 
+        new_jobs = []
+
         r = request("GET", search_url, headers=headers)
         if r.status_code == 200:
             response = r.json()
@@ -56,7 +59,9 @@ class Tw104Scraper(BaseScraper):
                 job_id = job_url.split("/")[-1]
                 if job_id not in existing_job_ids:
                     self.jobs.append(job_details)
-                    self._store_new(job_id)
+                    new_jobs.append(job_id)
+
+        self._store_new_jobs(new_jobs)
 
     def extract_job_description(self, job_url: str) -> str:
         translation_table = str.maketrans({
