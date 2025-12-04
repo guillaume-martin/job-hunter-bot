@@ -90,7 +90,7 @@ def find_jobs(searches):
         "date_published", "url"
     """
     jobs = []
-    for term in Config.SEARCHES:
+    for term in searches:
         print(f"=============== {term} ===============")
 
         for site in Config.SITES:
