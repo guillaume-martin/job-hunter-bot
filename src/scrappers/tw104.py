@@ -1,10 +1,7 @@
-from datetime import datetime, timedelta, timezone
-import os
 import urllib
 
 from .base_scraper import BaseScraper
 
-import boto3
 from requests import request
 
 
