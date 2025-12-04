@@ -127,3 +127,24 @@ class BaseScraper(ABC):
         table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
         response = table.scan(ProjectionExpression="job_id")
         return {item["job_id"] for item in response.get("Items", [])}
+
+    def _store_new_jobs(self, new_jobs: list[str]) -> None:
+        """Store new jobs in jobs cache"""
+        if not new_jobs:
+            return
+
+        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE"))
+        with table.batch_writer() as batch:
+            for job_id in new_jobs:
+                # Add RETENTION_DAYS to today's date
+                expiry_date = datetime.now(timezone.utc) + timedelta(days=int(os.getenv("RETENTION_DAYS", 30)))
+
+                # Convert to Unix timestamp
+                expires_at = int(expiry_date.timestamp())
+
+                batch.put_item({
+                    "job_id": job_id,
+                    "site": self.name,
+                    "date_added": datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+                    "expires_at": expires_at
+                })
