@@ -34,6 +34,7 @@ class Tw104Scraper(BaseScraper):
         return published_date
 
     def get_jobs(self, term:str) -> list:
+        existing_job_ids = self._get_existing_job_ids()
         search_url = self._build_search_url(term)
 
         headers = {
@@ -53,7 +54,7 @@ class Tw104Scraper(BaseScraper):
                 job_details = self._extract_job_details(job)
                 job_url = job_details.get("url", "unknown")
                 job_id = job_url.split("/")[-1]
-                if self._is_new(job_id):
+                if job_id not in existing_job_ids:
                     self.jobs.append(job_details)
                     self._store_new(job_id)
 
