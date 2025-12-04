@@ -122,8 +122,8 @@ class BaseScraper(ABC):
         except ClientError as e:
             raise ValueError(f"Failed to save job in DynamoDB: {e}")
 
-        def _get_existing_job_ids(self) -> set[str]:
-            """Fetch all existing job IDs from DynamoDB."""
-            table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
-            response = table.scan(ProjectionExpression="job_id")
-            return {item["job_id"] for item in response.get("Items", [])}
+    def _get_existing_job_ids(self) -> set[str]:
+        """Fetch all existing job IDs from DynamoDB."""
+        table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
+        response = table.scan(ProjectionExpression="job_id")
+        return {item["job_id"] for item in response.get("Items", [])}
