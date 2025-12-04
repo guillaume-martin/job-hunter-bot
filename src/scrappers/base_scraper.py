@@ -8,8 +8,7 @@ import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 
 class BaseScraper(ABC):
-    def __init__(self, base_url: str, name: str, context: str):
-        self.context = context
+    def __init__(self, base_url: str, name: str):
         self.base_url = base_url
         self.name = name
         self.jobs = []
@@ -68,7 +67,7 @@ class BaseScraper(ABC):
         pass
 
     @staticmethod
-    def _connect_dynamodb_table(table_name: str) -> boto3.resources.factory.dynamodb.Table:
+    def _connect_dynamodb_table(table_name: str):
         """Connect to a DynamoDB table.
 
         Args:
