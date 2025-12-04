@@ -1,7 +1,9 @@
+import os
 import urllib
 
 from .base_scraper import BaseScraper
 
+import boto3
 from requests import request
 
 
@@ -19,20 +21,20 @@ class Tw104Scraper(BaseScraper):
 
     def extract_company(self, job_element):
         return job_element.get("custName", "unknown")
-    
+
     def extract_title(self, job_element):
         return job_element.get("jobName", "unknown")
-    
+
     def extract_url(self, job_element):
         return job_element.get("link", {}).get("job", "unknown")
-    
+
     def extract_date_published(self, job_element):
         date_int = int(job_element.get("appearDate", 0))
         published_date = f"{date_int // 10000}-{(date_int // 100) % 100:02}-{date_int % 100:02}"
         return published_date
-    
+
     def get_jobs(self, term:str) -> list:
-        search_url = self._build_search_url(term) 
+        search_url = self._build_search_url(term)
 
         headers = {
             "Host": "www.104.com.tw",
@@ -41,15 +43,19 @@ class Tw104Scraper(BaseScraper):
             "Accept-Language": "en-US,en;q=0.5",
             "Referer": f"https://www.104.com.tw/jobs/search/?jobsource=joblist_search&keyword={term.replace(" ", "+")}&mode=s&page=1&order=16",
         }
-        
+
         r = request("GET", search_url, headers=headers)
         if r.status_code == 200:
             response = r.json()
             jobs_list = response.get("data", [])
-            
+
             for job in jobs_list:
                 job_details = self._extract_job_details(job)
-                self.jobs.append(job_details)
+                job_url = self.extract_url(job_details)
+                job_id = job_url.split("/")[-1]
+                if self._is_new(job_id):
+                    self.jobs.append(job_details)
+                    self._store_new(job_id)
 
     def extract_job_description(self, job_url: str) -> str:
         translation_table = str.maketrans({
@@ -78,5 +84,5 @@ class Tw104Scraper(BaseScraper):
         data = r.json()["data"]
         job_description = data["jobDetail"]["jobDescription"]
         description = job_description.translate(translation_table).strip()
-        
+
         return description
