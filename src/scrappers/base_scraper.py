@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
 import os
-from time import time
 from typing import List, Dict, Any
 
 import boto3
