@@ -1,9 +1,15 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+import os
+from time import time
 from typing import List, Dict, Any
 
+import boto3
+from botocore.exceptions import NoCredentialsError, ClientError
+
 class BaseScraper(ABC):
-    def __init__(self, base_url: str, name: str):
+    def __init__(self, base_url: str, name: str, context: str):
+        self.context = context
         self.base_url = base_url
         self.name = name
         self.jobs = []
@@ -26,7 +32,7 @@ class BaseScraper(ABC):
     def _extract_job_details(self, job_element) -> Dict[str, Any]:
         """Extract job details from a job element. To be implemented by subclasses."""
         return {
-            "company": self.extract_company(job_element), 
+            "company": self.extract_company(job_element),
             "title": self.extract_title(job_element),
             "url": self.extract_url(job_element),
             "date_published": self.extract_date_published(job_element)
@@ -39,7 +45,7 @@ class BaseScraper(ABC):
     def _build_api_payload(self, term: str) -> dict:
         """Construct the API payload for the given term."""
         raise NotImplementedError("This scrapper does not use API based search.")
-    
+
     @abstractmethod
     def extract_company(self, job_element) -> str:
         pass
@@ -61,3 +67,73 @@ class BaseScraper(ABC):
         """Extract job description from the job URL."""
         pass
 
+    @staticmethod
+    def _connect_dynamodb_table(table_name: str) -> boto3.resources.factory.dynamodb.Table:
+        """Connect to a DynamoDB table.
+
+        Args:
+            table_name: Name of the DynamoDB table.
+
+        Returns:
+            boto3.resources.factory.dynamodb.Table: DynamoDB table resource.
+
+        Raises:
+            ValueError: If the table name is empty or AWS credentials are missing.
+            botocore.exceptions.ClientError: If the table doesn’t exist or AWS access is denied.
+        """
+        if not table_name:
+            raise ValueError("Table name cannot be empty.")
+
+        try:
+            ddb = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+            return ddb.Table(table_name)
+        except NoCredentialsError:
+            raise ValueError("AWS credentials not configured.")
+        except ClientError as e:
+            raise ValueError(f"Failed to connect to DynamoDB table: {e}")
+
+    def _is_new(self, job_id: str) -> bool:
+        """Check if a job ID is new (not in jobs cache).
+
+        Args:
+            job_id: Job ID to check.
+
+        Returns:
+            bool: True if the job ID is new, False otherwise.
+
+        Raises:
+            ValueError: If the job ID is empty or DynamoDB access fails.
+        """
+        if not job_id:
+            raise ValueError("Job ID cannot be empty.")
+        try:
+            table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
+            resp = table.get_item(Key={'job_id': job_id})
+            return 'Item' not in resp
+        except ClientError as e:
+            raise ValueError(f"Failed to check job in DynamoDB: {e}")
+
+    def _store_new(self, job_id: str) -> None:
+        """Store a new job ID in job cache.
+
+        Args:
+            job_id: Job ID to store.
+
+        Raises:
+            ValueError: If the job ID is empty or DynamoDB access fails.
+        """
+        if not job_id:
+            raise ValueError("Job ID cannot be empty.")
+        
+        try:
+            table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
+            table.put_item(
+                Item={
+                    "job_id": job_id,
+                    "site": self.name,
+                    "date_added": datetime.strftime(datetime.now(), '%Y-%m-%d'),
+                    'expires_at': int(time.time()) + os.getenv("RETENTION_DAYS")*24*3600
+                }
+            )
+        except ClientError as e:
+            raise ValueError(f"Failed to save job in DynamoDB: {e}")
