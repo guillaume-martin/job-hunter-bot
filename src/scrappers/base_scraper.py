@@ -91,37 +91,6 @@ class BaseScraper(ABC):
         except ClientError as e:
             raise ValueError(f"Failed to connect to DynamoDB table: {e}")
 
-    def _store_new(self, job_id: str) -> None:
-        """Store a new job ID in job cache.
-
-        Args:
-            job_id: Job ID to store.
-
-        Raises:
-            ValueError: If the job ID is empty or DynamoDB access fails.
-        """
-        if not job_id:
-            raise ValueError("Job ID cannot be empty.")
-
-        # Add RETENTION_DAYS to today's date
-        expiry_date = datetime.now(timezone.utc) + timedelta(days=int(os.getenv("RETENTION_DAYS", 30)))
-
-        # Convert to Unix timestamp
-        expires_at = int(expiry_date.timestamp())
-
-        try:
-            table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
-            table.put_item(
-                Item={
-                    "job_id": job_id,
-                    "site": self.name,
-                    "date_added": datetime.strftime(datetime.now(), '%Y-%m-%d'),
-                    'expires_at': expires_at
-                }
-            )
-        except ClientError as e:
-            raise ValueError(f"Failed to save job in DynamoDB: {e}")
-
     def _get_existing_job_ids(self) -> set[str]:
         """Fetch all existing job IDs from DynamoDB."""
         table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
