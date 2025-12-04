@@ -91,27 +91,6 @@ class BaseScraper(ABC):
         except ClientError as e:
             raise ValueError(f"Failed to connect to DynamoDB table: {e}")
 
-    def _is_new(self, job_id: str) -> bool:
-        """Check if a job ID is new (not in jobs cache).
-
-        Args:
-            job_id: Job ID to check.
-
-        Returns:
-            bool: True if the job ID is new, False otherwise.
-
-        Raises:
-            ValueError: If the job ID is empty or DynamoDB access fails.
-        """
-        if not job_id:
-            raise ValueError("Job ID cannot be empty.")
-        try:
-            table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
-            resp = table.get_item(Key={'job_id': job_id})
-            return 'Item' not in resp
-        except ClientError as e:
-            raise ValueError(f"Failed to check job in DynamoDB: {e}")
-
     def _store_new(self, job_id: str) -> None:
         """Store a new job ID in job cache.
 
