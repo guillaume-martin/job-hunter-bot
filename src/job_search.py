@@ -287,9 +287,7 @@ def main(context: str) -> None:
     with open(Config.RESUME_FILE, "r", encoding="utf-8") as f:
         resume = f.read()
 
-    # selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
-    selected_jobs = single_jobs
-    rejected_jobs = []
+    selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)
 
     send_results(context, selected_jobs, rejected_jobs, date)
 
