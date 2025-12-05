@@ -93,8 +93,31 @@ class BaseScraper(ABC):
     def _get_existing_job_ids(self) -> set[str]:
         """Fetch all existing job IDs from DynamoDB."""
         table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
-        response = table.scan(ProjectionExpression="job_id")
-        return {item["job_id"] for item in response.get("Items", [])}
+        job_ids = set()
+        last_evaluated_key = None
+
+        while True:
+            query_params = {
+                'IndexName': 'site-index',
+                'KeyConditionExpression': 'site = :site',
+                'ExpressionAttributeValues': {
+                    ':site': self.name
+                },
+                'ProjectionExpression': 'job_id'
+            }
+
+            if last_evaluated_key:
+                query_params['ExclusiveStartKey'] = last_evaluated_key
+
+            response = table.query(**query_params)
+            job_ids.update(item['job_id'] for item in response.get('Items', []))
+
+            if 'LastEvaluatedKey' not in response:
+                break
+
+            last_evaluated_key = response['LastEvaluatedKey']
+
+        return job_ids
 
     def _store_new_jobs(self, new_jobs: list[str]) -> None:
         """Store new jobs in jobs cache"""
