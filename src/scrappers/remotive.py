@@ -32,9 +32,6 @@ class RemotiveScraper(BaseScraper):
     def __init__(self):
         super().__init__(base_url=BASE_URL, name="Remotive")
 
-    def _build_search_url(self):
-        return BASE_URL
-
     def __build_api_payload(self, term: str) -> Dict:
         term_encoded = urllib.parse.quote(term)
         locations_encoded = urllib.parse.quote(LOCATIONS)
