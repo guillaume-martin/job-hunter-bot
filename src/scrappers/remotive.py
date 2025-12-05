@@ -32,9 +32,6 @@ class RemotiveScraper(BaseScraper):
     def __init__(self):
         super().__init__(base_url=BASE_URL, name="Remotive")
 
-    def _build_search_url(self, term):
-        return BASE_URL
-
     def __build_api_payload(self, term: str) -> Dict:
         term_encoded = urllib.parse.quote(term)
         locations_encoded = urllib.parse.quote(LOCATIONS)
@@ -70,10 +67,9 @@ class RemotiveScraper(BaseScraper):
         return date_published
 
     def get_jobs(self, term:str) -> list:
-        search_url = self._build_search_url(term)
         payload = self.__build_api_payload(term)
 
-        r = request("POST", search_url, headers=HEADERS, data=json.dumps(payload))
+        r = request("POST", BASE_URL, headers=HEADERS, data=json.dumps(payload))
         response = json.loads(r.content)
         results = response['results']
         jobs_list = results[0]['hits']
