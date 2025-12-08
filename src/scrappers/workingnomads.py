@@ -7,6 +7,7 @@ from .base_scraper import BaseScraper
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
 from requests import request
+from requests.exceptions import RequestException
 
 
 API_URL = "https://www.workingnomads.com/jobsapi/_search"
@@ -92,13 +93,19 @@ class WorkingNomadsScraper(BaseScraper):
             "Sec-Fetch-Site": "same-origin"
         }
 
-        r = request("POST", url=self.base_url, json=payload, headers=headers)
-        if r.status_code == 200:
+        try:
+            r = request("POST", url=self.base_url, json=payload, headers=headers)
+            r.raise_for_status()
             response = r.json()
+        except RequestException as e:
+            print(f"Failed to fetch job for term '{term}': {e}")
+            return []
+
+        try:
             data = response["hits"]["hits"]
             jobs_list = [j["_source"] for j in data]
-        else:
-            print(f"Error: {r.status_code} - {r.text}")
+        except (KeyError, ValueError) as e:
+            print(f"Failed to parse response: {e}")
             jobs_list = []
 
         for job in jobs_list:
