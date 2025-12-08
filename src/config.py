@@ -45,16 +45,16 @@ class Config:
     ]
 
     SITES = [
-        # "104",
-        # "remoteok",
-        # "remotive",
-        # "trulyremote"
+        "104",
+        "remoteok",
+        "remotive",
+        "trulyremote"
         "workingnomads"
     ]
 
     # Number of days since the job was published
     # Older jobs are dropped.
-    SINCE = 5
+    SINCE = 2
 
     # AI settings
     API_URL = "https://api.mistral.ai/v1/chat/completions"
@@ -68,3 +68,14 @@ class Config:
     # Output file settings
     OUTPUT_PATH = ""
     OUTPUT_FILE = "new-jobs.md"
+
+    # ============================ #
+    #      Scrapers settings       #
+    # ============================ #
+
+    # workingnomads settings
+    WORKINGNOMADS_API_URL = "https://www.workingnomads.com/jobsapi/_search"
+    WORKINGNOMADS_LOCATIONS = ["Anywhere", "Asia", "APAC", "Taiwan, Province of China"]
+    WORKINGNOMADS_URL_LOCATION = "taiwan,-province-of-china"
+
+
