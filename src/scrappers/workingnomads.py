@@ -56,7 +56,7 @@ class WorkingNomadsScraper(BaseScraper):
         return payload
 
     def extract_company(self, job_element: dict) -> str:
-        return job_element.get("company", "unknkown")
+        return job_element.get("company", "unknown")
 
     def extract_title(self, job_element: dict) -> str:
         return job_element.get("title", 'unknown')
