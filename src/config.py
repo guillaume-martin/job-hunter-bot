@@ -45,10 +45,11 @@ class Config:
     ]
 
     SITES = [
-        # "104",
+        "104",
         "remoteok",
         "remotive",
         "trulyremote"
+        "workingnomads"
     ]
 
     # Number of days since the job was published
@@ -67,3 +68,14 @@ class Config:
     # Output file settings
     OUTPUT_PATH = ""
     OUTPUT_FILE = "new-jobs.md"
+
+    # ============================ #
+    #      Scrapers settings       #
+    # ============================ #
+
+    # workingnomads settings
+    WORKINGNOMADS_API_URL = "https://www.workingnomads.com/jobsapi/_search"
+    WORKINGNOMADS_LOCATIONS = ["Anywhere", "Asia", "APAC", "Taiwan, Province of China"]
+    WORKINGNOMADS_URL_LOCATION = "taiwan,-province-of-china"
+
+
