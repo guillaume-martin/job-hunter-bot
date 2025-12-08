@@ -10,7 +10,7 @@ from dateutil.parser import parse
 from requests import request
 
 
-API_URL = 'https://www.workingnomads.co/api/exposed_jobs/'
+API_URL = "https://www.workingnomads.com/jobsapi/_search"
 LOCATIONS = ["Anywhere", "Asia", "APAC", "Taiwan, Province of China"]
 URL_LOCATION = "taiwan,-province-of-china"
 SINCE = 2
@@ -18,7 +18,7 @@ SINCE = 2
 class WorkingNomadsScraper(BaseScraper):
     """Scraper for Working Nomads jobs"""
     def __init__(self):
-        super.__init__(base_url=API_URL, name="WorkingNomads")
+        super().__init__(base_url=API_URL, name="WorkingNomads")
         self.locations = LOCATIONS
 
     def _build_api_payload(self, term):
