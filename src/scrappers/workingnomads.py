@@ -6,7 +6,6 @@ from .base_scraper import BaseScraper
 from ..config import Config
 
 from bs4 import BeautifulSoup
-from dateutil.parser import parse
 from requests import request
 from requests.exceptions import RequestException
 
