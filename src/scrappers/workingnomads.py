@@ -131,35 +131,3 @@ def to_utc(date_str):
 
     dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
     return dt.astimezone(timezone.utc)
-
-def keep_job(job, term):
-    term = term.lower()
-    title = job['title'].lower()
-    description = job['description'].lower()
-    tags = job['tags'].lower()
-    
-    
-    if job['location'].lower() not in LOCATIONS:
-        return False
-    
-    if term in title or term in description or term in tags:
-        return True
-    else:
-        return False
-    
-    
-def get_jobs(term):
-    jobs = []
-    r = requests.get(API)
-    jobs_list = json.loads(r.content)
-    
-    for job in jobs_list:
-        if keep_job(job, term):
-            jobs.append({
-                'title': job['title'],
-                'company': job['company_name'],
-                "date_published": datetime.strftime(parse(job['pub_date']), '%Y-%m-%d'),
-                'url': job['url']
-                })
-            
-    return jobs
