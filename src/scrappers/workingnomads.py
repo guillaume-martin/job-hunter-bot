@@ -70,10 +70,10 @@ class WorkingNomadsScraper(BaseScraper):
         utc_publish_date = to_utc(publish_date)
         return datetime.strftime(utc_publish_date, "%Y-%m-%d")
 
-    def extract_job_description(self, job_url: str) -> None:
+    def extract_job_description(self, job_url: str) -> str:
         # The job description is included in the job details.
         # We don't need to fetch it from the job post URL
-        pass
+        raise NotImplementedError("Job description is included in job details.")
 
     def get_jobs(self, term: str) -> list:
         payload = self._build_api_payload(term)
