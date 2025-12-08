@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import json
 from datetime import datetime, timezone
 
 from .base_scraper import BaseScraper
@@ -56,26 +55,26 @@ class WorkingNomadsScraper(BaseScraper):
         }
 
         return payload
-    
+
     def extract_company(self, job_element: dict) -> str:
         return job_element.get("company", "unknkown")
-    
+
     def extract_title(self, job_element: dict) -> str:
         return job_element.get("title", 'unknown')
-    
+
     def extract_url(self, job_element: dict) -> str:
         return job_element.get("apply_url")
-    
+
     def extract_date_published(self, job_element:dict) -> str:
         publish_date = job_element["pub_date"]
         utc_publish_date = to_utc(publish_date)
         return datetime.strftime(utc_publish_date, "%Y-%m-%d")
-        
+
     def extract_job_description(self, job_url: str) -> None:
-        # The job description is included in the job details. 
+        # The job description is included in the job details.
         # We don't need to fetch it from the job post URL
         pass
-    
+
     def get_jobs(self, term: str) -> list:
         payload = self._build_api_payload(term)
 
