@@ -106,8 +106,9 @@ def find_jobs(searches):
             # Extract job descriptions
             print("Extracting job descriptions...")
             for job in scrapper.jobs:
-                description = scrapper.extract_job_description(job['url'])
-                job['description'] = description
+                if not "description" in job or not job["description"]:
+                    description = scrapper.extract_job_description(job['url'])
+                    job['description'] = description
 
             print(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
 
