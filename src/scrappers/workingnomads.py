@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 
 from .base_scraper import BaseScraper
+from ..config import Config
 
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
@@ -10,15 +11,11 @@ from requests import request
 from requests.exceptions import RequestException
 
 
-API_URL = "https://www.workingnomads.com/jobsapi/_search"
-LOCATIONS = ["Anywhere", "Asia", "APAC", "Taiwan, Province of China"]
-URL_LOCATION = "taiwan,-province-of-china"
-
 class WorkingNomadsScraper(BaseScraper):
     """Scraper for Working Nomads jobs"""
     def __init__(self):
-        super().__init__(base_url=API_URL, name="WorkingNomads")
-        self.locations = LOCATIONS
+        super().__init__(base_url=Config.WORKINGNOMADS_API_URL, name="WorkingNomads")
+        self.locations = Config.WORKINGNOMADS_LOCATIONS
 
     def _build_api_payload(self, term):
         payload = {
@@ -46,7 +43,7 @@ class WorkingNomadsScraper(BaseScraper):
                         }
                     },
                     "filter": [
-                        {"terms": {"locations": LOCATIONS}},
+                        {"terms": {"locations": Config.WORKINGNOMADS_LOCATIONS}},
                         {"range": {"pub_date": {"gte": f"now-{self.since}d/d"}}}
                     ]
                 }
@@ -86,7 +83,7 @@ class WorkingNomadsScraper(BaseScraper):
             "Content-Type": "application/json;charset=utf-8",
             "Origin": "https://www.workingnomads.com",
             "Connection": "keep-alive",
-            "Referer": f"https://www.workingnomads.com/jobs?location={URL_LOCATION}&postedDate={self.since}&tag={term.replace(' ', '-')}",
+            "Referer": f"https://www.workingnomads.com/jobs?location={Config.WORKINGNINADS_URL_LOCATION}&postedDate={self.since}&tag={term.replace(' ', '-')}",
             "Cookie": 'subscriber_source=""; subscriber_utm_source=""; subscriber_utm_medium=""; subscriber_utm_campaign=""',
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",

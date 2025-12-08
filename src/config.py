@@ -46,14 +46,15 @@ class Config:
 
     SITES = [
         # "104",
-        "remoteok",
-        "remotive",
-        "trulyremote"
+        # "remoteok",
+        # "remotive",
+        # "trulyremote"
+        "workingnomads"
     ]
 
     # Number of days since the job was published
     # Older jobs are dropped.
-    SINCE = 2
+    SINCE = 5
 
     # AI settings
     API_URL = "https://api.mistral.ai/v1/chat/completions"
