@@ -12,7 +12,6 @@ from requests import request
 API_URL = "https://www.workingnomads.com/jobsapi/_search"
 LOCATIONS = ["Anywhere", "Asia", "APAC", "Taiwan, Province of China"]
 URL_LOCATION = "taiwan,-province-of-china"
-SINCE = 2
 
 class WorkingNomadsScraper(BaseScraper):
     """Scraper for Working Nomads jobs"""
@@ -47,7 +46,7 @@ class WorkingNomadsScraper(BaseScraper):
                     },
                     "filter": [
                         {"terms": {"locations": LOCATIONS}},
-                        {"range": {"pub_date": {"gte": f"now-{SINCE}d/d"}}}
+                        {"range": {"pub_date": {"gte": f"now-{self.since}d/d"}}}
                     ]
                 }
             },
@@ -86,7 +85,7 @@ class WorkingNomadsScraper(BaseScraper):
             "Content-Type": "application/json;charset=utf-8",
             "Origin": "https://www.workingnomads.com",
             "Connection": "keep-alive",
-            "Referer": f"https://www.workingnomads.com/jobs?location={URL_LOCATION}&postedDate={SINCE}&tag={term.replace(' ', '-')}",
+            "Referer": f"https://www.workingnomads.com/jobs?location={URL_LOCATION}&postedDate={self.since}&tag={term.replace(' ', '-')}",
             "Cookie": 'subscriber_source=""; subscriber_utm_source=""; subscriber_utm_medium=""; subscriber_utm_campaign=""',
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",

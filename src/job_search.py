@@ -16,6 +16,7 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
+
 def send_results(
     context: Literal["cloud", "local"],
     selected_jobs: List[Dict],
@@ -97,6 +98,8 @@ def find_jobs(searches):
             print("-" * 20)
             print(f"Searching jobs on {site}...")
             scrapper = get_scraper(site)
+            if site.lower() == "workingnomads":
+                scrapper.since = Config.SINCE
             scrapper.get_jobs(term)
 
             # Remove older jobs
