@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from .base_scraper import BaseScraper
 
@@ -71,7 +71,7 @@ class WorkingNomadsScraper(BaseScraper):
         utc_publish_date = to_utc(publish_date)
         return datetime.strftime(utc_publish_date, "%Y-%m-%d")
         
-    def extract_job_description(self, ) -> None:
+    def extract_job_description(self, job_url: str) -> None:
         # The job description is included in the job details. 
         # We don't need to fetch it from the job post URL
         pass
@@ -98,7 +98,7 @@ class WorkingNomadsScraper(BaseScraper):
         if r.status_code == 200:
             response = r.json()
             data = response["hits"]["hits"]
-            jobs_list = [j["_source"] for j in jobs_list]
+            jobs_list = [j["_source"] for j in data]
         else:
             print(f"Error: {r.status_code} - {r.text}")
             jobs_list = []
