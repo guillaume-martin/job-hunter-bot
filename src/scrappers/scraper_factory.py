@@ -2,6 +2,7 @@ from .remoteok import RemoteOkScraper
 from .remotive import RemotiveScraper
 from .trulyremote import TrulyRemoteScraper
 from .tw104 import Tw104Scraper
+from .workingnomads import WorkingNomadsScraper
 
 def get_scraper(site_name: str):
     scrapers = {
@@ -9,6 +10,7 @@ def get_scraper(site_name: str):
         "remoteok": RemoteOkScraper,
         "remotive": RemotiveScraper,
         "trulyremote": TrulyRemoteScraper,
+        "workingnomads": WorkingNomadsScraper,
     }
     return scrapers.get(site_name.lower())()
 
