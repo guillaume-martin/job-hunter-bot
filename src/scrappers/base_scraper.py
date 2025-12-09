@@ -119,7 +119,7 @@ class BaseScraper(ABC):
 
         return job_ids
 
-    def _store_new_jobs(self, new_jobs: list[str]) -> None:
+    def _store_new_jobs(self, new_jobs: set[str]) -> None:
         """Store new jobs in jobs cache"""
         if not new_jobs:
             return
