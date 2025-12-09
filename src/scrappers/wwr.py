@@ -73,7 +73,7 @@ class WwrScraper(BaseScraper):
         date_text = date_tag.text.strip()
 
         if date_text.lower() == "new":
-            days_since = 0
+            days_since_posted = 0
         else:
             # Remove non numeric characters
             days_str = ''.join(filter(str.isdigit, date_text))
