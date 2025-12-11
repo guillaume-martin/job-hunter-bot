@@ -31,7 +31,7 @@ class Tw104Scraper(BaseScraper):
         published_date = f"{date_int // 10000}-{(date_int // 100) % 100:02}-{date_int % 100:02}"
         return published_date
 
-    def get_jobs(self, term:str) -> list:
+    def get_jobs(self, term:str) -> None:
         existing_job_ids = self._get_existing_job_ids()
         search_url = self._build_search_url(term)
 

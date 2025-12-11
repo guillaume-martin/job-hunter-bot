@@ -66,7 +66,7 @@ class RemotiveScraper(BaseScraper):
         date_published = datetime.strftime(utc_pub_date, '%Y-%m-%d')
         return date_published
 
-    def get_jobs(self, term:str) -> list:
+    def get_jobs(self, term:str) -> None:
         payload = self.__build_api_payload(term)
 
         r = request("POST", BASE_URL, headers=HEADERS, data=json.dumps(payload))

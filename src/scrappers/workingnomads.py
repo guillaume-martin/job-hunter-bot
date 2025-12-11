@@ -70,7 +70,7 @@ class WorkingNomadsScraper(BaseScraper):
         """Job description is included in job details. This method is not used."""
         raise NotImplementedError("Job description is included in job details.")
 
-    def get_jobs(self, term: str) -> list:
+    def get_jobs(self, term: str) -> None:
         payload = self._build_api_payload(term)
 
         headers = {
