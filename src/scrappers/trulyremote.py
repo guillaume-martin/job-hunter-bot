@@ -45,7 +45,7 @@ class TrulyRemoteScraper(BaseScraper):
         utc_publish_date = to_utc(publish_date)
         return datetime.strftime(utc_publish_date, "%Y-%m-%d")
 
-    def get_jobs(self, term:str) -> list:
+    def get_jobs(self, term:str) -> None:
         payload = self._build_api_payload(term)
 
         r = request("POST", self.base_url, json=payload)
