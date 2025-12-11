@@ -1,20 +1,8 @@
 """
 Configuration class for job search parameters and settings.
-
-Attributes:
-    SEARCHES (list): List of search terms for job categories.
-    SITES (list): List of job board sites to search.
-    SINCE (int): Number of days since job was published to consider.
-    API_URL (str): URL for AI API endpoint.
-    MODEL (str): AI model name to use.
-    TEMPERATURE (float): Temperature setting for AI model.
-    TIMEOUT (int): Timeout in seconds for AI API requests.
-    PROMPT_FILE (str): Path to file containing AI prompt template.
-    RESUME_FILE (str): Path to file containing resume text.
-    APPLY_THRESHOLD (int): Minimum match score (0-100) required to apply.
-    OUTPUT_PATH (str): Path for output files.
-    OUTPUT_FILE (str): Name of output file for job listings.
 """
+
+import os
 
 class Config:
     # Searches are a list of tuples (search_term, category)
@@ -41,15 +29,17 @@ class Config:
         "data software engineer",
         "data architect",
         "dataops",
-        "solution architect"
+        "solution architect",
+        "it manager",
     ]
 
     SITES = [
-        "104",
-        "remoteok",
-        "remotive",
-        "trulyremote"
-        "workingnomads"
+       "104",
+       "remoteok",
+       "remotive",
+       "trulyremote",
+       "workingnomads",
+       "weworkremotely",
     ]
 
     # Number of days since the job was published
@@ -73,9 +63,15 @@ class Config:
     #      Scrapers settings       #
     # ============================ #
 
-    # workingnomads settings
+   # Selenium configuration
+    FIREFOX_PATH = os.getenv("FIREFOX_PATH")
+    GECKODRIVER_PATH = os.getenv("GECKODRIVER_PATH")
+
+    # Working Nomads Settings
     WORKINGNOMADS_API_URL = "https://www.workingnomads.com/jobsapi/_search"
     WORKINGNOMADS_LOCATIONS = ["Anywhere", "Asia", "APAC", "Taiwan, Province of China"]
     WORKINGNOMADS_URL_LOCATION = "taiwan,-province-of-china"
 
-
+    # We Work Remotely Settings
+    WWR_BASE_URL = 'https://weworkremotely.com'
+    WWR_REGION = "taiwan"
