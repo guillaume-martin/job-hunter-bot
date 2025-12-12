@@ -70,7 +70,7 @@ class WwrScraper(BaseScraper):
         date_tag = job_element.find('p', class_='new-listing__header__icons__date')
         
         if not date_tag:
-            logger.exception("Warning: No date tag found. Assuming today's date.")
+            logger.warning("No date tag found. Assuming today's date.")
             return datetime.now().strftime('%Y-%m-%d')
         
         date_text = date_tag.text.strip()
