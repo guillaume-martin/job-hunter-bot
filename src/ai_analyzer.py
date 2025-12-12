@@ -1,9 +1,12 @@
 import json
+import logging
 from string import Template
 from typing import Dict, Optional
 
 from requests import request
 from requests.exceptions import RequestException
+
+logger = logging.getLogger(__name__)
 
 class AIAnalyzer:
     def __init__(
@@ -114,8 +117,8 @@ class AIAnalyzer:
                 return content  # Fallback: return raw content
             
         except RequestException as e:
-            print(f"API request failed: {e}")
+            logger.error(f"API request failed: {e}")
             return None
         except (KeyError, json.JSONDecodeError) as e:
-            print(f"Invalid API response: {e}")
+            logger.error(f"Invalid API response: {e}")
             return None
