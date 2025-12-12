@@ -6,6 +6,7 @@ load_dotenv("src/.env")
 
 from datetime import datetime
 import logging
+import logging.config
 import os
 from pathlib import Path
 from typing import Dict, List, Literal
@@ -17,16 +18,11 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
-# Configure the logger
-logger = logging.getLogger(__name__)
-log_level = Config.LOG_LEVEL.upper()
-log_level_numeric = getattr(logging, log_level, logging.INFO)
-logger.setLevel(log_level_numeric)
+# Load the logging configuration
+logging.config.fileConfig(os.path.join(os.path.dirname(__file__), 'logging.conf'))
 
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 def send_results(
     context: Literal["cloud", "local"],
@@ -280,7 +276,6 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
     return markdown
 
 def main(context: str) -> None:
-
     # Extract jobs from web sites and save them in a list
     logger.info("###############  Searching Jobs  ###############")
     jobs = find_jobs(Config.SEARCHES)
