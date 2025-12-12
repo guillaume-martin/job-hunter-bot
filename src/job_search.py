@@ -19,7 +19,9 @@ date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
 # Configure the logger
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+log_level = Config.LOG_LEVEL.upper()
+log_level_numeric = getattr(logging, log_level, logging.INFO)
+logger.setLevel(log_level_numeric)
 
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
