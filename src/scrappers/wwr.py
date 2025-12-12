@@ -139,7 +139,7 @@ class WwrScraper(BaseScraper):
             logger.exception(f"Failed to reach URL {url}: {e}")
             page_content = ""
         except TimeoutError:
-            logger.error("Loading took too much time!")
+            logger.exception("Loading took too much time!")
             page_content = ""
         finally:
             driver.quit()
@@ -168,7 +168,7 @@ class WwrScraper(BaseScraper):
             description_div = soup.find_all("div", class_="lis-container__job__content")[0]
             job_description = description_div.text.translate(translation_table)
         except Exception as e:
-            logger.error(f"Failed to extract job description for {job_url}: {e}")
+            logger.exception(f"Failed to extract job description for {job_url}: {e}")
             job_description = "No description available"
 
         return job_description
