@@ -5,9 +5,6 @@ Configuration class for job search parameters and settings.
 import os
 
 class Config:
-    # Set the logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
-    LOG_LEVEL = "INFO"
-
     # Searches are a list of tuples (search_term, category)
     # The categories are used in remotive.io
     SEARCHES = [
