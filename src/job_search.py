@@ -75,7 +75,7 @@ def _save_jobs_to_file(jobs: List[Dict], suffix: str, date: str) -> None:
         with open(full_path, "w", encoding="utf-8") as f:
             f.write(markdown)
     except IOError as e:
-        logger.error(f"Failed to write to file {full_path}: {e}")
+        logger.exception(f"Failed to write to file {full_path}: {e}")
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -184,14 +184,14 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
             job["evaluation"] = eval_result
 
         except Exception as e:
-            logger.error(f"Failed to analyze job {job.get('title', 'Unknown')}: {e}")
+            logger.exception(f"Failed to analyze job {job.get('title', 'Unknown')}: {e}")
             job["evaluation"] = {"error": f"Analysis failed: {e}"}
 
         # Only keep the jobs that are worth applying for:
         try:
             job_score = job["evaluation"]["match_score"].split("/")[0]
         except KeyError as e:
-            logger.error(f"Error: Missing {e} key in job.")
+            logger.exception(f"Missing {e} key in job.")
             rejected_jobs.append(job)
             continue
 

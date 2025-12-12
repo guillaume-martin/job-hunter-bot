@@ -69,7 +69,7 @@ def send_email(subject, content):
             }
         )
     except ClientError as e:
-        logger.error(f"Error: {e.response['Error']['Message']}")
+        logger.exception(f"{e.response['Error']['Message']}")
     else:
         logger.info(f"Email sent! Message ID: {response['MessageId']}")
 

@@ -96,14 +96,14 @@ class WorkingNomadsScraper(BaseScraper):
             r.raise_for_status()
             response = r.json()
         except RequestException as e:
-            logger.error(f"Failed to fetch job for term '{term}': {e}")
+            logger.exception(f"Failed to fetch job for term '{term}': {e}")
             return []
 
         try:
             data = response["hits"]["hits"]
             jobs_list = [j["_source"] for j in data]
         except (KeyError, ValueError) as e:
-            logger.error(f"Failed to parse response: {e}")
+            logger.exception(f"Failed to parse response: {e}")
             jobs_list = []
 
         for job in jobs_list:

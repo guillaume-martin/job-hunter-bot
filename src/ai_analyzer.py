@@ -117,8 +117,8 @@ class AIAnalyzer:
                 return content  # Fallback: return raw content
             
         except RequestException as e:
-            logger.error(f"API request failed: {e}")
+            logger.exception(f"API request failed: {e}")
             return None
         except (KeyError, json.JSONDecodeError) as e:
-            logger.error(f"Invalid API response: {e}")
+            logger.exception(f"Invalid API response: {e}")
             return None

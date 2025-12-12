@@ -70,7 +70,7 @@ class WwrScraper(BaseScraper):
         date_tag = job_element.find('p', class_='new-listing__header__icons__date')
         
         if not date_tag:
-            logger.error("Warning: No date tag found. Assuming today's date.")
+            logger.exception("Warning: No date tag found. Assuming today's date.")
             return datetime.now().strftime('%Y-%m-%d')
         
         date_text = date_tag.text.strip()
@@ -136,7 +136,7 @@ class WwrScraper(BaseScraper):
             time.sleep(5)
             page_content = driver.page_source
         except InvalidArgumentException as e:
-            logger.error(f"Failed to reach URL {url}: {e}")
+            logger.exception(f"Failed to reach URL {url}: {e}")
             page_content = ""
         except TimeoutError:
             logger.error("Loading took too much time!")

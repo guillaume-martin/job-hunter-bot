@@ -104,7 +104,7 @@ class RemotiveScraper(BaseScraper):
             else:
                 job_description = "No description available"
         except Exception as e:
-            logger.error(f"Failed to extract job description for {job_url}: {e}")
+            logger.exception(f"Failed to extract job description for {job_url}: {e}")
             job_description = "No description available"
 
         return job_description

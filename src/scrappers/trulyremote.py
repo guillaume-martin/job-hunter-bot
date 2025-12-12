@@ -55,7 +55,7 @@ class TrulyRemoteScraper(BaseScraper):
            response = r.json()
            jobs_list = response.get("records", [])
         else:
-            logger.error(f"Error: {r.status_code} - {r.text}")
+            logger.exception(f"Error: {r.status_code} - {r.text}")
             jobs_list = []
 
         for job in jobs_list:
