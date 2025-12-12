@@ -5,12 +5,14 @@ This module provides functions to query the TrulyRemote job listing API, filter 
 and convert publish dates to UTC datetime objects.
 """
 from datetime import datetime, timezone
+import logging
 
 from .base_scraper import BaseScraper
 
 from bs4 import BeautifulSoup
 from requests import request
 
+logger = logging.getLogger(__name__)
 
 API_URL = "https://trulyremote.co/api/getListing"
 LOCATIONS = ["Anywhere in the world","Asia"]
@@ -53,7 +55,7 @@ class TrulyRemoteScraper(BaseScraper):
            response = r.json()
            jobs_list = response.get("records", [])
         else:
-            print(f"Error: {r.status_code} - {r.text}")
+            logger.error(f"Error: {r.status_code} - {r.text}")
             jobs_list = []
 
         for job in jobs_list:
