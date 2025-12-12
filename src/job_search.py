@@ -21,6 +21,10 @@ date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 # Load the logging configuration
 logging.config.fileConfig(os.path.join(os.path.dirname(__file__), 'logging.conf'))
 
+# Check if the log directory exists, if not create it
+log_dir = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(log_dir, exist_ok=True)
+
 # Initialize the logger
 logger = logging.getLogger(__name__)
 
