@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
-import os
+import logging
 import time
 import urllib
 
@@ -14,6 +14,9 @@ from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import InvalidArgumentException
+
+
+logger = logging.getLogger(__name__)
 
 
 class WwrScraper(BaseScraper):
@@ -67,7 +70,7 @@ class WwrScraper(BaseScraper):
         date_tag = job_element.find('p', class_='new-listing__header__icons__date')
         
         if not date_tag:
-            print("Warning: No date tag found. Assuming today's date.")
+            logger.warning("No date tag found. Assuming today's date.")
             return datetime.now().strftime('%Y-%m-%d')
         
         date_text = date_tag.text.strip()
@@ -80,7 +83,7 @@ class WwrScraper(BaseScraper):
 
             # if no digits are found, assume today's date
             if not days_str:
-                print(f"Warning: Unexpected date text '{date_text}'. Assuming today's date.")
+                logger.warning(f"Unexpected date text '{date_text}'. Assuming today's date.")
                 days_since_posted = 0
             else:
                 days_since_posted = int(days_str)
@@ -133,10 +136,10 @@ class WwrScraper(BaseScraper):
             time.sleep(5)
             page_content = driver.page_source
         except InvalidArgumentException as e:
-            print(f"Failed to reach URL {url}: {e}")
+            logger.exception(f"Failed to reach URL {url}: {e}")
             page_content = ""
         except TimeoutError:
-            print("Loading took too much time!")
+            logger.exception("Loading took too much time!")
             page_content = ""
         finally:
             driver.quit()
@@ -165,7 +168,7 @@ class WwrScraper(BaseScraper):
             description_div = soup.find_all("div", class_="lis-container__job__content")[0]
             job_description = description_div.text.translate(translation_table)
         except Exception as e:
-            print(f"Failed to extract job description for {job_url}: {e}")
+            logger.exception(f"Failed to extract job description for {job_url}: {e}")
             job_description = "No description available"
 
         return job_description

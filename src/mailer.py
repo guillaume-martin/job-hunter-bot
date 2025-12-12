@@ -1,7 +1,10 @@
+import logging
 import os
 
 import boto3
 from botocore.exceptions import ClientError
+
+logger = logging.getLogger(__name__)
 
 # AWS configuration
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
@@ -66,7 +69,7 @@ def send_email(subject, content):
             }
         )
     except ClientError as e:
-        print(f"Error: {e.response['Error']['Message']}")
+        logger.exception(f"{e.response['Error']['Message']}")
     else:
-        print(f"Email sent! Message ID: {response['MessageId']}")
+        logger.info(f"Email sent! Message ID: {response['MessageId']}")
 

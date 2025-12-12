@@ -5,6 +5,8 @@ from dotenv import load_dotenv
 load_dotenv("src/.env")
 
 from datetime import datetime
+import logging
+import logging.config
 import os
 from pathlib import Path
 from typing import Dict, List, Literal
@@ -16,6 +18,15 @@ from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
+# Load the logging configuration
+logging.config.fileConfig(os.path.join(os.path.dirname(__file__), 'logging.conf'))
+
+# Check if the log directory exists, if not create it
+log_dir = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(log_dir, exist_ok=True)
+
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 def send_results(
     context: Literal["cloud", "local"],
@@ -39,8 +50,8 @@ def _send_jobs_by_email(jobs: List[Dict], subject: str, date: str) -> None:
         subject: Email subject.
         date: Date string for logging.
     """
-    print(f"###############  Sending {subject}  ###############")
-    print(f"Sending {len(jobs)} jobs.")
+    logger.info(f"###############  Sending {subject}  ###############")
+    logger.info(f"Sending {len(jobs)} jobs.")
     content: str = "<p>No jobs found.</p>" if not jobs else jobs_to_html(jobs)
     send_email(subject, content)
 
@@ -60,13 +71,13 @@ def _save_jobs_to_file(jobs: List[Dict], suffix: str, date: str) -> None:
     full_path = path / new_filename
     markdown = jobs_to_markdown(jobs)
 
-    print(f"###############  Saving {suffix.lower()} Jobs to File  ###############")
-    print(f"Saving {len(jobs)} {suffix} jobs.")
+    logger.info(f"###############  Saving {suffix.lower()} Jobs to File  ###############")
+    logger.info(f"Saving {len(jobs)} {suffix} jobs.")
     try:
         with open(full_path, "w", encoding="utf-8") as f:
             f.write(markdown)
     except IOError as e:
-        print(f"Failed to write to file {full_path}: {e}")
+        logger.exception(f"Failed to write to file {full_path}: {e}")
 
 def find_jobs(searches):
     """ Find jobs from search terms on multiple web sites
@@ -92,28 +103,28 @@ def find_jobs(searches):
     """
     jobs = []
     for term in searches:
-        print(f"=============== {term} ===============")
+        logger.info(f"=============== {term} ===============")
 
         for site in Config.SITES:
-            print("-" * 20)
-            print(f"Searching jobs on {site}...")
+            logger.info("-" * 20)
+            logger.info(f"Searching jobs on {site}...")
             scrapper = get_scraper(site)
             if site.lower() == "workingnomads":
                 scrapper.since = Config.SINCE
             scrapper.get_jobs(term)
 
             # Remove older jobs
-            print(f"Removing jobs older than {Config.SINCE} days...")
+            logger.info(f"Removing jobs older than {Config.SINCE} days...")
             scrapper.remove_older_jobs(Config.SINCE)
 
             # Extract job descriptions
-            print("Extracting job descriptions...")
+            logger.info("Extracting job descriptions...")
             for job in scrapper.jobs:
                 if not "description" in job or not job["description"]:
                     description = scrapper.extract_job_description(job['url'])
                     job['description'] = description
 
-            print(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
+            logger.info(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
 
             jobs += scrapper.jobs
 
@@ -161,12 +172,12 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
     """
     selected_jobs = []
     rejected_jobs = []
-    print(f"Processing {len(jobs)} jobs...")
+    logger.info(f"Processing {len(jobs)} jobs...")
 
     for job in jobs:
         try:
             if not job["description"]:
-                print("Jobs does not have a description.")
+                logger.info("Jobs does not have a description.")
                 job["evaluation"] = "manual"
                 selected_jobs.append(job)
                 continue
@@ -175,14 +186,14 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
             job["evaluation"] = eval_result
 
         except Exception as e:
-            print(f"Failed to analyze job {job.get('title', 'Unknown')}: {e}")
+            logger.exception(f"Failed to analyze job {job.get('title', 'Unknown')}: {e}")
             job["evaluation"] = {"error": f"Analysis failed: {e}"}
 
         # Only keep the jobs that are worth applying for:
         try:
             job_score = job["evaluation"]["match_score"].split("/")[0]
         except KeyError as e:
-            print(f"Error: Missing {e} key in job.")
+            logger.exception(f"Missing {e} key in job.")
             rejected_jobs.append(job)
             continue
 
@@ -269,15 +280,14 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
     return markdown
 
 def main(context: str) -> None:
-
     # Extract jobs from web sites and save them in a list
-    print("###############  Searching Jobs  ###############")
+    logger.info("###############  Searching Jobs  ###############")
     jobs = find_jobs(Config.SEARCHES)
 
-    print("###############  Remove duplicate Jobs  ###############")
+    logger.info("###############  Remove duplicate Jobs  ###############")
     single_jobs = remove_duplicates(jobs)
 
-    print("###############  Selecting Jobs  ###############")
+    logger.info("###############  Selecting Jobs  ###############")
     analyzer = AIAnalyzer(
         api_key=os.getenv("AI_API_KEY"),
         model = Config.MODEL,

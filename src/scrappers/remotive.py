@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
 from datetime import datetime
 import json
+import logging
 from typing import Dict, List
 import urllib
 
@@ -10,6 +10,7 @@ from .base_scraper import BaseScraper
 from requests import request
 from bs4 import BeautifulSoup
 
+logger = logging.getLogger(__name__)
 
 BASE_URL = 'https://oqubrx6zeq-3.algolianet.com/1/indexes/*/queries'
 
@@ -103,7 +104,7 @@ class RemotiveScraper(BaseScraper):
             else:
                 job_description = "No description available"
         except Exception as e:
-            print(f"Failed to extract job description for {job_url}: {e}")
+            logger.exception(f"Failed to extract job description for {job_url}: {e}")
             job_description = "No description available"
 
         return job_description
