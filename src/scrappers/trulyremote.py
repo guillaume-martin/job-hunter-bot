@@ -10,7 +10,6 @@ import logging
 from .base_scraper import BaseScraper
 
 from bs4 import BeautifulSoup
-from requests import request
 
 logger = logging.getLogger(__name__)
 
@@ -50,12 +49,12 @@ class TrulyRemoteScraper(BaseScraper):
     def get_jobs(self, term:str) -> None:
         payload = self._build_api_payload(term)
 
-        r = request("POST", self.base_url, json=payload)
-        if r.status_code == 200:
+        r = self._request(method="POST", url=self.base_url, json=payload)
+        if r:
            response = r.json()
            jobs_list = response.get("records", [])
         else:
-            logger.error(f"{r.status_code} - {r.text}")
+            logger.error(f"Failed to retrieve jobs from TrulyRemote API for term: {term}")
             jobs_list = []
 
         for job in jobs_list:
@@ -70,12 +69,16 @@ class TrulyRemoteScraper(BaseScraper):
             "\t": " "
         })
 
-        r = request("GET", job_url, allow_redirects=True)
-        soup = BeautifulSoup(r.content, "lxml")
+        r = self._request(method="GET", url=job_url, allow_redirects=True)
+        if r:
+            soup = BeautifulSoup(r.content, "lxml")
 
-        # Trulyremote is an aggregator. The jobs URLs point to different sites like
-        # lever.co, greenhouse.io, etc... We need to search for all possible <div> classes.
-        description_div = soup.select_one("div.job__description, div.description, div.posting-page")
+            # Trulyremote is an aggregator. The jobs URLs point to different sites like
+            # lever.co, greenhouse.io, etc... We need to search for all possible <div> classes.
+            description_div = soup.select_one("div.job__description, div.description, div.posting-page")
+        else:
+            logger.error(f"Failed to retrieve job description from URL: {job_url}")
+            description_div = None
 
         if description_div:
             description = description_div.text.translate(translation_table).strip()
