@@ -1,10 +1,18 @@
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta, timezone
+import logging
 import os
+import time
 from typing import List, Dict, Any
 
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
+from requests import request, RequestException
+from requests.exceptions import Timeout
+
+RETRIES = 3
+
+logger = logging.getLogger(__name__)
 
 class BaseScraper(ABC):
     def __init__(self, base_url: str, name: str):
@@ -64,6 +72,38 @@ class BaseScraper(ABC):
     def extract_job_description(self, job_url: str) -> str:
         """Extract job description from the job URL."""
         pass
+
+    @staticmethod
+    def _request(url: str, method: str = "GET", **kwargs) -> Any:
+        """Make an HTTP request and handle errors.
+
+        Args:
+            url: The URL to request.
+            method: The HTTP method to use (default is "GET").
+            **kwargs: Additional arguments to pass to the request.
+
+        Returns:
+            The response object.
+
+        Raises:
+            RequestException: If the request fails.
+            Timeout: If the request times out.
+        """
+        for attempt in range(RETRIES):
+            try:
+                response = request(method, url, **kwargs)
+                response.raise_for_status()
+                return response
+            except Timeout as e:
+                logger.error(f"Timeout occured for {url} after {attempt + 1}/{RETRIES}: {e}")
+            except RequestException as e:
+                print(e)
+                logger.error(f"Request failed {e} for {url} after {attempt + 1}/{RETRIES}")
+
+            time.sleep(2 ** attempt)
+
+        logger.info(f"Failed to fetch {url} after {RETRIES} attempts.")
+        return None
 
     @staticmethod
     def _connect_dynamodb_table(table_name: str):
