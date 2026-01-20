@@ -2,8 +2,6 @@ import urllib
 
 from .base_scraper import BaseScraper
 
-from requests import request
-
 
 BASE_URL = "https://www.104.com.tw/jobs/search/api/jobs?"
 RESULTS_PER_PAGE = 100
@@ -45,8 +43,8 @@ class Tw104Scraper(BaseScraper):
 
         new_jobs = set()    # Use a set to avoid duplicates
 
-        r = request("GET", search_url, headers=headers)
-        if r.status_code == 200:
+        r = self._request(method="GET", url=search_url, headers=headers)
+        if r:
             response = r.json()
             jobs_list = response.get("data", [])
 
@@ -57,6 +55,7 @@ class Tw104Scraper(BaseScraper):
                 if job_id not in existing_job_ids:
                     self.jobs.append(job_details)
                     new_jobs.add(job_id)
+
 
         self._store_new_jobs(new_jobs)
 
@@ -83,7 +82,7 @@ class Tw104Scraper(BaseScraper):
             "Sec-Fetch-Site": "same-origin"
         }
 
-        r = request("GET", request_url, headers=headers)
+        r = self._request(method="GET", url=request_url, headers=headers)
         data = r.json()["data"]
         job_description = data["jobDetail"]["jobDescription"]
         description = job_description.translate(translation_table).strip()
