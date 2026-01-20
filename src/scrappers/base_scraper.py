@@ -5,12 +5,13 @@ import os
 import time
 from typing import List, Dict, Any
 
+from ..config import Config
+
 import boto3
 from botocore.exceptions import NoCredentialsError, ClientError
 from requests import request, RequestException
 from requests.exceptions import Timeout
 
-RETRIES = 3
 
 logger = logging.getLogger(__name__)
 
@@ -89,20 +90,20 @@ class BaseScraper(ABC):
             RequestException: If the request fails.
             Timeout: If the request times out.
         """
-        for attempt in range(RETRIES):
+        for attempt in range(Config.REQUEST_RETRIES):
             try:
                 response = request(method, url, **kwargs)
                 response.raise_for_status()
                 return response
             except Timeout as e:
-                logger.error(f"Timeout occured for {url} after {attempt + 1}/{RETRIES}: {e}")
+                logger.error(f"Timeout occured for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}: {e}")
             except RequestException as e:
                 print(e)
-                logger.error(f"Request failed {e} for {url} after {attempt + 1}/{RETRIES}")
+                logger.error(f"Request failed {e} for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}")
 
             time.sleep(2 ** attempt)
 
-        logger.info(f"Failed to fetch {url} after {RETRIES} attempts.")
+        logger.info(f"Failed to fetch {url} after {Config.REQUEST_RETRIES} attempts.")
         return None
 
     @staticmethod

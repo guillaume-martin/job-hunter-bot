@@ -47,6 +47,9 @@ class Config:
     # Older jobs are dropped.
     SINCE = 2
 
+    # Number of retries when requests fail.
+    REQUEST_RETRIES = 3
+
     # AI settings
     API_URL = "https://api.mistral.ai/v1/chat/completions"
     MODEL = "mistral-small-latest"
