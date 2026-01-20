@@ -101,6 +101,7 @@ class RemotiveScraper(BaseScraper):
                 description_div = soup.find_all("div", class_="left")[0]
                 job_description = description_div.text.translate(translation_table).strip()
             else:
+                logger.error(f"Failed to fetch job description for {job_url}")
                 job_description = "No description available"
         except Exception as e:
             logger.exception(f"Failed to extract job description for {job_url}: {e}")

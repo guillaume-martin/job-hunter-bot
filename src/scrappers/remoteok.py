@@ -1,10 +1,13 @@
 from dateutil.parser import parse
 from datetime import datetime
+import logging
 
 from .base_scraper import BaseScraper
 
 from bs4 import BeautifulSoup
 
+
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://remoteok.com"
 LOCATIONS = ["Worldwide", "region_AS", "TW"]
@@ -69,6 +72,7 @@ class RemoteOkScraper(BaseScraper):
         if description_div:
             description = description_div.text.replace("\\n", "").translate(translation_table).strip()
         else:
+            logger.error(f"Failed to fetch job description for {job_url}")
             description = "No description available."
         return description
 
