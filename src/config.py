@@ -47,8 +47,8 @@ class Config:
     # Older jobs are dropped.
     SINCE = 2
 
-    # Number of retries when requests fail.
-    REQUEST_RETRIES = 3
+    # Scrapers requests settings
+    REQUEST_RETRIES = 3     # Number of retries when requests fail.
     REQUEST_TIMEOUT = 60
 
     # AI settings
