@@ -49,6 +49,7 @@ class Config:
 
     # Number of retries when requests fail.
     REQUEST_RETRIES = 3
+    REQUEST_TIMEOUT = 60
 
     # AI settings
     API_URL = "https://api.mistral.ai/v1/chat/completions"

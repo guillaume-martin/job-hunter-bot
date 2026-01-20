@@ -92,18 +92,17 @@ class BaseScraper(ABC):
         """
         for attempt in range(Config.REQUEST_RETRIES):
             try:
-                response = request(method, url, **kwargs)
+                response = request(method, url, timeout=Config.REQUEST_TIMEOUT, **kwargs)
                 response.raise_for_status()
                 return response
             except Timeout as e:
-                logger.error(f"Timeout occured for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}: {e}")
+                logger.exception(f"Timeout occured for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}: {e}")
             except RequestException as e:
-                print(e)
-                logger.error(f"Request failed {e} for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}")
+                logger.exception(f"Request failed {e} for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}")
 
             time.sleep(2 ** attempt)
 
-        logger.info(f"Failed to fetch {url} after {Config.REQUEST_RETRIES} attempts.")
+        logger.error(f"Failed to fetch {url} after {Config.REQUEST_RETRIES} attempts.")
         return None
 
     @staticmethod
