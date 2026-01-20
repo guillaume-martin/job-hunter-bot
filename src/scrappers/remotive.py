@@ -7,7 +7,6 @@ import urllib
 
 from .base_scraper import BaseScraper
 
-from requests import request
 from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
@@ -70,7 +69,7 @@ class RemotiveScraper(BaseScraper):
     def get_jobs(self, term:str) -> None:
         payload = self.__build_api_payload(term)
 
-        r = request("POST", BASE_URL, headers=HEADERS, data=json.dumps(payload))
+        r = self._request(method="POST", url=BASE_URL, headers=HEADERS, data=json.dumps(payload))
         response = json.loads(r.content)
         results = response['results']
         jobs_list = results[0]['hits']
@@ -95,9 +94,9 @@ class RemotiveScraper(BaseScraper):
         })
 
         try:
-            r = request("GET", job_url, headers=HEADERS, timeout=20)
+            r = self._request(method="GET", url=job_url, headers=HEADERS, timeout=20)
 
-            if r.status_code == 200:
+            if r:
                 soup = BeautifulSoup(r.content, "lxml")
                 description_div = soup.find_all("div", class_="left")[0]
                 job_description = description_div.text.translate(translation_table).strip()
