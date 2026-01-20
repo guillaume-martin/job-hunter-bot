@@ -196,6 +196,10 @@ def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
             logger.exception(f"Missing {e} key in job.")
             rejected_jobs.append(job)
             continue
+        except TypeError as e:
+            logger.exception(f"Job evaluation has incorrect type: {e}.")
+            rejected_jobs.append(job)
+            continue
 
         # We select jobs with a score over the threshold and jobs that
         # need to be evaluated manually.
@@ -271,7 +275,7 @@ def jobs_to_markdown(jobs: List[Dict]) -> str:
         title = job.get("title", "Missing title").replace("|", "\\|")
         company = job.get("company", "Missing employer")
         date_published = job.get("date_published", f"Found on {date}")
-        evaluation = job.get("evaluation", {})
+        evaluation = job.get("evaluation") or {}
         score = evaluation.get("match_score", "Missing score")
         missing_required = ", ".join(evaluation.get("missing_required", []))
 

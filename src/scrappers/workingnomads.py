@@ -7,8 +7,6 @@ from .base_scraper import BaseScraper
 from ..config import Config
 
 from bs4 import BeautifulSoup
-from requests import request
-from requests.exceptions import RequestException
 
 
 logger = logging.getLogger(__name__)
@@ -91,13 +89,8 @@ class WorkingNomadsScraper(BaseScraper):
             "Sec-Fetch-Site": "same-origin"
         }
 
-        try:
-            r = request("POST", url=self.base_url, json=payload, headers=headers)
-            r.raise_for_status()
-            response = r.json()
-        except RequestException as e:
-            logger.exception(f"Failed to fetch job for term '{term}': {e}")
-            return []
+        r = self._request(method="POST", url=self.base_url, json=payload, headers=headers)
+        response = r.json()
 
         try:
             data = response["hits"]["hits"]

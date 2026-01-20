@@ -19,6 +19,7 @@ class Config:
         "backend engineer",
         "cloud data engineer",
         "cloud engineer",
+        "cloud solution architect",
         "database engineer",
         "database administrator",
         "database manager",
@@ -46,6 +47,10 @@ class Config:
     # Older jobs are dropped.
     SINCE = 2
 
+    # Scrapers requests settings
+    REQUEST_RETRIES = 3     # Number of retries when requests fail.
+    REQUEST_TIMEOUT = 60
+
     # AI settings
     API_URL = "https://api.mistral.ai/v1/chat/completions"
     MODEL = "mistral-small-latest"
@@ -53,7 +58,7 @@ class Config:
     TIMEOUT = 60
     PROMPT_FILE = "src/data/prompt.txt"
     RESUME_FILE = "src/data/resume.txt"
-    APPLY_THRESHOLD = 50    # Minimum job `match_score` (0-100) required to select a job for application.
+    APPLY_THRESHOLD = 80    # Minimum job `match_score` (0-100) required to select a job for application.
 
     # Output file settings
     OUTPUT_PATH = ""

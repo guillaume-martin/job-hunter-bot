@@ -1,13 +1,13 @@
+import logging
 import urllib
 
 from .base_scraper import BaseScraper
-
-from requests import request
 
 
 BASE_URL = "https://www.104.com.tw/jobs/search/api/jobs?"
 RESULTS_PER_PAGE = 100
 
+logger = logging.getLogger(__name__)
 
 class Tw104Scraper(BaseScraper):
     """ Scraper for 104.com.tw jobs. """
@@ -45,8 +45,8 @@ class Tw104Scraper(BaseScraper):
 
         new_jobs = set()    # Use a set to avoid duplicates
 
-        r = request("GET", search_url, headers=headers)
-        if r.status_code == 200:
+        r = self._request(method="GET", url=search_url, headers=headers)
+        if r:
             response = r.json()
             jobs_list = response.get("data", [])
 
@@ -57,6 +57,7 @@ class Tw104Scraper(BaseScraper):
                 if job_id not in existing_job_ids:
                     self.jobs.append(job_details)
                     new_jobs.add(job_id)
+
 
         self._store_new_jobs(new_jobs)
 
@@ -83,9 +84,17 @@ class Tw104Scraper(BaseScraper):
             "Sec-Fetch-Site": "same-origin"
         }
 
-        r = request("GET", request_url, headers=headers)
-        data = r.json()["data"]
-        job_description = data["jobDetail"]["jobDescription"]
-        description = job_description.translate(translation_table).strip()
+        try:
+            r = self._request(method="GET", url=request_url, headers=headers)
 
+            if r:
+                data = r.json()["data"]
+                job_description = data["jobDetail"]["jobDescription"]
+                description = job_description.translate(translation_table).strip()
+            else:
+                logger.error(f"Failed to fetch job description for {job_url}")
+                description = "No description available"
+        except Exception as e:
+            logger.exception(f"Failed to extract job description for {request_url}: {e}")
+            description = "No description available"
         return description

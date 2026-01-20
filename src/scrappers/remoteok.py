@@ -1,11 +1,13 @@
 from dateutil.parser import parse
 from datetime import datetime
+import logging
 
 from .base_scraper import BaseScraper
 
-from requests import request
 from bs4 import BeautifulSoup
 
+
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://remoteok.com"
 LOCATIONS = ["Worldwide", "region_AS", "TW"]
@@ -62,26 +64,30 @@ class RemoteOkScraper(BaseScraper):
             "\t": " "
         })
 
-        r = request("GET", job_url, headers=HEADERS, allow_redirects=True)
-        soup = BeautifulSoup(r.content, "lxml")
-        description_div = soup.select_one("div.html, div.markdown")
+        r = self._request(method="GET", url=job_url, headers=HEADERS, allow_redirects=True)
+        if r:
+            soup = BeautifulSoup(r.content, "lxml")
+            description_div = soup.select_one("div.html, div.markdown")
+        
         if description_div:
             description = description_div.text.replace("\\n", "").translate(translation_table).strip()
         else:
+            logger.error(f"Failed to fetch job description for {job_url}")
             description = "No description available."
         return description
 
     def get_jobs(self, term: str) -> None:
         search_url = self._build_search_url(term)
-        r = request("GET", search_url, headers=HEADERS)
-        soup = BeautifulSoup(r.content, "lxml")
+        r = self._request(method="GET", url=search_url, headers=HEADERS)
+        if r:
+            soup = BeautifulSoup(r.content, "lxml")
 
-        self.jobs = [
-            {
-                "title": self.extract_title(job),
-                "company": self.extract_company(job),
-                "date_published": self.extract_date_published(job),
-                "url": self.extract_url(job),
-            }
-            for job in soup.find_all("tr", class_="job")
-        ]
+            self.jobs = [
+                {
+                    "title": self.extract_title(job),
+                    "company": self.extract_company(job),
+                    "date_published": self.extract_date_published(job),
+                    "url": self.extract_url(job),
+                }
+                for job in soup.find_all("tr", class_="job")
+            ]
