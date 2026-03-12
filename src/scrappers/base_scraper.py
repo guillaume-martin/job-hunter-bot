@@ -91,13 +91,24 @@ class BaseScraper(ABC):
         """
         for attempt in range(Config.REQUEST_RETRIES):
             try:
-                response = request(method, url, timeout=Config.REQUEST_TIMEOUT, **kwargs)
+                response = request(
+                    method,
+                    url,
+                    timeout=Config.REQUEST_TIMEOUT,
+                    **kwargs
+                )
                 response.raise_for_status()
                 return response
             except Timeout as e:
-                logger.exception(f"Timeout occured for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}: {e}")
+                logger.exception(
+                    f"Timeout occurred for {url} after "
+                    f"{attempt + 1}/{Config.REQUEST_RETRIES}: {e}"
+                )
             except RequestException as e:
-                logger.exception(f"Request failed {e} for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}")
+                logger.exception(
+                    f"Request failed {e} for {url} after "
+                    f"{attempt + 1}/{Config.REQUEST_RETRIES}"
+                )
 
             time.sleep(2 ** attempt)
 
@@ -116,13 +127,17 @@ class BaseScraper(ABC):
 
         Raises:
             ValueError: If the table name is empty or AWS credentials are missing.
-            botocore.exceptions.ClientError: If the table doesn’t exist or AWS access is denied.
+            botocore.exceptions.ClientError: If the table doesn’t exist or AWS 
+            access is denied.
         """
         if not table_name:
             raise ValueError("Table name cannot be empty.")
 
         try:
-            ddb = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+            ddb = boto3.resource(
+                    'dynamodb',
+                    region_name=os.getenv('AWS_REGION', 'us-east-1')
+                )
             return ddb.Table(table_name)
         except NoCredentialsError:
             raise ValueError("AWS credentials not configured.")
@@ -168,7 +183,8 @@ class BaseScraper(ABC):
             with table.batch_writer() as batch:
                 for job_id in new_jobs:
                     # Add RETENTION_DAYS to today's date
-                    expiry_date = datetime.now(UTC) + timedelta(days=int(os.getenv("RETENTION_DAYS", 30)))
+                    retention_days = int(os.getenv("RETENTION_DAYS", 30))
+                    expiry_date = datetime.now(UTC) + timedelta(days=retention_days)
 
                     # Convert to Unix timestamp
                     expires_at = int(expiry_date.timestamp())

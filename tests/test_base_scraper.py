@@ -24,7 +24,8 @@ class TestScraper(BaseScraper):
 
 
 def test_remove_older_jobs():
-    """ The remove_older_jobs method should remove jobs older than the specified threshold
+    """ The remove_older_jobs method should remove jobs older than the specified 
+    threshold
     """
 
     # Setup
@@ -37,10 +38,30 @@ def test_remove_older_jobs():
 
     scraper = TestScraper("https://example.com", "ExampleScraper")
     scraper.jobs = [
-        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": older_date},
-        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": recent_date1},
-        {"company": "Initech", "title": "DevOps Engineer", "url": "https://example.com/job3", "date_published": recent_date2},
-        {"company": "Umbrella Corp", "title": "Backend Developer", "url": "https://example.com/job4", "date_published": cutoff_date.strftime("%Y-%m-%d")},
+        {
+            "company": "Acme Inc",
+            "title": "Software Engineer",
+            "url": "https://example.com/job1",
+            "date_published": older_date
+        },
+        {
+            "company": "Globex Corp",
+            "title": "Data Scientist",
+            "url": "https://example.com/job2",
+            "date_published": recent_date1
+        },
+        {
+            "company": "Initech",
+            "title": "DevOps Engineer",
+            "url": "https://example.com/job3",
+            "date_published": recent_date2
+        },
+        {
+            "company": "Umbrella Corp",
+            "title": "Backend Developer",
+            "url": "https://example.com/job4",
+            "date_published": cutoff_date.strftime("%Y-%m-%d")
+        },
     ]
 
     # Exercise
@@ -49,7 +70,22 @@ def test_remove_older_jobs():
     # Verify
     assert len(scraper.jobs) == 3
     assert scraper.jobs == [
-        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": recent_date1},
-        {"company": "Initech", "title": "DevOps Engineer", "url": "https://example.com/job3", "date_published": recent_date2},
-        {"company": "Umbrella Corp", "title": "Backend Developer", "url": "https://example.com/job4", "date_published": cutoff_date.strftime("%Y-%m-%d")},
+        {
+            "company": "Globex Corp",
+            "title": "Data Scientist",
+            "url": "https://example.com/job2",
+            "date_published": recent_date1
+        },
+        {
+            "company": "Initech",
+            "title": "DevOps Engineer",
+            "url": "https://example.com/job3",
+            "date_published": recent_date2
+        },
+        {
+            "company": "Umbrella Corp",
+            "title": "Backend Developer",
+            "url": "https://example.com/job4",
+            "date_published": cutoff_date.strftime("%Y-%m-%d")
+        },
     ]

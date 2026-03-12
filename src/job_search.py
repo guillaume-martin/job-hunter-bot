@@ -1,10 +1,6 @@
 """ Searches jobs offers on a selection of web sites
 """
 # -*- coding: utf-8 -*-
-from dotenv import load_dotenv
-
-load_dotenv("src/.env")
-
 import logging
 import logging.config
 import os
@@ -12,10 +8,14 @@ from datetime import datetime
 from pathlib import Path
 from typing import Literal
 
+from dotenv import load_dotenv
+
 from .ai_analyzer import AIAnalyzer
 from .config import Config
 from .mailer import send_email
 from .scrappers.scraper_factory import get_scraper
+
+load_dotenv("src/.env")
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
@@ -72,7 +72,7 @@ def _save_jobs_to_file(jobs: list[dict], suffix: str, date: str) -> None:
     full_path = path / new_filename
     markdown = jobs_to_markdown(jobs)
 
-    logger.info(f"###############  Saving {suffix.lower()} Jobs to File  ###############")
+    logger.info(f"##############  Saving {suffix.lower()} Jobs to File  ##############")
     logger.info(f"Saving {len(jobs)} {suffix} jobs.")
     try:
         with open(full_path, "w", encoding="utf-8") as f:
@@ -144,8 +144,10 @@ def remove_duplicates(jobs: list[dict]) -> list[dict]:
         List[Dict]: List of unique jobs as dictionaries
     """
     single_jobs = []
-    seen_urls = set()               # Set of jobs URLs that have already been seen
-    seen_companies_titles = set()   # Set of companies/titles pairs that have already been seen
+    # Set of jobs URLs that have already been seen
+    seen_urls = set()
+    # Set of companies/titles pairs that have already been seen
+    seen_companies_titles = set()
 
     for job in jobs:
         job_url = job.get("url", "missing")
@@ -187,7 +189,8 @@ def select_jobs(jobs: list[dict], analyzer, resume: str) -> list[dict]:
             job["evaluation"] = eval_result
 
         except Exception as e:
-            logger.exception(f"Failed to analyze job {job.get('title', 'Unknown')}: {e}")
+            title = job.get('title', 'Unknown')
+            logger.exception(f"Failed to analyze job {title}: {e}")
             job["evaluation"] = {"error": f"Analysis failed: {e}"}
 
         # Only keep the jobs that are worth applying for:
@@ -242,7 +245,11 @@ def jobs_to_html(jobs):
         </style>
     """
 
-    html += "<div><table><tr><th>Title</th><th>Company</th><th>Score</th><th>Date Published</th><th>Missing Required Skills</tr>"
+    html += (
+        "<div><table>"
+        "<tr><th>Title</th><th>Company</th><th>Score</th>"
+        "<th>Date Published</th><th>Missing Required Skills</th></tr>"
+    )
 
     for job in jobs:
         url = job.get("url", "")
@@ -253,7 +260,13 @@ def jobs_to_html(jobs):
         score = evaluation.get("match_score", "Missing score")
         missing_required = ", ".join(evaluation.get("missing_required", []))
 
-        html += f"<tr><td><a href='{url}'>{title}</a></td><td>{company}</td><td>{score}</td><td>{date_published}</td><td>{missing_required}</tr>"
+        html += (
+            f"<tr><td><a href='{url}'>{title}</a></td>"
+            f"<td>{company}</td>"
+            f"<td>{score}</td>"
+            f"<td>{date_published}</td>"
+            f"<td>{missing_required}</td></tr>"
+        )
 
     html += "</table></div>"
 
@@ -280,7 +293,10 @@ def jobs_to_markdown(jobs: list[dict]) -> str:
         score = evaluation.get("match_score", "Missing score")
         missing_required = ", ".join(evaluation.get("missing_required", []))
 
-        markdown += f"|[{title}]({url})|{company}|{score}|{date_published}|{missing_required}|\n"
+        markdown += (
+            f"|[{title}]({url})|{company}|{score}|"
+            f"{date_published}|{missing_required}|\n"
+        )
 
     return markdown
 

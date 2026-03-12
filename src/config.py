@@ -37,7 +37,8 @@ class Config:
     TIMEOUT = 60
     PROMPT_FILE = "src/data/prompt.txt"
     RESUME_FILE = "src/data/resume.txt"
-    APPLY_THRESHOLD = 80    # Minimum job `match_score` (0-100) required to select a job for application.
+    # Minimum job `match_score` (0-100) required to select a job for application.
+    APPLY_THRESHOLD = 80
 
     # Output file settings
     OUTPUT_PATH = ""

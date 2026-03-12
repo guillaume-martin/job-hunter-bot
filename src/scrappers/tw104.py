@@ -14,7 +14,11 @@ class Tw104Scraper(BaseScraper):
         super().__init__(base_url=BASE_URL, name="104")
 
     def _build_search_url(self, term):
-        return f"{BASE_URL}jobsource=joblist_search&keyword={urllib.parse.quote(term)}&mode=s&order=15&page=1&page-size={RESULTS_PER_PAGE}&searchJobs=1"
+        keyword = urllib.parse.quote(term)
+        return (
+            f"{BASE_URL}jobsource=joblist_search&keyword={keyword}&mode=s&"
+            f"order=15&page=1&page-size={RESULTS_PER_PAGE}&searchJobs=1"
+        )
 
     def extract_company(self, job_element):
         return job_element.get("custName", "unknown")
@@ -27,19 +31,29 @@ class Tw104Scraper(BaseScraper):
 
     def extract_date_published(self, job_element):
         date_int = int(job_element.get("appearDate", 0))
-        published_date = f"{date_int // 10000}-{(date_int // 100) % 100:02}-{date_int % 100:02}"
+        published_date = (
+            f"{date_int // 10000}-{(date_int // 100) % 100:02}-{date_int % 100:02}"
+        )
         return published_date
 
     def get_jobs(self, term:str) -> None:
         existing_job_ids = self._get_existing_job_ids()
         search_url = self._build_search_url(term)
 
+        user_agent = (
+            "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
+        )
+        keyword = term.replace(" ", "+")
+        referer = (
+            "https://www.104.com.tw/jobs/search/?"
+            f"jobsource=joblist_search&keyword={keyword}&mode=s&page=1&order=16"
+        )
         headers = {
             "Host": "www.104.com.tw",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "User-Agent": user_agent,
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.5",
-            "Referer": f"https://www.104.com.tw/jobs/search/?jobsource=joblist_search&keyword={term.replace(" ", "+")}&mode=s&page=1&order=16",
+            "Referer": referer,
         }
 
         new_jobs = set()    # Use a set to avoid duplicates
@@ -71,9 +85,12 @@ class Tw104Scraper(BaseScraper):
         job_id = job_url.split("/")[-1]
 
         request_url = f"https://www.104.com.tw/job/ajax/content/{job_id}"
+        user_agent = (
+            "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
+        )
         headers = {
             "Host": "www.104.com.tw",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "User-Agent": user_agent,
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.5",
             "Connection": "keep-alive",
@@ -94,6 +111,8 @@ class Tw104Scraper(BaseScraper):
                 logger.error(f"Failed to fetch job description for {job_url}")
                 description = "No description available"
         except Exception as e:
-            logger.exception(f"Failed to extract job description for {request_url}: {e}")
+            logger.exception(
+                f"Failed to extract job description for {request_url}: {e}"
+            )
             description = "No description available"
         return description

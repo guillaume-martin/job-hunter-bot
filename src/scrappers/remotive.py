@@ -68,7 +68,12 @@ class RemotiveScraper(BaseScraper):
     def get_jobs(self, term:str) -> None:
         payload = self.__build_api_payload(term)
 
-        r = self._request(method="POST", url=BASE_URL, headers=HEADERS, data=json.dumps(payload))
+        r = self._request(
+                method="POST",
+                url=BASE_URL,
+                headers=HEADERS,
+                data=json.dumps(payload)
+            )
 
         if r is None:
             logger.error("Request failed, no response received")
@@ -103,7 +108,11 @@ class RemotiveScraper(BaseScraper):
             if r:
                 soup = BeautifulSoup(r.content, "lxml")
                 description_div = soup.find_all("div", class_="left")[0]
-                job_description = description_div.text.translate(translation_table).strip()
+                job_description = (
+                    description_div.text
+                    .translate(translation_table)
+                    .strip()
+                )
             else:
                 logger.error(f"Failed to fetch job description for {job_url}")
                 job_description = "No description available"
@@ -113,36 +122,3 @@ class RemotiveScraper(BaseScraper):
 
         return job_description
 
-
-def get_jobs_by_category(category: str) -> list:
-    """ Search jobs in a category on remotive.io
-
-    Parameters
-    ----------
-    category: String
-        The name of the category to search.
-
-    Returns
-    -------
-    List
-        A list of dictionaries with jobs details
-    """
-    locations_encoded = urllib.parse.quote(LOCATIONS)
-
-    params = (
-        "facetFilters="
-        f"%5B{locations_encoded}%2C%"
-        f"5B%22category%3A{category}%22%5D%5D&"
-    )
-
-    payload = {
-        "requests": [
-            {
-                "indexName": "live_jobs",
-                "params": params
-            },
-        ]
-    }
-
-    jobs = load_jobs(payload)
-    return jobs

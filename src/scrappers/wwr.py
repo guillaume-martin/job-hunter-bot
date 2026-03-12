@@ -35,17 +35,24 @@ class WwrScraper(BaseScraper):
         return title
 
     def extract_url(self, job_element):
-        """ Extracts and returns the full URL to the job details page from a BeautifulSoup job element.
+        """ Extracts and returns the full URL to the job details page from a 
+        BeautifulSoup job element.
+        
         Args:
-            job (bs4.element.Tag): A BeautifulSoup tag representing a job listing, expected to contain anchor tags.
+            job (bs4.element.Tag): A BeautifulSoup tag representing a job 
+            listing, expected to contain anchor tags.
         Returns:
-            str: The absolute URL to the job details page if found, otherwise an empty string.
+            str: The absolute URL to the job details page if found, otherwise 
+            an empty string.
         """
 
         links = job_element.find_all('a')
         try:
             url = Config.WWR_BASE_URL
-            url += [link["href"] for link in links if link["href"].startswith("/remote-jobs/")][0]
+            url += (
+                [link["href"] for link in links if link["href"]
+                .startswith("/remote-jobs/")][0]
+            )
             url = urllib.parse.urljoin(Config.WWR_BASE_URL, url)
         except IndexError:
             url = ""
@@ -57,7 +64,8 @@ class WwrScraper(BaseScraper):
         """ Extracts the publication date from a job listing element.
 
         Args:
-            job (bs4.element.Tag): A BeautifulSoup Tag object representing a job listing.
+            job (bs4.element.Tag): A BeautifulSoup Tag object representing a 
+            job listing.
 
         Returns:
                 str: The formatted publication date as a string in 'YYYY-MM-DD' format.
@@ -79,7 +87,9 @@ class WwrScraper(BaseScraper):
 
             # if no digits are found, assume today's date
             if not days_str:
-                logger.warning(f"Unexpected date text '{date_text}'. Assuming today's date.")
+                logger.warning(
+                    f"Unexpected date text '{date_text}'. Assuming today's date."
+                )
                 days_since_posted = 0
             else:
                 days_since_posted = int(days_str)
@@ -90,7 +100,8 @@ class WwrScraper(BaseScraper):
 
     def get_jobs(self, term: str) -> None:
         """
-        Scrapes job listings from the WWR (We Work Remotely) website based on a search term and region.
+        Scrapes job listings from the WWR (We Work Remotely) website based on 
+        a search term and region.
 
         Args:
             term (str): The search keyword to filter job listings.
@@ -161,7 +172,9 @@ class WwrScraper(BaseScraper):
 
         soup = BeautifulSoup(page_content, "html.parser")
         try:
-            description_div = soup.find_all("div", class_="lis-container__job__content")[0]
+            description_div = soup.find_all(
+                    "div", class_="lis-container__job__content"
+            )[0]
             job_description = description_div.text.translate(translation_table)
         except Exception as e:
             logger.exception(f"Failed to extract job description for {job_url}: {e}")

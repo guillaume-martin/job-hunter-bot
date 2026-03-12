@@ -109,7 +109,8 @@ class AIAnalyzer:
             result = response.json()
             content = result["choices"][0]["message"]["content"]
             
-            # Check if result["choices"][0]["message"]["content"] is already a dict before parsing.
+            # Check if result["choices"][0]["message"]["content"] is already a dict 
+            # before parsing.
             try:
                 return json.loads(content) if isinstance(content, str) else content
             except json.JSONDecodeError:

@@ -67,7 +67,9 @@ def test_get_jobs_list_contains_dictionaries():
 
 
 def test_extract_job_description_success():
-    """Test that extract_job_description returns the job description when the request succeeds."""
+    """Test that extract_job_description returns the job description when the
+    request succeeds.
+    """
     # Setup
     scraper = RemotiveScraper()
 
@@ -90,7 +92,9 @@ def test_extract_job_description_success():
         assert description == "Backend Engineer (Python, Django, PostgreSQL)"
 
 def test_extract_job_description_failure():
-    """Test that extract_job_description returns 'No description available' when the request fails."""
+    """Test that extract_job_description returns 'No description available'
+    when the request fails.
+    """
     # Setup
     scraper = RemotiveScraper()
 
@@ -106,7 +110,9 @@ def test_extract_job_description_failure():
         assert description == "No description available"
 
 def test_extract_job_description_exception():
-    """Test that extract_job_description returns 'No description available' when an exception occurs."""
+    """Test that extract_job_description returns 'No description available' when
+      an exception occurs.
+    """
     # Setup
     scraper = RemotiveScraper()
 

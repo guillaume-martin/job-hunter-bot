@@ -46,7 +46,7 @@ def extract_link(job_elem):
         parsed = urlparse(link)
         job_id = parse_qs(parsed.query)['jk'][0]
         job_url = f"https://www.indeed.com/viewjob?jk={job_id}"
-    except:
+    except Exception:
         job_url = f"https://www.indeed.com{link}"
     return job_url
 

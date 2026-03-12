@@ -1,7 +1,8 @@
 
 """Module for scraping job listings from TrulyRemote API.
 
-This module provides functions to query the TrulyRemote job listing API, filter jobs by search term and location,
+This module provides functions to query the TrulyRemote job listing API, filter
+jobsjobs by search term and location,
 and convert publish dates to UTC datetime objects.
 """
 import logging
@@ -38,7 +39,8 @@ class TrulyRemoteScraper(BaseScraper):
         return job_element.get("roleApplyURL", "unknown")
 
     def extract_date_published(self, job_element):
-        # Sometimes job posts don't have a publish date, use last modified date instead
+        # Sometimes job posts don't have a publish date, use last modified 
+        # date instead
         try:
             publish_date = job_element["publishDate"]
         except KeyError:
@@ -54,7 +56,9 @@ class TrulyRemoteScraper(BaseScraper):
            response = r.json()
            jobs_list = response.get("records", [])
         else:
-            logger.error(f"Failed to retrieve jobs from TrulyRemote API for term: {term}")
+            logger.error(
+                    f"Failed to retrieve jobs from TrulyRemote API for term: {term}"
+            )
             jobs_list = []
 
         for job in jobs_list:
@@ -73,9 +77,11 @@ class TrulyRemoteScraper(BaseScraper):
         if r:
             soup = BeautifulSoup(r.content, "lxml")
 
-            # Trulyremote is an aggregator. The jobs URLs point to different sites like
-            # lever.co, greenhouse.io, etc... We need to search for all possible <div> classes.
-            description_div = soup.select_one("div.job__description, div.description, div.posting-page")
+            # Trulyremote is an aggregator. The jobs URLs point to different 
+            # sites like lever.co, greenhouse.io, etc... We need to search for 
+            # all possible <div> classes.
+            selector = "div.job__description, div.description, div.posting-page"
+            description_div = soup.select_one(selector)
         else:
             logger.error(f"Failed to retrieve job description from URL: {job_url}")
             description_div = None
@@ -93,7 +99,8 @@ def to_utc(date_str):
     Converts an ISO 8601 date string to a UTC datetime object.
 
     Args:
-        date_str (str): The date string in ISO 8601 format. Can include 'Z' to indicate UTC.
+        date_str (str): The date string in ISO 8601 format. Can include 'Z' 
+        to indicate UTC.
 
     Returns:
         datetime: A timezone-aware datetime object in UTC.

@@ -21,11 +21,31 @@ class WorkingNomadsScraper(BaseScraper):
             "from": 0,
             "size": 100,
             "_source": [
-                "company", "company_slug", "category_name", "locations", "location_base",
-                "salary_range", "salary_range_short", "number_of_applicants", "instructions",
-                "id", "external_id", "slug", "title", "pub_date", "tags", "source",
-                "apply_option", "apply_email", "apply_url", "premium", "expired",
-                "use_ats", "position_type", "annual_salary_usd", "description"
+                "company",
+                "company_slug",
+                "category_name",
+                "locations",
+                "location_base",
+                "salary_range",
+                "salary_range_short",
+                "number_of_applicants",
+                "instructions",
+                "id",
+                "external_id",
+                "slug",
+                "title",
+                "pub_date",
+                "tags",
+                "source",
+                "apply_option",
+                "apply_email",
+                "apply_url",
+                "premium",
+                "expired",
+                "use_ats",
+                "position_type",
+                "annual_salary_usd",
+                "description"
             ],
             "sort": [
                 {"premium": {"order": "desc"}},
@@ -72,22 +92,43 @@ class WorkingNomadsScraper(BaseScraper):
     def get_jobs(self, term: str) -> None:
         payload = self._build_api_payload(term)
 
+        user_agent = (
+            "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
+        )
+        tag = term.replace(' ', '-')
+        referer = (
+            "https://www.workingnomads.com/jobs?"
+            f"location={Config.WORKINGNOMADS_URL_LOCATION}&"
+            f"postedDate={self.since}&tag={tag}"
+        )
+        cookie = (
+            'subscriber_source=""; '
+            'subscriber_utm_source=""; '
+            'subscriber_utm_medium=""; '
+            'subscriber_utm_campaign=""'
+        )
         headers = {
             "Host": "www.workingnomads.com",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "User-Agent": user_agent,
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.5",
             "Content-Type": "application/json;charset=utf-8",
             "Origin": "https://www.workingnomads.com",
             "Connection": "keep-alive",
-            "Referer": f"https://www.workingnomads.com/jobs?location={Config.WORKINGNOMADS_URL_LOCATION}&postedDate={self.since}&tag={term.replace(' ', '-')}",
-            "Cookie": 'subscriber_source=""; subscriber_utm_source=""; subscriber_utm_medium=""; subscriber_utm_campaign=""',
+            "Referer": referer,
+            "Cookie": cookie,
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",
             "Sec-Fetch-Site": "same-origin"
         }
 
-        r = self._request(method="POST", url=self.base_url, json=payload, headers=headers)
+
+        r = self._request(
+                method="POST", 
+                url=self.base_url, 
+                json=payload, 
+                headers=headers
+        )
         response = r.json()
 
         try:
@@ -114,7 +155,8 @@ def to_utc(date_str):
     Converts an ISO 8601 date string to a UTC datetime object.
 
     Args:
-        date_str (str): The date string in ISO 8601 format. Can include 'Z' to indicate UTC.
+        date_str (str): The date string in ISO 8601 format. Can include 'Z' 
+        to indicate UTC.
 
     Returns:
         datetime: A timezone-aware datetime object in UTC.
