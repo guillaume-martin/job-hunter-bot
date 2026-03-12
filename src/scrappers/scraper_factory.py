@@ -14,5 +14,10 @@ def get_scraper(site_name: str):
         "workingnomads": WorkingNomadsScraper,
         "weworkremotely": WwrScraper
     }
-    return scrapers.get(site_name.lower())()
+
+    scraper_class = scrapers.get(site_name.lower())
+    if scraper_class is None:
+        raise ValueError(f"Unknown scraper '{site_name}'. Valid options: {list(scrapers.keys())}"))
+    
+    return scraper_class()
 
