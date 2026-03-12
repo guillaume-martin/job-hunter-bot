@@ -6,6 +6,7 @@ from typing import Dict, List
 import urllib
 
 from .base_scraper import BaseScraper
+from ..config import Config
 
 from bs4 import BeautifulSoup
 
@@ -15,8 +16,8 @@ BASE_URL = 'https://oqubrx6zeq-3.algolianet.com/1/indexes/*/queries'
 
 HEADERS = {
     'x-algolia-agent': 'Algolia for JavaScript (4.0.0); Browser (lite)',
-    'x-algolia-api-key': '8ad949132d497255ffc04accd141f083',
-    'x-algolia-application-id': 'OQUBRX6ZEQ',
+    'x-algolia-api-key': Config.REMOTIVE_ALGOLIA_KEY,
+    'x-algolia-application-id': Config.REMOTIVE_ALGOLIA_ID,
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0',
     'Accept':'application/json, text/plain, */*',
     'Accept-Language':'en',

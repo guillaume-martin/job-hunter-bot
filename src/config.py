@@ -5,35 +5,13 @@ Configuration class for job search parameters and settings.
 import os
 
 class Config:
-    # Searches are a list of tuples (search_term, category)
-    # The categories are used in remotive.io
+    # Searches are a list keywords searched on the job boards
     SEARCHES = [
-        "database",
-        "dba",
-        "postgresql",
-        "sql",
-        "python",
-        "aws",
-        "data analyst",
-        "data engineer",
-        "backend engineer",
-        "cloud data engineer",
-        "cloud engineer",
-        "cloud solution architect",
-        "database engineer",
-        "database administrator",
-        "database manager",
-        "etl developer",
-        "devops engineer",
-        "data manager",
-        "analytics engineer",
-        "data software engineer",
-        "data architect",
-        "dataops",
-        "solution architect",
-        "it manager",
+
     ]
 
+    # List of sites to search. They should match the names of the scrapers in 
+    # `scraper_factory.py`
     SITES = [
        "104",
        "remoteok",
@@ -80,3 +58,7 @@ class Config:
     # We Work Remotely Settings
     WWR_BASE_URL = 'https://weworkremotely.com'
     WWR_REGION = "taiwan"
+
+    # Remotive settings
+    REMOTIVE_ALGOLIA_KEY = "8ad949132d497255ffc04accd141f083"
+    REMOTIVE_ALGOLIA_ID = "OQUBRX6ZEQ"
