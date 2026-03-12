@@ -25,7 +25,7 @@ class TestScraper(BaseScraper):
 
 
 def test_remove_older_jobs():
-    """ The _remove_older_jobs method should remove jobs older than the specified threshold
+    """ The remove_older_jobs method should remove jobs older than the specified threshold
     """
 
     # Setup
@@ -45,7 +45,7 @@ def test_remove_older_jobs():
     ]
 
     # Exercise
-    scraper._remove_older_jobs(days_threshold=days_threshold)
+    scraper.remove_older_jobs(days_threshold=days_threshold)
 
     # Verify
     assert len(scraper.jobs) == 3
