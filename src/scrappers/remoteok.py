@@ -1,11 +1,10 @@
-from dateutil.parser import parse
-from datetime import datetime
 import logging
-
-from .base_scraper import BaseScraper
+from datetime import datetime
 
 from bs4 import BeautifulSoup
+from dateutil.parser import parse
 
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 

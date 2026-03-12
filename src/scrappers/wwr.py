@@ -1,20 +1,16 @@
-# -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
 import logging
 import time
 import urllib
-
-from .base_scraper import BaseScraper
-from ..config import Config
+from datetime import datetime, timedelta
 
 from bs4 import BeautifulSoup
-from dateutil.parser import parse
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import InvalidArgumentException
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 
+from ..config import Config
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 

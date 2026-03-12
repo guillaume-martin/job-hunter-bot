@@ -2,19 +2,20 @@
 """
 # -*- coding: utf-8 -*-
 from dotenv import load_dotenv
+
 load_dotenv("src/.env")
 
-from datetime import datetime
 import logging
 import logging.config
 import os
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Literal
+from typing import Literal
 
+from .ai_analyzer import AIAnalyzer
 from .config import Config
 from .mailer import send_email
 from .scrappers.scraper_factory import get_scraper
-from .ai_analyzer import AIAnalyzer
 
 date = datetime.strftime(datetime.now(), '%Y-%m-%d')
 
@@ -30,8 +31,8 @@ logger = logging.getLogger(__name__)
 
 def send_results(
     context: Literal["cloud", "local"],
-    selected_jobs: List[Dict],
-    rejected_jobs: List[Dict],
+    selected_jobs: list[dict],
+    rejected_jobs: list[dict],
     date: str,
 ) -> None:
     """Send or save job results based on the context (cloud or local)."""
@@ -42,7 +43,7 @@ def send_results(
         _save_jobs_to_file(selected_jobs, "selected", date)
         _save_jobs_to_file(rejected_jobs, "rejected", date)
 
-def _send_jobs_by_email(jobs: List[Dict], subject: str, date: str) -> None:
+def _send_jobs_by_email(jobs: list[dict], subject: str, date: str) -> None:
     """Send jobs by email.
 
     Args:
@@ -55,7 +56,7 @@ def _send_jobs_by_email(jobs: List[Dict], subject: str, date: str) -> None:
     content: str = "<p>No jobs found.</p>" if not jobs else jobs_to_html(jobs)
     send_email(subject, content)
 
-def _save_jobs_to_file(jobs: List[Dict], suffix: str, date: str) -> None:
+def _save_jobs_to_file(jobs: list[dict], suffix: str, date: str) -> None:
     """Save jobs to a file locally.
 
     Args:
@@ -76,7 +77,7 @@ def _save_jobs_to_file(jobs: List[Dict], suffix: str, date: str) -> None:
     try:
         with open(full_path, "w", encoding="utf-8") as f:
             f.write(markdown)
-    except IOError as e:
+    except OSError as e:
         logger.exception(f"Failed to write to file {full_path}: {e}")
 
 def find_jobs(searches):
@@ -120,7 +121,7 @@ def find_jobs(searches):
             # Extract job descriptions
             logger.info("Extracting job descriptions...")
             for job in scrapper.jobs:
-                if not "description" in job or not job["description"]:
+                if "description" not in job or not job["description"]:
                     description = scrapper.extract_job_description(job['url'])
                     job['description'] = description
 
@@ -130,7 +131,7 @@ def find_jobs(searches):
 
     return jobs
 
-def remove_duplicates(jobs: List[Dict]) -> List[Dict]:
+def remove_duplicates(jobs: list[dict]) -> list[dict]:
     """emoves duplicate jobs based on their URLs.
 
     Jobs with missing or duplicate URLs are removed. Only the first occurrence
@@ -159,7 +160,7 @@ def remove_duplicates(jobs: List[Dict]) -> List[Dict]:
 
     return single_jobs
 
-def select_jobs(jobs: List[Dict], analyzer, resume: str) -> List[Dict]:
+def select_jobs(jobs: list[dict], analyzer, resume: str) -> list[dict]:
     """Select the jobs that score over the application threshold
 
         Args:
@@ -258,7 +259,7 @@ def jobs_to_html(jobs):
 
     return html
 
-def jobs_to_markdown(jobs: List[Dict]) -> str:
+def jobs_to_markdown(jobs: list[dict]) -> str:
     """Format the jobs into a Markdown output that can be saved in a file
 
     Args:
@@ -302,7 +303,7 @@ def main(context: str) -> None:
     )
 
     # Load resume once (e.g., from a file or environment variable)
-    with open(Config.RESUME_FILE, "r", encoding="utf-8") as f:
+    with open(Config.RESUME_FILE, encoding="utf-8") as f:
         resume = f.read()
 
     selected_jobs, rejected_jobs = select_jobs(single_jobs, analyzer, resume)

@@ -1,10 +1,11 @@
-from datetime import date,  timedelta
-from urllib.parse import urlparse, parse_qs, urlencode
+from datetime import date, timedelta
+from urllib.parse import parse_qs, urlencode, urlparse
 
 import requests
 from bs4 import BeautifulSoup
 
 from config import since
+
 
 def load_jobs(job_title, location, since=1):
     """ Creates a soup of all jobs returned by search """

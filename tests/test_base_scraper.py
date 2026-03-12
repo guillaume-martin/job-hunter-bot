@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from src.scrappers.base_scraper import BaseScraper
 
 
-
 class TestScraper(BaseScraper):
     def get_jobs(self, term: str) -> list:
         pass

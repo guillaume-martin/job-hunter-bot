@@ -1,17 +1,16 @@
-from abc import ABC, abstractmethod
-from datetime import datetime, timedelta, timezone
 import logging
 import os
 import time
-from typing import List, Dict, Any
-
-from ..config import Config
+from abc import ABC, abstractmethod
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import boto3
-from botocore.exceptions import NoCredentialsError, ClientError
-from requests import request, RequestException
+from botocore.exceptions import ClientError, NoCredentialsError
+from requests import RequestException, request
 from requests.exceptions import Timeout
 
+from ..config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class BaseScraper(ABC):
         self.jobs = []
 
     @abstractmethod
-    def get_jobs(self, term: str) -> List[Dict[str, Any]]:
+    def get_jobs(self, term: str) -> list[dict[str, Any]]:
         """Fetch and return jobs for a given serch term."""
         pass
 
@@ -36,7 +35,7 @@ class BaseScraper(ABC):
                 filtered_jobs.append(job)
         self.jobs = filtered_jobs
 
-    def _extract_job_details(self, job_element) -> Dict[str, Any]:
+    def _extract_job_details(self, job_element) -> dict[str, Any]:
         """Extract job details from a job element. To be implemented by subclasses."""
         return {
             "company": self.extract_company(job_element),
@@ -169,7 +168,7 @@ class BaseScraper(ABC):
             with table.batch_writer() as batch:
                 for job_id in new_jobs:
                     # Add RETENTION_DAYS to today's date
-                    expiry_date = datetime.now(timezone.utc) + timedelta(days=int(os.getenv("RETENTION_DAYS", 30)))
+                    expiry_date = datetime.now(UTC) + timedelta(days=int(os.getenv("RETENTION_DAYS", 30)))
 
                     # Convert to Unix timestamp
                     expires_at = int(expiry_date.timestamp())
@@ -177,7 +176,7 @@ class BaseScraper(ABC):
                     batch.put_item({
                         "job_id": job_id,
                         "site": self.name,
-                        "date_added": datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+                        "date_added": datetime.now(UTC).strftime('%Y-%m-%d'),
                         "expires_at": expires_at
                     })
         except ClientError as e:

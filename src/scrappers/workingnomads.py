@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
 
-from datetime import datetime, timezone
 import logging
-
-from .base_scraper import BaseScraper
-from ..config import Config
+from datetime import UTC, datetime
 
 from bs4 import BeautifulSoup
 
+from ..config import Config
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 
@@ -126,4 +124,4 @@ def to_utc(date_str):
     """
 
     dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-    return dt.astimezone(timezone.utc)
+    return dt.astimezone(UTC)

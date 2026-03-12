@@ -4,6 +4,7 @@ Configuration class for job search parameters and settings.
 
 import os
 
+
 class Config:
     # Searches are a list keywords searched on the job boards
     SEARCHES = [

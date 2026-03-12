@@ -1,14 +1,12 @@
-# -*- coding: utf-8 -*-
-from datetime import datetime
 import json
 import logging
-from typing import Dict, List
 import urllib
-
-from .base_scraper import BaseScraper
-from ..config import Config
+from datetime import datetime
 
 from bs4 import BeautifulSoup
+
+from ..config import Config
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +31,7 @@ class RemotiveScraper(BaseScraper):
     def __init__(self):
         super().__init__(base_url=BASE_URL, name="Remotive")
 
-    def __build_api_payload(self, term: str) -> Dict:
+    def __build_api_payload(self, term: str) -> dict:
         term_encoded = urllib.parse.quote(term)
         locations_encoded = urllib.parse.quote(LOCATIONS)
         params = (
@@ -116,7 +114,7 @@ class RemotiveScraper(BaseScraper):
         return job_description
 
 
-def get_jobs_by_category(category: str) -> List:
+def get_jobs_by_category(category: str) -> list:
     """ Search jobs in a category on remotive.io
 
     Parameters

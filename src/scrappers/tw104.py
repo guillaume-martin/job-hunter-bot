@@ -3,7 +3,6 @@ import urllib
 
 from .base_scraper import BaseScraper
 
-
 BASE_URL = "https://www.104.com.tw/jobs/search/api/jobs?"
 RESULTS_PER_PAGE = 100
 

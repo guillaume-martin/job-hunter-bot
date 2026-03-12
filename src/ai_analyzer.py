@@ -1,7 +1,6 @@
 import json
 import logging
 from string import Template
-from typing import Dict, Optional
 
 from requests import request
 from requests.exceptions import RequestException
@@ -58,12 +57,12 @@ class AIAnalyzer:
         })
 
         try:
-            with open(self.prompt_file, "r", encoding="utf-8") as f:
+            with open(self.prompt_file, encoding="utf-8") as f:
                 prompt_template = f.read()
         except FileNotFoundError:
             raise FileNotFoundError(f"Prompt file not found: {self.prompt_file}")
-        except IOError as e:
-            raise IOError(f"Error reading prompt file: {e}")
+        except OSError as e:
+            raise OSError(f"Error reading prompt file: {e}")
 
         template = Template(prompt_template)
         message = template.substitute(resume=resume, job_description=job_description)
@@ -71,7 +70,7 @@ class AIAnalyzer:
 
         return message
 
-    def analyze_job(self, resume: str, job_description: str) -> Optional[Dict]:
+    def analyze_job(self, resume: str, job_description: str) -> dict | None:
         """Query the AI API to analyze a job description against a resume.
 
             Args:
