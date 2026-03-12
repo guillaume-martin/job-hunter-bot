@@ -71,6 +71,11 @@ class RemotiveScraper(BaseScraper):
         payload = self.__build_api_payload(term)
 
         r = self._request(method="POST", url=BASE_URL, headers=HEADERS, data=json.dumps(payload))
+
+        if r is None:
+            logger.error("Request failed, no response received")
+            return
+        
         response = json.loads(r.content)
         results = response['results']
         jobs_list = results[0]['hits']
