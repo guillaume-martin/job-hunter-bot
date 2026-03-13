@@ -1,5 +1,5 @@
-from datetime import UTC, datetime
 import logging
+from datetime import UTC, datetime
 from typing import Any, cast
 
 from bs4 import BeautifulSoup

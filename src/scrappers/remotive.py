@@ -1,8 +1,8 @@
 import json
 import logging
-from typing import Any
 import urllib
 from datetime import datetime
+from typing import Any
 
 from bs4 import BeautifulSoup
 

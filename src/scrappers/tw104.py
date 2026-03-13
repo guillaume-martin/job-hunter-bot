@@ -1,6 +1,6 @@
 import logging
-from typing import Any
 import urllib
+from typing import Any
 
 from .base_scraper import BaseScraper
 

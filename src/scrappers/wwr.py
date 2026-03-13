@@ -1,8 +1,8 @@
 import logging
 import time
-from typing import Any, cast
 import urllib
 from datetime import datetime, timedelta
+from typing import Any, cast
 
 from bs4 import BeautifulSoup
 from selenium import webdriver
