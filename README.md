@@ -198,8 +198,3 @@ scrapers = {
 - [ ] Build full CI/CD pipeline with GitHub Actions (lint → test → deploy)
 - [ ] Add monitoring and alerting (CloudWatch metrics, error notifications)
 
----
-
-## License
-
-MIT
