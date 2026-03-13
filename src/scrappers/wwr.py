@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Any, cast
 import urllib
 from datetime import datetime, timedelta
 
@@ -98,7 +99,7 @@ class WwrScraper(BaseScraper):
 
         return date_published.strftime('%Y-%m-%d')
 
-    def get_jobs(self, term: str) -> None:
+    def get_jobs(self, term: str) -> list[dict[str, Any]]:
         """
         Scrapes job listings from the WWR (We Work Remotely) website based on 
         a search term and region.
@@ -113,6 +114,8 @@ class WwrScraper(BaseScraper):
 
         for job in jobs_list:
             self.jobs.append(self._extract_job_details(job))
+        
+        return self.jobs
     
     @staticmethod
     def _retrieve_html_content(url: str):
@@ -129,7 +132,11 @@ class WwrScraper(BaseScraper):
         firefox_options.add_argument("--headless")
         firefox_options.add_argument("--no-sandbox")
         firefox_options.add_argument("--disable-dev-shm-usage")
-        firefox_options.binary_location = Config.FIREFOX_PATH
+        if Config.FIREFOX_PATH is not None:
+            firefox_options.binary_location = Config.FIREFOX_PATH
+        else:
+            # Handle the None case
+            raise ValueError("FIREFOX_PATH is not configured")
 
         # Specify the path to Geckodriver if not in PATH
         service = Service(Config.GECKODRIVER_PATH)
@@ -175,7 +182,7 @@ class WwrScraper(BaseScraper):
             description_div = soup.find_all(
                     "div", class_="lis-container__job__content"
             )[0]
-            job_description = description_div.text.translate(translation_table)
+            job_description = cast(str, description_div.text.translate(translation_table))
         except Exception as e:
             logger.exception(f"Failed to extract job description for {job_url}: {e}")
             job_description = "No description available"

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 import urllib
 
 from .base_scraper import BaseScraper
@@ -36,7 +37,7 @@ class Tw104Scraper(BaseScraper):
         )
         return published_date
 
-    def get_jobs(self, term:str) -> None:
+    def get_jobs(self, term:str) -> list[dict[str, Any]]:
         existing_job_ids = self._get_existing_job_ids()
         search_url = self._build_search_url(term)
 
@@ -74,6 +75,8 @@ class Tw104Scraper(BaseScraper):
 
         self._store_new_jobs(new_jobs)
 
+        return self.jobs
+
     def extract_job_description(self, job_url: str) -> str:
         translation_table = str.maketrans({
             "\n": " ",
@@ -105,7 +108,7 @@ class Tw104Scraper(BaseScraper):
 
             if r:
                 data = r.json()["data"]
-                job_description = data["jobDetail"]["jobDescription"]
+                job_description: str = data["jobDetail"]["jobDescription"]
                 description = job_description.translate(translation_table).strip()
             else:
                 logger.error(f"Failed to fetch job description for {job_url}")

@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Any
 import urllib
 from datetime import datetime
 
@@ -65,7 +66,7 @@ class RemotiveScraper(BaseScraper):
         date_published = datetime.strftime(utc_pub_date, '%Y-%m-%d')
         return date_published
 
-    def get_jobs(self, term:str) -> None:
+    def get_jobs(self, term:str) -> list[dict[str, Any]]:
         payload = self.__build_api_payload(term)
 
         r = self._request(
@@ -86,6 +87,8 @@ class RemotiveScraper(BaseScraper):
         for job in jobs_list:
             job_details = self._extract_job_details(job)
             self.jobs.append(job_details)
+
+        return self.jobs
 
     def extract_job_description(self, job_url: str) -> str:
         """Extract the job description from the job URL

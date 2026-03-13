@@ -18,7 +18,7 @@ class BaseScraper(ABC):
     def __init__(self, base_url: str, name: str):
         self.base_url = base_url
         self.name = name
-        self.jobs = []
+        self.jobs: list[dict] = []
 
     @abstractmethod
     def get_jobs(self, term: str) -> list[dict[str, Any]]:
@@ -146,8 +146,8 @@ class BaseScraper(ABC):
 
     def _get_existing_job_ids(self) -> set[str]:
         """Fetch all existing job IDs from DynamoDB."""
-        table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
-        job_ids = set()
+        table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE', 'jobs_cache'))
+        job_ids: set[str] = set()
         last_evaluated_key = None
 
         while True:
@@ -178,7 +178,7 @@ class BaseScraper(ABC):
         if not new_jobs:
             return
 
-        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE"))
+        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE", "jobs_cache"))
         try:
             with table.batch_writer() as batch:
                 for job_id in new_jobs:

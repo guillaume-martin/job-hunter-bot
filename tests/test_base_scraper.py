@@ -1,24 +1,31 @@
+from abc import abstractmethod
 from datetime import datetime, timedelta
 
 from src.scrappers.base_scraper import BaseScraper
 
 
 class TestScraper(BaseScraper):
+    @abstractmethod
     def get_jobs(self, term: str) -> list:
         pass
 
+    @abstractmethod
     def extract_company(self, job_element):
         pass
 
+    @abstractmethod
     def extract_title(self, job_element):
         pass
 
+    @abstractmethod
     def extract_url(self, job_element):
         pass
 
+    @abstractmethod
     def extract_date_published(self, job_element):
         pass
 
+    @abstractmethod
     def extract_job_description(self, job_url):
         pass
 

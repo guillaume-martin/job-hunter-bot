@@ -1,6 +1,7 @@
 import json
 import logging
 from string import Template
+from typing import cast
 
 from requests import request
 from requests.exceptions import RequestException
@@ -112,10 +113,11 @@ class AIAnalyzer:
             # Check if result["choices"][0]["message"]["content"] is already a dict 
             # before parsing.
             try:
-                return json.loads(content) if isinstance(content, str) else content
+                parsed = json.loads(content) if isinstance(content, str) else content
+                return cast(dict, parsed)
             except json.JSONDecodeError:
-                return content  # Fallback: return raw content
-            
+                return cast(dict, content) # Fallback: return raw content
+                
         except RequestException as e:
             logger.exception(f"API request failed: {e}")
             return None

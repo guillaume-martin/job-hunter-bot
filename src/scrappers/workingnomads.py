@@ -1,6 +1,6 @@
-
-import logging
 from datetime import UTC, datetime
+import logging
+from typing import Any, cast
 
 from bs4 import BeautifulSoup
 
@@ -14,6 +14,7 @@ class WorkingNomadsScraper(BaseScraper):
     def __init__(self):
         super().__init__(base_url=Config.WORKINGNOMADS_API_URL, name="WorkingNomads")
         self.locations = Config.WORKINGNOMADS_LOCATIONS
+        self.since = Config.SINCE
 
     def _build_api_payload(self, term):
         payload = {
@@ -72,13 +73,13 @@ class WorkingNomadsScraper(BaseScraper):
         return payload
 
     def extract_company(self, job_element: dict) -> str:
-        return job_element.get("company", "unknown")
+        return cast(str, job_element.get("company", "unknown"))
 
     def extract_title(self, job_element: dict) -> str:
-        return job_element.get("title", 'unknown')
+        return cast(str, job_element.get("title", 'unknown'))
 
     def extract_url(self, job_element: dict) -> str:
-        return job_element.get("apply_url")
+        return cast(str, job_element.get("apply_url"))
 
     def extract_date_published(self, job_element:dict) -> str:
         publish_date = job_element["pub_date"]
@@ -89,7 +90,7 @@ class WorkingNomadsScraper(BaseScraper):
         """Job description is included in job details. This method is not used."""
         raise NotImplementedError("Job description is included in job details.")
 
-    def get_jobs(self, term: str) -> None:
+    def get_jobs(self, term: str) -> list[dict[str, Any]]:
         payload = self._build_api_payload(term)
 
         user_agent = (
@@ -148,6 +149,8 @@ class WorkingNomadsScraper(BaseScraper):
             job_details["description"] = description_text
 
             self.jobs.append(job_details)
+
+        return self.jobs
 
 
 def to_utc(date_str):

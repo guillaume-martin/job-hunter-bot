@@ -1,6 +1,5 @@
 """ Searches jobs offers on a selection of web sites
 """
-# -*- coding: utf-8 -*-
 import logging
 import logging.config
 import os
@@ -162,7 +161,7 @@ def remove_duplicates(jobs: list[dict]) -> list[dict]:
 
     return single_jobs
 
-def select_jobs(jobs: list[dict], analyzer, resume: str) -> list[dict]:
+def select_jobs(jobs: list[dict], analyzer, resume: str) -> tuple[list[dict], list[dict]]:
     """Select the jobs that score over the application threshold
 
         Args:
@@ -300,7 +299,7 @@ def jobs_to_markdown(jobs: list[dict]) -> str:
 
     return markdown
 
-def main(context: str) -> None:
+def main(context: Literal["cloud", "local"]) -> None:
     # Extract jobs from web sites and save them in a list
     logger.info("###############  Searching Jobs  ###############")
     jobs = find_jobs(Config.SEARCHES)
@@ -309,8 +308,11 @@ def main(context: str) -> None:
     single_jobs = remove_duplicates(jobs)
 
     logger.info("###############  Selecting Jobs  ###############")
+    api_key = os.getenv("AI_API_KEY")
+    if api_key is None:
+        raise ValueError("AI_API_KEY environment variable is not set")
     analyzer = AIAnalyzer(
-        api_key=os.getenv("AI_API_KEY"),
+        api_key=api_key,
         model = Config.MODEL,
         api_url=Config.API_URL,
         prompt_file=Config.PROMPT_FILE,
@@ -328,9 +330,9 @@ def main(context: str) -> None:
 
 
 def lambda_handler(event, context):
-    run_context = "cloud"
+    run_context: Literal['cloud', 'local'] = "cloud"
     main(run_context)
 
 if __name__ == '__main__':
-    run_context = "local"
+    run_context: Literal['cloud', 'local'] = "local"
     main(run_context)

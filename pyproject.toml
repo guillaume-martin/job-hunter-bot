@@ -18,6 +18,9 @@ urllib3 = "2.5.0"
 pytest = "8.4.1"
 ruff = "^0.15.5"
 mypy = "^1.19.1"
+boto3-stubs = "^1.42.67"
+botocore-stubs = "^1.42.41"
+types-requests = "^2.32.4.20260107"
 
 [tool.poetry.group.test.dependencies]
 pytest = "8.4.1"

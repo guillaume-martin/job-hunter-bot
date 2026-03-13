@@ -1,5 +1,6 @@
 import logging
 from datetime import datetime
+from typing import Any
 
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
@@ -99,7 +100,7 @@ class RemoteOkScraper(BaseScraper):
             description = "No description available."
         return description
 
-    def get_jobs(self, term: str) -> None:
+    def get_jobs(self, term: str) -> list[dict[str, Any]]:
         search_url = self._build_search_url(term)
         r = self._request(method="GET", url=search_url, headers=HEADERS)
         if r:
@@ -114,3 +115,5 @@ class RemoteOkScraper(BaseScraper):
                 }
                 for job in soup.find_all("tr", class_="job")
             ]
+
+        return self.jobs

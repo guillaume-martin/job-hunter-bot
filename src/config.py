@@ -7,13 +7,13 @@ import os
 
 class Config:
     # Searches are a list keywords searched on the job boards
-    SEARCHES = [
+    SEARCHES: list[str] = [
 
     ]
 
     # List of sites to search. They should match the names of the scrapers in 
     # `scraper_factory.py`
-    SITES = [
+    SITES: list[str] = [
        "104",
        "remoteok",
        "remotive",

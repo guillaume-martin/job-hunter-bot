@@ -4,7 +4,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import requests
 from bs4 import BeautifulSoup
 
-from config import since
+from ..Config import SINCE
 
 
 def load_jobs(job_title, location, since=1):
@@ -69,13 +69,13 @@ def get_jobs(term):
 
     jobs = []
 
-    jobs_list = load_jobs(term, 'Taipei', since)
+    jobs_list = load_jobs(term, 'Taipei', SINCE)
 
     for job in jobs_list:
         jobs.append({
             'title': extract_job_title(job),
             'company': extract_company(job),
-            'date_published': set_date(since),
+            'date_published': set_date(SINCE),
             'url': extract_link(job)
         })
 

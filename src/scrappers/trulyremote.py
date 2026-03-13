@@ -7,6 +7,7 @@ and convert publish dates to UTC datetime objects.
 """
 import logging
 from datetime import UTC, datetime
+from typing import Any
 
 from bs4 import BeautifulSoup
 
@@ -48,7 +49,7 @@ class TrulyRemoteScraper(BaseScraper):
         utc_publish_date = to_utc(publish_date)
         return datetime.strftime(utc_publish_date, "%Y-%m-%d")
 
-    def get_jobs(self, term:str) -> None:
+    def get_jobs(self, term:str) -> list[dict[str, Any]]:
         payload = self._build_api_payload(term)
 
         r = self._request(method="POST", url=self.base_url, json=payload)
@@ -65,6 +66,8 @@ class TrulyRemoteScraper(BaseScraper):
             job_data = job["fields"]
             job_details = self._extract_job_details(job_data)
             self.jobs.append(job_details)
+
+        return self.jobs
 
     def extract_job_description(self, job_url: str) -> str:
         translation_table = str.maketrans({
