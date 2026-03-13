@@ -1,17 +1,16 @@
-from abc import ABC, abstractmethod
-from datetime import datetime, timedelta, timezone
 import logging
 import os
 import time
-from typing import List, Dict, Any
-
-from ..config import Config
+from abc import ABC, abstractmethod
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import boto3
-from botocore.exceptions import NoCredentialsError, ClientError
-from requests import request, RequestException
+from botocore.exceptions import ClientError, NoCredentialsError
+from requests import RequestException, request
 from requests.exceptions import Timeout
 
+from ..config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +18,10 @@ class BaseScraper(ABC):
     def __init__(self, base_url: str, name: str):
         self.base_url = base_url
         self.name = name
-        self.jobs = []
+        self.jobs: list[dict] = []
 
     @abstractmethod
-    def get_jobs(self, term: str) -> List[Dict[str, Any]]:
+    def get_jobs(self, term: str) -> list[dict[str, Any]]:
         """Fetch and return jobs for a given serch term."""
         pass
 
@@ -36,7 +35,7 @@ class BaseScraper(ABC):
                 filtered_jobs.append(job)
         self.jobs = filtered_jobs
 
-    def _extract_job_details(self, job_element) -> Dict[str, Any]:
+    def _extract_job_details(self, job_element) -> dict[str, Any]:
         """Extract job details from a job element. To be implemented by subclasses."""
         return {
             "company": self.extract_company(job_element),
@@ -92,13 +91,24 @@ class BaseScraper(ABC):
         """
         for attempt in range(Config.REQUEST_RETRIES):
             try:
-                response = request(method, url, timeout=Config.REQUEST_TIMEOUT, **kwargs)
+                response = request(
+                    method,
+                    url,
+                    timeout=Config.REQUEST_TIMEOUT,
+                    **kwargs
+                )
                 response.raise_for_status()
                 return response
             except Timeout as e:
-                logger.exception(f"Timeout occured for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}: {e}")
+                logger.exception(
+                    f"Timeout occurred for {url} after "
+                    f"{attempt + 1}/{Config.REQUEST_RETRIES}: {e}"
+                )
             except RequestException as e:
-                logger.exception(f"Request failed {e} for {url} after {attempt + 1}/{Config.REQUEST_RETRIES}")
+                logger.exception(
+                    f"Request failed {e} for {url} after "
+                    f"{attempt + 1}/{Config.REQUEST_RETRIES}"
+                )
 
             time.sleep(2 ** attempt)
 
@@ -117,13 +127,17 @@ class BaseScraper(ABC):
 
         Raises:
             ValueError: If the table name is empty or AWS credentials are missing.
-            botocore.exceptions.ClientError: If the table doesn’t exist or AWS access is denied.
+            botocore.exceptions.ClientError: If the table doesn’t exist or AWS 
+            access is denied.
         """
         if not table_name:
             raise ValueError("Table name cannot be empty.")
 
         try:
-            ddb = boto3.resource('dynamodb', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+            ddb = boto3.resource(
+                    'dynamodb',
+                    region_name=os.getenv('AWS_REGION', 'us-east-1')
+                )
             return ddb.Table(table_name)
         except NoCredentialsError:
             raise ValueError("AWS credentials not configured.")
@@ -132,8 +146,8 @@ class BaseScraper(ABC):
 
     def _get_existing_job_ids(self) -> set[str]:
         """Fetch all existing job IDs from DynamoDB."""
-        table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE'))
-        job_ids = set()
+        table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE', 'jobs_cache'))
+        job_ids: set[str] = set()
         last_evaluated_key = None
 
         while True:
@@ -164,12 +178,13 @@ class BaseScraper(ABC):
         if not new_jobs:
             return
 
-        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE"))
+        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE", "jobs_cache"))
         try:
             with table.batch_writer() as batch:
                 for job_id in new_jobs:
                     # Add RETENTION_DAYS to today's date
-                    expiry_date = datetime.now(timezone.utc) + timedelta(days=int(os.getenv("RETENTION_DAYS", 30)))
+                    retention_days = int(os.getenv("RETENTION_DAYS", 30))
+                    expiry_date = datetime.now(UTC) + timedelta(days=retention_days)
 
                     # Convert to Unix timestamp
                     expires_at = int(expiry_date.timestamp())
@@ -177,7 +192,7 @@ class BaseScraper(ABC):
                     batch.put_item({
                         "job_id": job_id,
                         "site": self.name,
-                        "date_added": datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+                        "date_added": datetime.now(UTC).strftime('%Y-%m-%d'),
                         "expires_at": expires_at
                     })
         except ClientError as e:

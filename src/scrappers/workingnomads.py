@@ -1,13 +1,11 @@
-# -*- coding: utf-8 -*-
-
-from datetime import datetime, timezone
 import logging
-
-from .base_scraper import BaseScraper
-from ..config import Config
+from datetime import UTC, datetime
+from typing import Any, cast
 
 from bs4 import BeautifulSoup
 
+from ..config import Config
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +14,7 @@ class WorkingNomadsScraper(BaseScraper):
     def __init__(self):
         super().__init__(base_url=Config.WORKINGNOMADS_API_URL, name="WorkingNomads")
         self.locations = Config.WORKINGNOMADS_LOCATIONS
+        self.since = Config.SINCE
 
     def _build_api_payload(self, term):
         payload = {
@@ -23,11 +22,31 @@ class WorkingNomadsScraper(BaseScraper):
             "from": 0,
             "size": 100,
             "_source": [
-                "company", "company_slug", "category_name", "locations", "location_base",
-                "salary_range", "salary_range_short", "number_of_applicants", "instructions",
-                "id", "external_id", "slug", "title", "pub_date", "tags", "source",
-                "apply_option", "apply_email", "apply_url", "premium", "expired",
-                "use_ats", "position_type", "annual_salary_usd", "description"
+                "company",
+                "company_slug",
+                "category_name",
+                "locations",
+                "location_base",
+                "salary_range",
+                "salary_range_short",
+                "number_of_applicants",
+                "instructions",
+                "id",
+                "external_id",
+                "slug",
+                "title",
+                "pub_date",
+                "tags",
+                "source",
+                "apply_option",
+                "apply_email",
+                "apply_url",
+                "premium",
+                "expired",
+                "use_ats",
+                "position_type",
+                "annual_salary_usd",
+                "description"
             ],
             "sort": [
                 {"premium": {"order": "desc"}},
@@ -54,13 +73,13 @@ class WorkingNomadsScraper(BaseScraper):
         return payload
 
     def extract_company(self, job_element: dict) -> str:
-        return job_element.get("company", "unknown")
+        return cast(str, job_element.get("company", "unknown"))
 
     def extract_title(self, job_element: dict) -> str:
-        return job_element.get("title", 'unknown')
+        return cast(str, job_element.get("title", 'unknown'))
 
     def extract_url(self, job_element: dict) -> str:
-        return job_element.get("apply_url")
+        return cast(str, job_element.get("apply_url"))
 
     def extract_date_published(self, job_element:dict) -> str:
         publish_date = job_element["pub_date"]
@@ -71,25 +90,46 @@ class WorkingNomadsScraper(BaseScraper):
         """Job description is included in job details. This method is not used."""
         raise NotImplementedError("Job description is included in job details.")
 
-    def get_jobs(self, term: str) -> None:
+    def get_jobs(self, term: str) -> list[dict[str, Any]]:
         payload = self._build_api_payload(term)
 
+        user_agent = (
+            "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
+        )
+        tag = term.replace(' ', '-')
+        referer = (
+            "https://www.workingnomads.com/jobs?"
+            f"location={Config.WORKINGNOMADS_URL_LOCATION}&"
+            f"postedDate={self.since}&tag={tag}"
+        )
+        cookie = (
+            'subscriber_source=""; '
+            'subscriber_utm_source=""; '
+            'subscriber_utm_medium=""; '
+            'subscriber_utm_campaign=""'
+        )
         headers = {
             "Host": "www.workingnomads.com",
-            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0",
+            "User-Agent": user_agent,
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.5",
             "Content-Type": "application/json;charset=utf-8",
             "Origin": "https://www.workingnomads.com",
             "Connection": "keep-alive",
-            "Referer": f"https://www.workingnomads.com/jobs?location={Config.WORKINGNOMADS_URL_LOCATION}&postedDate={self.since}&tag={term.replace(' ', '-')}",
-            "Cookie": 'subscriber_source=""; subscriber_utm_source=""; subscriber_utm_medium=""; subscriber_utm_campaign=""',
+            "Referer": referer,
+            "Cookie": cookie,
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",
             "Sec-Fetch-Site": "same-origin"
         }
 
-        r = self._request(method="POST", url=self.base_url, json=payload, headers=headers)
+
+        r = self._request(
+                method="POST", 
+                url=self.base_url, 
+                json=payload, 
+                headers=headers
+        )
         response = r.json()
 
         try:
@@ -110,13 +150,16 @@ class WorkingNomadsScraper(BaseScraper):
 
             self.jobs.append(job_details)
 
+        return self.jobs
+
 
 def to_utc(date_str):
     """
     Converts an ISO 8601 date string to a UTC datetime object.
 
     Args:
-        date_str (str): The date string in ISO 8601 format. Can include 'Z' to indicate UTC.
+        date_str (str): The date string in ISO 8601 format. Can include 'Z' 
+        to indicate UTC.
 
     Returns:
         datetime: A timezone-aware datetime object in UTC.
@@ -126,4 +169,4 @@ def to_utc(date_str):
     """
 
     dt = datetime.fromisoformat(date_str.replace("Z", "+00:00"))
-    return dt.astimezone(timezone.utc)
+    return dt.astimezone(UTC)

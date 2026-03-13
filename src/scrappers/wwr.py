@@ -1,20 +1,17 @@
-# -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
 import logging
 import time
 import urllib
-
-from .base_scraper import BaseScraper
-from ..config import Config
+from datetime import datetime, timedelta
+from typing import Any, cast
 
 from bs4 import BeautifulSoup
-from dateutil.parser import parse
 from selenium import webdriver
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import InvalidArgumentException
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 
+from ..config import Config
+from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 
@@ -39,17 +36,24 @@ class WwrScraper(BaseScraper):
         return title
 
     def extract_url(self, job_element):
-        """ Extracts and returns the full URL to the job details page from a BeautifulSoup job element.
+        """ Extracts and returns the full URL to the job details page from a 
+        BeautifulSoup job element.
+        
         Args:
-            job (bs4.element.Tag): A BeautifulSoup tag representing a job listing, expected to contain anchor tags.
+            job (bs4.element.Tag): A BeautifulSoup tag representing a job 
+            listing, expected to contain anchor tags.
         Returns:
-            str: The absolute URL to the job details page if found, otherwise an empty string.
+            str: The absolute URL to the job details page if found, otherwise 
+            an empty string.
         """
 
         links = job_element.find_all('a')
         try:
             url = Config.WWR_BASE_URL
-            url += [link["href"] for link in links if link["href"].startswith("/remote-jobs/")][0]
+            url += (
+                [link["href"] for link in links if link["href"]
+                .startswith("/remote-jobs/")][0]
+            )
             url = urllib.parse.urljoin(Config.WWR_BASE_URL, url)
         except IndexError:
             url = ""
@@ -61,7 +65,8 @@ class WwrScraper(BaseScraper):
         """ Extracts the publication date from a job listing element.
 
         Args:
-            job (bs4.element.Tag): A BeautifulSoup Tag object representing a job listing.
+            job (bs4.element.Tag): A BeautifulSoup Tag object representing a 
+            job listing.
 
         Returns:
                 str: The formatted publication date as a string in 'YYYY-MM-DD' format.
@@ -83,7 +88,9 @@ class WwrScraper(BaseScraper):
 
             # if no digits are found, assume today's date
             if not days_str:
-                logger.warning(f"Unexpected date text '{date_text}'. Assuming today's date.")
+                logger.warning(
+                    f"Unexpected date text '{date_text}'. Assuming today's date."
+                )
                 days_since_posted = 0
             else:
                 days_since_posted = int(days_str)
@@ -92,9 +99,10 @@ class WwrScraper(BaseScraper):
 
         return date_published.strftime('%Y-%m-%d')
 
-    def get_jobs(self, term: str) -> None:
+    def get_jobs(self, term: str) -> list[dict[str, Any]]:
         """
-        Scrapes job listings from the WWR (We Work Remotely) website based on a search term and region.
+        Scrapes job listings from the WWR (We Work Remotely) website based on 
+        a search term and region.
 
         Args:
             term (str): The search keyword to filter job listings.
@@ -106,6 +114,8 @@ class WwrScraper(BaseScraper):
 
         for job in jobs_list:
             self.jobs.append(self._extract_job_details(job))
+        
+        return self.jobs
     
     @staticmethod
     def _retrieve_html_content(url: str):
@@ -122,7 +132,11 @@ class WwrScraper(BaseScraper):
         firefox_options.add_argument("--headless")
         firefox_options.add_argument("--no-sandbox")
         firefox_options.add_argument("--disable-dev-shm-usage")
-        firefox_options.binary_location = Config.FIREFOX_PATH
+        if Config.FIREFOX_PATH is not None:
+            firefox_options.binary_location = Config.FIREFOX_PATH
+        else:
+            # Handle the None case
+            raise ValueError("FIREFOX_PATH is not configured")
 
         # Specify the path to Geckodriver if not in PATH
         service = Service(Config.GECKODRIVER_PATH)
@@ -165,8 +179,10 @@ class WwrScraper(BaseScraper):
 
         soup = BeautifulSoup(page_content, "html.parser")
         try:
-            description_div = soup.find_all("div", class_="lis-container__job__content")[0]
-            job_description = description_div.text.translate(translation_table)
+            description_div = soup.find_all(
+                    "div", class_="lis-container__job__content"
+            )[0]
+            job_description = cast(str, description_div.text.translate(translation_table))
         except Exception as e:
             logger.exception(f"Failed to extract job description for {job_url}: {e}")
             job_description = "No description available"

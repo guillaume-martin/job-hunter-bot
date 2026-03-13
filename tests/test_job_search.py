@@ -10,9 +10,24 @@ def test_remove_duplicates_with_urls():
 
     # Setup
     jobs = [
-        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
-        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
-        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": "2024-06-02"},
+        {
+            "company": "Acme Inc",
+            "title": "Software Engineer",
+            "url": "https://example.com/job1",
+            "date_published": "2024-06-01"
+        },
+        {
+            "company": "Acme Inc",
+            "title": "Software Engineer",
+            "url": "https://example.com/job1",
+            "date_published": "2024-06-01"
+        },
+        {
+            "company": "Globex Corp",
+            "title": "Data Scientist",
+            "url": "https://example.com/job2",
+            "date_published": "2024-06-02"
+        },
     ]
 
     # Exercise
@@ -21,8 +36,18 @@ def test_remove_duplicates_with_urls():
     # Verify
     assert len(single_jobs_list) == 2
     assert single_jobs_list == [
-        {"company": "Acme Inc", "title": "Software Engineer", "url": "https://example.com/job1", "date_published": "2024-06-01"},
-        {"company": "Globex Corp", "title": "Data Scientist", "url": "https://example.com/job2", "date_published": "2024-06-02"},
+        {
+            "company": "Acme Inc",
+            "title": "Software Engineer",
+            "url": "https://example.com/job1",
+            "date_published": "2024-06-01"
+        },
+        {
+            "company": "Globex Corp",
+            "title": "Data Scientist",
+            "url": "https://example.com/job2",
+            "date_published": "2024-06-02"
+        },
     ]
 
 def test_remove_duplicates_with_missing_urls():
@@ -108,15 +133,28 @@ def test_find_jobs_create_file(tmp_path):
 
     # Mock the jobs and other dependencies
     mock_jobs = [
-        {"url": "https://example.com/job1", "title": "Job 1", "company": "Acme", "evaluation": {"match_score": "85/100", "missing_required": []}},
-        {"url": "https://example.com/job2", "title": "Job 2", "company": "Acme", "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}},
+        {
+            "url": "https://example.com/job1",
+            "title": "Job 1",
+            "company": "Acme",
+            "evaluation": {"match_score": "85/100", "missing_required": []}
+        },
+        {
+            "url": "https://example.com/job2",
+            "title": "Job 2",
+            "company": "Acme",
+            "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}
+        },
     ]
 
     # Mock functions
     with patch("src.job_search.find_jobs", return_value=mock_jobs), \
          patch("src.job_search.remove_duplicates", return_value=mock_jobs), \
          patch("src.job_search.select_jobs", return_value=(mock_jobs, [])), \
-         patch("argparse.ArgumentParser.parse_args", return_value=argparse.Namespace(output="file", file=str(output_file))):
+         patch(
+             "argparse.ArgumentParser.parse_args",
+             return_value=argparse.Namespace(output="file", file=str(output_file))
+         ):
 
         # Exercise
         job_search.main()
@@ -129,8 +167,18 @@ def test_job_to_markdown_return_string():
     """Test that file_to_markdown returns a file"""
     # Setup
     mock_jobs = [
-        {"url": "https://example.com/job1", "title": "Job 1", "company": "Acme", "evaluation": {"match_score": "85/100", "missing_required": []}},
-        {"url": "https://example.com/job2", "title": "Job 2", "company": "Acme", "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}},
+        {
+            "url": "https://example.com/job1",
+            "title": "Job 1",
+            "company": "Acme",
+            "evaluation": {"match_score": "85/100", "missing_required": []}
+        },
+        {
+            "url": "https://example.com/job2",
+            "title": "Job 2",
+            "company": "Acme",
+            "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}
+        },
     ]
 
     # Exercise

@@ -6,7 +6,6 @@ import json
 import requests
 from bs4 import BeautifulSoup
 
-
 AJAX_URL = "https://remote.co/jm-ajax/get_listings/"
 
 
