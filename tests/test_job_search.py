@@ -267,6 +267,9 @@ def test_reject_jobs_below_threshold(monkeypatch, fake_analyzer):
     # Setup
     monkeypatch.setattr(job_search.Config, "APPLY_THRESHOLD", 80)
 
+    # Override the default return value for this specific test
+    fake_analyzer.return_value = {"match_score": "40/100", "missing_required": []}
+
     jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
 
     # Exercise

@@ -18,3 +18,23 @@ def mock_aws_services():
             AssumeRolePolicyDocument='{"Version":"2012-10-17","Statement":[]}',
         )
         yield
+
+
+@pytest.fixture
+def fake_analyzer():
+    """Reusable test double for AIAnalyzer with call tracking."""
+
+    class FakeAnalyzer:
+        def __init__(self):
+            self.called = False
+            # Return value can be overridden per-test
+            self.return_value: dict[str, object] = {
+                "match_score": "85/100",
+                "missing_required": [],
+            }
+
+        def analyze_job(self, resume: str, description: str) -> dict:
+            self.called = True
+            return self.return_value
+
+    return FakeAnalyzer()
