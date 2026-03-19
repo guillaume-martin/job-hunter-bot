@@ -1,7 +1,3 @@
-import argparse
-import os
-from unittest.mock import patch
-
 import src.job_search as job_search
 
 
@@ -14,19 +10,19 @@ def test_remove_duplicates_with_urls():
             "company": "Acme Inc",
             "title": "Software Engineer",
             "url": "https://example.com/job1",
-            "date_published": "2024-06-01"
+            "date_published": "2024-06-01",
         },
         {
             "company": "Acme Inc",
             "title": "Software Engineer",
             "url": "https://example.com/job1",
-            "date_published": "2024-06-01"
+            "date_published": "2024-06-01",
         },
         {
             "company": "Globex Corp",
             "title": "Data Scientist",
             "url": "https://example.com/job2",
-            "date_published": "2024-06-02"
+            "date_published": "2024-06-02",
         },
     ]
 
@@ -40,15 +36,16 @@ def test_remove_duplicates_with_urls():
             "company": "Acme Inc",
             "title": "Software Engineer",
             "url": "https://example.com/job1",
-            "date_published": "2024-06-01"
+            "date_published": "2024-06-01",
         },
         {
             "company": "Globex Corp",
             "title": "Data Scientist",
             "url": "https://example.com/job2",
-            "date_published": "2024-06-02"
+            "date_published": "2024-06-02",
         },
     ]
+
 
 def test_remove_duplicates_with_missing_urls():
     """Test that remove_duplicates remoces jobs with duplicate company + title"""
@@ -70,8 +67,9 @@ def test_remove_duplicates_with_missing_urls():
         {"url": "missing", "title": "Job 2", "company": "Acme"},
     ]
 
+
 def test_jobs_to_html_returns_string():
-    """ jobs_to_html should return a string containing the HTML script """
+    """jobs_to_html should return a string containing the HTML script"""
 
     # Setup
     jobs = [
@@ -79,7 +77,7 @@ def test_jobs_to_html_returns_string():
             "url": "https://acme.com",
             "title": "job title",
             "company": "Acme, Inc.",
-            "date_published": "2022-04-29"
+            "date_published": "2022-04-29",
         }
     ]
 
@@ -89,8 +87,9 @@ def test_jobs_to_html_returns_string():
     # Verify
     assert isinstance(result, str)
 
+
 def test_find_jobs_calls_scrappers(monkeypatch):
-    """ find_jobs should call the configured scrapers and return combined results """
+    """find_jobs should call the configured scrapers and return combined results"""
     # setup
     calls = []
 
@@ -125,11 +124,16 @@ def test_find_jobs_calls_scrappers(monkeypatch):
 # TODO test find_jobs returns expected results from scrapers
 
 
-def test_find_jobs_create_file(tmp_path):
-    """Test that job_search creates a file when the output is set to file"""
+def test_save_jobs_to_file_create_file(tmp_path, monkeypatch):
+    """_save_jobs_to_file should write a markdown file to the configured output path.
+
+    Tests the file-writing unit directly rather than going through main(),
+    which would require patching unrelated dependencies (AIAnalyzer, resume, etc.).
+    """
 
     # Setting
-    output_file = tmp_path / "output.md"
+    monkeypatch.setattr(job_search.Config, "OUTPUT_PATH", str(tmp_path))
+    monkeypatch.setattr(job_search.Config, "OUTPUT_FILE", "jobs.md")
 
     # Mock the jobs and other dependencies
     mock_jobs = [
@@ -137,31 +141,24 @@ def test_find_jobs_create_file(tmp_path):
             "url": "https://example.com/job1",
             "title": "Job 1",
             "company": "Acme",
-            "evaluation": {"match_score": "85/100", "missing_required": []}
-        },
-        {
-            "url": "https://example.com/job2",
-            "title": "Job 2",
-            "company": "Acme",
-            "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}
+            "evaluation": {"match_score": "85/100", "missing_required": []},
         },
     ]
 
-    # Mock functions
-    with patch("src.job_search.find_jobs", return_value=mock_jobs), \
-         patch("src.job_search.remove_duplicates", return_value=mock_jobs), \
-         patch("src.job_search.select_jobs", return_value=(mock_jobs, [])), \
-         patch(
-             "argparse.ArgumentParser.parse_args",
-             return_value=argparse.Namespace(output="file", file=str(output_file))
-         ):
-
-        # Exercise
-        job_search.main()
+    # Exercise
+    job_search._save_jobs_to_file(mock_jobs, suffix="selected", date="2026-03-19")
 
     # Verify
     # Check that the file exists
-    assert os.path.exists(output_file)
+    expected_file = tmp_path / "2026-03-19-jobs-selected.md"
+    assert expected_file.exists(), f"Expected file not found: {expected_file}"
+
+    # Verify the content is valid
+    content = expected_file.read_text(encoding="utf-8")
+    assert "Job 1" in content
+    assert "Acme" in content
+    assert "85/100" in content
+
 
 def test_job_to_markdown_return_string():
     """Test that file_to_markdown returns a file"""
@@ -171,13 +168,13 @@ def test_job_to_markdown_return_string():
             "url": "https://example.com/job1",
             "title": "Job 1",
             "company": "Acme",
-            "evaluation": {"match_score": "85/100", "missing_required": []}
+            "evaluation": {"match_score": "85/100", "missing_required": []},
         },
         {
             "url": "https://example.com/job2",
             "title": "Job 2",
             "company": "Acme",
-            "evaluation": {"match_score": "75/100", "missing_required": ["Python"]}
+            "evaluation": {"match_score": "75/100", "missing_required": ["Python"]},
         },
     ]
 

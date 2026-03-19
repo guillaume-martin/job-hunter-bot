@@ -13,26 +13,26 @@ BASE_URL = "https://remoteok.com"
 LOCATIONS = ["Worldwide", "region_AS", "TW"]
 
 USER_AGENT = (
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-    '(KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582'
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
 )
-ACCEPT = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
 
 HEADERS = {
-    'User-Agent': USER_AGENT,
-    'Accept': ACCEPT,
-    'Accept-Language': 'en-US,en;q=0.5',
-    'Connection': 'keep-alive',
-    'Upgrade-Insecure-Requests': '1',
-    'DNT': '1',
-    'Sec-GPC': '1',
-    'Host': 'remoteok.com',
+    "User-Agent": USER_AGENT,
+    "Accept": ACCEPT,
+    "Accept-Language": "en-US,en;q=0.5",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+    "DNT": "1",
+    "Sec-GPC": "1",
+    "Host": "remoteok.com",
 }
 
 
 class RemoteOkScraper(BaseScraper):
     def __init__(self):
-        super().__init__(base_url=BASE_URL, name='RemoteOK')
+        super().__init__(base_url=BASE_URL, name="RemoteOK")
 
     def _build_search_url(self, term):
         search_url = (
@@ -43,14 +43,14 @@ class RemoteOkScraper(BaseScraper):
         return search_url
 
     def extract_company(self, job_element):
-        company = job_element.find('h3').text
+        company = job_element.find("h3").text
         company = company.replace("\n", "").strip()
         company = company.replace("\t", "").strip()
 
         return company
 
     def extract_title(self, job_element):
-        title = job_element.find('h2').text
+        title = job_element.find("h2").text
         title = title.replace("\n", "").strip()
         title = title.replace("\t", "").strip()
 
@@ -72,25 +72,22 @@ class RemoteOkScraper(BaseScraper):
         return formatted_time
 
     def extract_job_description(self, job_url: str) -> str:
-        translation_table = str.maketrans({
-            "\n": " ",
-            "\r": " ",
-            "\t": " "
-        })
+        translation_table = str.maketrans({"\n": " ", "\r": " ", "\t": " "})
 
         r = self._request(
-                method="GET",
-                url=job_url,
-                headers=HEADERS,
-                allow_redirects=True
-            )
-        if r:
-            soup = BeautifulSoup(r.content, "lxml")
-            description_div = soup.select_one("div.html, div.markdown")
-        
-        if description_div:
-            description = (
-                description_div.text
+            method="GET", url=job_url, headers=HEADERS, allow_redirects=True
+        )
+
+        if r is None or r.status_code != 200:
+            logger.error(f"Failed to fetch job description for {job_url}.")
+            return "No description available"
+
+        soup = BeautifulSoup(r.content, "lxml")
+        description_div = soup.select_one("div.html, div.markdown")
+
+        if description_div is not None:
+            description: str = (
+                description_div.get_text(separator=" ", strip=True)
                 .replace("\\n", "")
                 .translate(translation_table)
                 .strip()
@@ -98,6 +95,7 @@ class RemoteOkScraper(BaseScraper):
         else:
             logger.error(f"Failed to fetch job description for {job_url}")
             description = "No description available."
+
         return description
 
     def get_jobs(self, term: str) -> list[dict[str, Any]]:
