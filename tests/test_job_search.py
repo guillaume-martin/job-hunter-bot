@@ -48,7 +48,7 @@ def test_remove_duplicates_with_urls():
 
 
 def test_remove_duplicates_with_missing_urls():
-    """Test that remove_duplicates remoces jobs with duplicate company + title"""
+    """Test that remove_duplicates removes jobs with duplicate company + title"""
 
     # Setup
     jobs = [
@@ -183,8 +183,8 @@ def test_save_jobs_to_file_create_file(tmp_path, monkeypatch):
     assert "85/100" in content
 
 
-def test_job_to_markdown_return_string():
-    """Test that file_to_markdown returns a file"""
+def test_jobs_to_markdown_return_string():
+    """Test that jobs_to_markdown returns a file"""
     # Setup
     mock_jobs = [
         {
