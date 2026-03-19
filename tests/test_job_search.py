@@ -191,17 +191,23 @@ def test_select_jobs_above_threshold(monkeypatch):
     class FakeAnalyzer:
         """Test double AIAnalyzer. Returns a fixed high score."""
 
+        def __init__(self):
+            self.called = False
+
         def analyze_job(self, resume: str, description: str) -> dict:
+            self.called = True
             return {"match_score": "85/100", "missing_required": []}
 
+    analyzer = FakeAnalyzer()
     jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
 
     # Exercise
-    selected, rejected = job_search.select_jobs(jobs, FakeAnalyzer(), "my resume")
+    selected, rejected = job_search.select_jobs(jobs, analyzer, "my resume")
 
     # Verify
     assert len(selected) == 1
     assert len(rejected) == 0
+    assert analyzer.called  # analyzer should have been called
 
 
 def test_reject_jobs_below_threshold(monkeypatch):
@@ -212,14 +218,48 @@ def test_reject_jobs_below_threshold(monkeypatch):
     class FakeAnalyzer:
         """Test double AIAnalyzer. Returns a fixed high score."""
 
+        def __init__(self):
+            self.called = False
+
         def analyze_job(self, resume: str, description: str) -> dict:
+            self.called = True
             return {"match_score": "40/100", "missing_required": []}
 
+    analyzer = FakeAnalyzer()
     jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
 
     # Exercise
-    selected, rejected = job_search.select_jobs(jobs, FakeAnalyzer(), "my resume")
+    selected, rejected = job_search.select_jobs(jobs, analyzer, "my resume")
 
     # Verify
     assert len(selected) == 0
     assert len(rejected) == 1
+    assert analyzer.called  # analyzer should have been called
+
+
+def test_select_jobs_no_description_is_selected(monkeypatch):
+    """Jobs without a description should be selected for manual review."""
+    # Setup
+    monkeypatch.setattr(job_search.Config, "APPLY_THRESHOLD", 80)
+
+    class FakeAnalyzer:
+        """Test double AIAnalyzer. Returns a fixed high score."""
+
+        def __init__(self):
+            self.called = False
+
+        def analyze_job(self, resume: str, description: str) -> dict:
+            self.called = True
+            return {"match_score": "40/100", "missing_required": []}
+
+    analyzer = FakeAnalyzer()
+    jobs = [{"title": "Job 1", "company": "Acme", "description": ""}]
+
+    # Exercise
+    selected, rejected = job_search.select_jobs(jobs, analyzer, "my resume")
+
+    # Verify
+    assert len(selected) == 1
+    assert len(rejected) == 0
+    assert selected[0]["evaluation"] == "manual"
+    assert not analyzer.called  # analyzer should not have been called
