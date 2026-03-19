@@ -88,6 +88,31 @@ def test_jobs_to_html_returns_string():
     assert isinstance(result, str)
 
 
+def test_jobs_to_html_contails_job_data():
+    """jobs_to_html should return an HTML table with all job fields populated."""
+    # Setup
+    jobs = [
+        {
+            "url": "https://acme.com/job1",
+            "title": "Engineer",
+            "company": "Acme, Inc.",
+            "date_published": "2022-04-29",
+            "evaluation": {"match_score": "90/100", "missing_required": ["Docker"]},
+        }
+    ]
+
+    # Exercise
+    result = job_search.jobs_to_html(jobs)
+
+    # Verify
+    assert "<table>" in result
+    assert "Engineer" in result
+    assert "Acme, Inc." in result
+    assert "90/100" in result
+    assert "Docker" in result
+    assert "href='https://acme.com/job1'" in result
+
+
 def test_find_jobs_calls_scrappers(monkeypatch):
     """find_jobs should call the configured scrapers and return combined results"""
     # setup
@@ -181,6 +206,30 @@ def test_job_to_markdown_return_string():
 
     # Verify
     assert isinstance(result, str)
+
+
+def test_jobs_to_markdown_contains_job_data():
+    """jobs_to_markdown should return a Markdown table with all job fields."""
+    # Setup
+    jobs = [
+        {
+            "url": "https://example.com/job1",
+            "title": "Job 1",
+            "company": "Acme",
+            "evaluation": {"match_score": "85/100", "missing_required": ["Python"]},
+        },
+    ]
+
+    # Exercise
+    result = job_search.jobs_to_markdown(jobs)
+
+    # Verify
+    assert result.startswith("|Title|")  # header row present
+    assert result.count("\n") >= 3  # header + separator + 1 data row
+    assert "Job 1" in result
+    assert "Acme" in result
+    assert "85/100" in result
+    assert "Python" in result
 
 
 def test_select_jobs_above_threshold(monkeypatch):
