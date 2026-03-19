@@ -232,6 +232,20 @@ def test_jobs_to_markdown_contains_job_data():
     assert "Python" in result
 
 
+def test_jobs_to_markdown_empty_list():
+    """jobs_to_markdown with no jobs should still return a valid header."""
+    # Setup
+    # Nothing to set up
+
+    # Exercise
+    result = job_search.jobs_to_markdown([])
+
+    # Verify
+    assert result.startswith("|Title|")
+    # Only header and separator — no data rows
+    assert result.count("\n") == 2
+
+
 def test_select_jobs_above_threshold(monkeypatch):
     """Jobs scoring at or above APPLY_THRESHOLD should be selected"""
     # Setup
