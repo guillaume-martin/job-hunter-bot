@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 
+import pytest
+
 from src.scrappers.base_scraper import BaseScraper
 
 
@@ -27,6 +29,12 @@ class TestScraper(BaseScraper):
 
     def extract_job_description(self, job_url: str) -> str:
         return ""
+
+
+@pytest.fixture
+def scraper() -> TestScraper:
+    """Provide a fresh TestScraper instance for each test."""
+    return TestScraper("https://example.com", "ExampleScraper")
 
 
 def test_remove_older_jobs():
