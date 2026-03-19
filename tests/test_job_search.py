@@ -91,7 +91,8 @@ def test_jobs_to_html_returns_string():
 def test_find_jobs_calls_scrappers(monkeypatch):
     """find_jobs should call the configured scrapers and return combined results"""
     # setup
-    calls = []
+    calls: list[tuple[str, str]] = []
+    fake_sites = ["siteA", "siteB"]
 
     class FakeScraper:
         def __init__(self, site):
@@ -111,13 +112,13 @@ def test_find_jobs_calls_scrappers(monkeypatch):
 
     # Patch job_search module-level symbols that find_jobs uses
     monkeypatch.setattr(job_search, "get_scraper", fake_get_scraper)
-    monkeypatch.setattr(job_search, "sites", ["siteA", "siteB"])
+    monkeypatch.setattr(job_search.Config, "SITES", fake_sites)
 
     # Exercise
     job_search.find_jobs(searches=search)
 
     # Verify
-    expected_calls = [(s, t) for t in search for s in job_search.sites]
+    expected_calls = [(s, t) for t in search for s in fake_sites]
     assert calls == expected_calls
 
 
