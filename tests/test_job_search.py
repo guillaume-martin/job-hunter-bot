@@ -122,9 +122,6 @@ def test_find_jobs_calls_scrappers(monkeypatch):
     assert calls == expected_calls
 
 
-# TODO test find_jobs returns expected results from scrapers
-
-
 def test_save_jobs_to_file_create_file(tmp_path, monkeypatch):
     """_save_jobs_to_file should write a markdown file to the configured output path.
 
@@ -184,3 +181,45 @@ def test_job_to_markdown_return_string():
 
     # Verify
     assert isinstance(result, str)
+
+
+def test_select_jobs_above_threshold(monkeypatch):
+    """Jobs scoring at or above APPLY_THRESHOLD should be selected"""
+    # Setup
+    monkeypatch.setattr(job_search.Config, "APPLY_THRESHOLD", 80)
+
+    class FakeAnalyzer:
+        """Test double AIAnalyzer. Returns a fixed high score."""
+
+        def analyze_job(self, resume: str, description: str) -> dict:
+            return {"match_score": "85/100", "missing_required": []}
+
+    jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
+
+    # Exercise
+    selected, rejected = job_search.select_jobs(jobs, FakeAnalyzer(), "my resume")
+
+    # Verify
+    assert len(selected) == 1
+    assert len(rejected) == 0
+
+
+def test_reject_jobs_below_threshold(monkeypatch):
+    """Jobs scoring below APPLY_THRESHOLD should be rejected."""
+    # Setup
+    monkeypatch.setattr(job_search.Config, "APPLY_THRESHOLD", 80)
+
+    class FakeAnalyzer:
+        """Test double AIAnalyzer. Returns a fixed high score."""
+
+        def analyze_job(self, resume: str, description: str) -> dict:
+            return {"match_score": "40/100", "missing_required": []}
+
+    jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
+
+    # Exercise
+    selected, rejected = job_search.select_jobs(jobs, FakeAnalyzer(), "my resume")
+
+    # Verify
+    assert len(selected) == 0
+    assert len(rejected) == 1
