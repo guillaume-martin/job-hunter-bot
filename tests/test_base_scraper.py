@@ -103,3 +103,15 @@ def test_remove_older_jobs():
             "date_published": cutoff_date.strftime("%Y-%m-%d"),
         },
     ]
+
+
+def test_remove_older_jobs_empty_list(scraper):
+    """remove_older_jobs on an empty list should leave the list empty."""
+    # Setup
+    scraper.jobs = []
+
+    # Exercise
+    scraper.remove_older_jobs(days_threshold=5)
+
+    # Verify
+    assert scraper.jobs == []
