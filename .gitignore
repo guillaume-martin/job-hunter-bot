@@ -13,6 +13,9 @@
 *.log
 *.log.*
 
+# Backup files
+*.bckp
+
 # Virtual environment
 venv
 .env
