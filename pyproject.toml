@@ -24,6 +24,7 @@ types-requests = "^2.32.4.20260107"
 pre-commit = "^4.5.1"
 detect-secrets = "^1.5.0"
 pytest-env = "^1.6.0"
+moto = "^5.1.22"
 
 [tool.ruff]
 line-length = 88
