@@ -46,7 +46,7 @@ def scraper() -> TestScraper:
 # ---------------------------------------------------------------------------
 
 
-def test_remove_older_jobs():
+def test_remove_older_jobs(scraper):
     """The remove_older_jobs method should remove jobs older than the specified
     threshold
     """
@@ -59,7 +59,6 @@ def test_remove_older_jobs():
     recent_date1 = (cutoff_date + timedelta(days=1)).strftime("%Y-%m-%d")
     recent_date2 = today.strftime("%Y-%m-%d")
 
-    scraper = TestScraper("https://example.com", "ExampleScraper")
     scraper.jobs = [
         {
             "company": "Acme Inc",
