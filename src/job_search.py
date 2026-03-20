@@ -135,7 +135,7 @@ def find_jobs(searches):
 
 
 def remove_duplicates(jobs: list[dict]) -> list[dict]:
-    """emoves duplicate jobs based on their URLs.
+    """Removes duplicate jobs based on their URLs.
 
     Jobs with missing or duplicate URLs are removed. Only the first occurrence
     of each URL is kept. Jobs with "missing" URLs are skipped.
