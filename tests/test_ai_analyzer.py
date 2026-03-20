@@ -42,3 +42,28 @@ def test_build_message_replaces_placehoders(analyzer):
     assert "$job_description" not in message
     assert test_resume in message
     assert test_job_description in message
+
+
+def test_build_message_raises_on_empty_resume(analyzer):
+    """_build_message should raise ValueError when resume is empty."""
+    with pytest.raises(
+        ValueError, match="Resume and job description must not be empty"
+    ):
+        analyzer._build_message("", "Some job description")
+
+
+def test_build_message_raises_on_empty_job_description(analyzer):
+    """_build_message should raise ValueError when job description is empty."""
+    with pytest.raises(
+        ValueError, match="Resume and job description must not be empty"
+    ):
+        analyzer._build_message("Some resume", "")
+
+
+def test_build_message_raises_on_missing_prompt_file(analyzer):
+    """_build_message should raise FileNotFoundError when the prompt file is
+    missing.
+    """
+    with patch("builtins.open", side_effect=FileNotFoundError):
+        with pytest.raises(FileNotFoundError, match="Prompt file not found"):
+            analyzer._build_message("resume text", "job description text")
