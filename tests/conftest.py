@@ -64,3 +64,7 @@ class FakeResponse:
 
     def raise_for_status(self) -> None:
         pass
+
+    def __bool__(self) -> bool:
+        # Ensures if r: behaves correctly for non-200 responses
+        return self.status_code == 200
