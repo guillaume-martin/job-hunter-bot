@@ -9,8 +9,10 @@ from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 
+
 class WorkingNomadsScraper(BaseScraper):
     """Scraper for Working Nomads jobs"""
+
     def __init__(self):
         super().__init__(base_url=Config.WORKINGNOMADS_API_URL, name="WorkingNomads")
         self.locations = Config.WORKINGNOMADS_LOCATIONS
@@ -46,28 +48,28 @@ class WorkingNomadsScraper(BaseScraper):
                 "use_ats",
                 "position_type",
                 "annual_salary_usd",
-                "description"
+                "description",
             ],
             "sort": [
                 {"premium": {"order": "desc"}},
                 {"_score": {"order": "desc"}},
-                {"pub_date": {"order": "desc"}}
+                {"pub_date": {"order": "desc"}},
             ],
             "query": {
                 "bool": {
                     "must": {
                         "query_string": {
-                            "query": f"\"{term}\"",
-                            "fields": ["title^2", "description", "company"]
+                            "query": f'"{term}"',
+                            "fields": ["title^2", "description", "company"],
                         }
                     },
                     "filter": [
                         {"terms": {"locations": Config.WORKINGNOMADS_LOCATIONS}},
-                        {"range": {"pub_date": {"gte": f"now-{self.since}d/d"}}}
-                    ]
+                        {"range": {"pub_date": {"gte": f"now-{self.since}d/d"}}},
+                    ],
                 }
             },
-            "min_score": 2
+            "min_score": 2,
         }
 
         return payload
@@ -76,12 +78,12 @@ class WorkingNomadsScraper(BaseScraper):
         return cast(str, job_element.get("company", "unknown"))
 
     def extract_title(self, job_element: dict) -> str:
-        return cast(str, job_element.get("title", 'unknown'))
+        return cast(str, job_element.get("title", "unknown"))
 
     def extract_url(self, job_element: dict) -> str:
         return cast(str, job_element.get("apply_url"))
 
-    def extract_date_published(self, job_element:dict) -> str:
+    def extract_date_published(self, job_element: dict) -> str:
         publish_date = job_element["pub_date"]
         utc_publish_date = to_utc(publish_date)
         return datetime.strftime(utc_publish_date, "%Y-%m-%d")
@@ -96,7 +98,7 @@ class WorkingNomadsScraper(BaseScraper):
         user_agent = (
             "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
         )
-        tag = term.replace(' ', '-')
+        tag = term.replace(" ", "-")
         referer = (
             "https://www.workingnomads.com/jobs?"
             f"location={Config.WORKINGNOMADS_URL_LOCATION}&"
@@ -120,16 +122,17 @@ class WorkingNomadsScraper(BaseScraper):
             "Cookie": cookie,
             "Sec-Fetch-Dest": "empty",
             "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin"
+            "Sec-Fetch-Site": "same-origin",
         }
 
-
         r = self._request(
-                method="POST", 
-                url=self.base_url, 
-                json=payload, 
-                headers=headers
+            method="POST", url=self.base_url, json=payload, headers=headers
         )
+
+        if r is None:
+            logger.error(f"Request failed for term: {term}.")
+            return []
+
         response = r.json()
 
         try:
@@ -158,7 +161,7 @@ def to_utc(date_str):
     Converts an ISO 8601 date string to a UTC datetime object.
 
     Args:
-        date_str (str): The date string in ISO 8601 format. Can include 'Z' 
+        date_str (str): The date string in ISO 8601 format. Can include 'Z'
         to indicate UTC.
 
     Returns:
