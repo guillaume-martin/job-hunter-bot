@@ -125,7 +125,7 @@ def test_remove_older_jobs_empty_list(scraper):
     assert scraper.jobs == []
 
 
-def test_remove_older_jobs_all_olds(scraper):
+def test_remove_older_jobs_all_old(scraper):
     """remove_older_jobs should return an empty list when all jobs are too old."""
     # Setup
     old_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
@@ -191,7 +191,7 @@ def test_request_returns_response_on_success(scraper):
 
 
 def test_request_returns_none_after_all_retries_fail(scraper, monkeypatch):
-    """_request should return None when all retru attempts are exhausted."""
+    """_request should return None when all retry attempts are exhausted."""
     # Setup
     monkeypatch.setattr("src.scrappers.base_scraper.Config.REQUEST_RETRIES", 2)
 
