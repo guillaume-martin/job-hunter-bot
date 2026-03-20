@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
+from botocore.exceptions import NoCredentialsError
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import Timeout
 
@@ -225,3 +226,46 @@ def test_request_retries_on_timeout(scraper, monkeypatch):
     # Verify
     assert result is None
     assert mock_request.call_count == 3  # retried exactly REQUEST_RETRIES times
+
+
+# ---------------------------------------------------------------------------
+# _connect_dynamodb_table
+# ---------------------------------------------------------------------------
+
+
+def test_connect_dynamodb_table_raises_on_empty_name(scraper):
+    """_connect_dynamodb_table should raise ValueError for an empty table name."""
+    # Setup
+    # No Setup needed
+
+    # Exercise
+    with pytest.raises(ValueError, match="Table name cannot be empty"):
+        scraper._connect_dynamodb_table("")
+
+
+def test_connect_dynamodb_table_raises_on_no_credentials(scraper):
+    """_connect_dynamodb_table should raise ValueError when AWS credentials
+    are missing.
+    """
+    # Setup
+    # No Setup needed
+
+    # Exercise
+    with patch("boto3.resource", side_effect=NoCredentialsError()):
+        with pytest.raises(ValueError, match="AWS credentials not configured"):
+            scraper._connect_dynamodb_table("my-table")
+
+
+def test_connect_dynamodb_table_returns_table_on_success(scraper):
+    """_connect_dynamodb_table should return a DynamoDB Table resource."""
+    # Verify
+    mock_table = MagicMock()
+    mock_ddb = MagicMock()
+    mock_ddb.Table.return_value = mock_table
+
+    # Exercise
+    with patch("boto3.resource", return_value=mock_ddb):
+        result = scraper._connect_dynamodb_table("my-table")
+
+    # Verify
+    assert result == mock_table
