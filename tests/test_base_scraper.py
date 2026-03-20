@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
-from botocore.exceptions import NoCredentialsError
+from botocore.exceptions import ClientError, NoCredentialsError
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import Timeout
 
@@ -268,3 +268,17 @@ def test_connect_dynamodb_table_returns_table_on_success(scraper):
 
     # Verify
     assert result == mock_table
+
+
+def test_connect_dynamodb_table_raises_on_client_error(scraper):
+    """_connect_dynamodb_table should raise ValueError on ClientError."""
+    # Setup
+    error_response = {
+        "Error": {"Code": "ResourceNotFoundException", "Message": "Table not found"}
+    }
+    client_error = ClientError(error_response, "DescribeTable")
+
+    # Exercise
+    with patch("boto3.resource", side_effect=client_error):
+        with pytest.raises(ValueError, match="Failed to connect to DynamoDB table"):
+            scraper._connect_dynamodb_table("my-table")
