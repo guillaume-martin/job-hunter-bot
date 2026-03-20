@@ -38,3 +38,27 @@ def fake_analyzer():
             return self.return_value
 
     return FakeAnalyzer()
+
+
+class FakeResponse:
+    """Test double for requests.Response.
+
+    Args:
+        content: Response body — either a dict (for JSON APIs) or an HTML string.
+        status_code: HTTP status code (default 200).
+    """
+
+    def __init__(self, content, status_code: int = 200) -> None:
+        self._content = content
+        self.status_code = status_code
+        self.content = (
+            content.encode("utf-8")
+            if isinstance(content, str)
+            else str(content).encode()
+        )
+
+    def json(self):
+        return self._content
+
+    def raise_for_status(self) -> None:
+        pass
