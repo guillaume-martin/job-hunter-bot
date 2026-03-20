@@ -9,7 +9,7 @@ from requests.exceptions import Timeout
 from src.scrappers.base_scraper import BaseScraper
 
 
-class TestScraper(BaseScraper):
+class FakeScraper(BaseScraper):
     """Minimal concrete subclass of BaseScraper for testing.
 
     All abstract methods return empty/default values so tests can
@@ -36,9 +36,9 @@ class TestScraper(BaseScraper):
 
 
 @pytest.fixture
-def scraper() -> TestScraper:
-    """Provide a fresh TestScraper instance for each test."""
-    return TestScraper("https://example.com", "ExampleScraper")
+def scraper() -> FakeScraper:
+    """Provide a fresh FakeScraper instance for each test."""
+    return FakeScraper("https://example.com", "ExampleScraper")
 
 
 # ---------------------------------------------------------------------------
