@@ -258,7 +258,7 @@ def test_connect_dynamodb_table_raises_on_no_credentials(scraper):
 
 def test_connect_dynamodb_table_returns_table_on_success(scraper):
     """_connect_dynamodb_table should return a DynamoDB Table resource."""
-    # Verify
+    # Setup
     mock_table = MagicMock()
     mock_ddb = MagicMock()
     mock_ddb.Table.return_value = mock_table
