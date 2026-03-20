@@ -24,10 +24,10 @@ class AWSCredentials(TypedDict):
     """Temporary AWS credentials returned by STS AssumeRole
 
     Attributes:
-       AccessKeyId: The temporary access key ID.
-       SecretAccessKey: The temporary secret access key.
-       SessionToken: The token required to authenticate with the credentials.
-       Expiration: The datetime when the credentials expire.
+        AccessKeyId: The temporary access key ID.
+        SecretAccessKey: The temporary secret access key.
+        SessionToken: The token required to authenticate with the credentials.
+        Expiration: The datetime when the credentials expire.
     """
 
     AccessKeyId: str
