@@ -84,12 +84,12 @@ class TrulyRemoteScraper(BaseScraper):
             description_div = soup.select_one(selector)
         else:
             logger.error(f"Failed to retrieve job description from URL: {job_url}")
-            return "No description available"
+            return "Request for job page failed."
 
         if description_div:
             description: str = description_div.text.translate(translation_table).strip()
         else:
-            description = "No description available"
+            description = "Description div not found in job page."
 
         return description
 
