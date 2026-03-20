@@ -235,7 +235,7 @@ def test_request_retries_on_timeout(scraper, monkeypatch):
 def test_connect_dynamodb_table_raises_on_empty_name(scraper):
     """_connect_dynamodb_table should raise ValueError for an empty table name."""
     # Setup
-    # No Setup needed
+    # No setup required
 
     # Exercise
     with pytest.raises(ValueError, match="Table name cannot be empty"):
@@ -247,7 +247,7 @@ def test_connect_dynamodb_table_raises_on_no_credentials(scraper):
     are missing.
     """
     # Setup
-    # No Setup needed
+    # No setup required
 
     # Exercise
     with patch("boto3.resource", side_effect=NoCredentialsError()):

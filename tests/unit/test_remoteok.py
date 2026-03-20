@@ -176,7 +176,7 @@ def test_extract_job_description_handles_failed_request(scraper):
     fails.
     """
     # Setup
-    # No setup needed
+    # No setup required
 
     # Exercise
     with patch.object(scraper, "_request", return_value=None):
@@ -283,7 +283,7 @@ def test_get_jobs_returns_list_of_jobs(scraper):
 def test_get_jobs_returns_empty_list_on_failed_request(scraper):
     """get_jobs should return an empty list when _request fails."""
     # Setup
-    # No setup needed
+    # No setup required
 
     # Exercise
     with patch.object(scraper, "_request", return_value=None):
