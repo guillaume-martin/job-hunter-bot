@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from unittest.mock import patch
 
 import pytest
+from bs4 import BeautifulSoup
 
 from src.scrappers.wwr import WwrScraper
 
@@ -59,8 +60,6 @@ def scraper() -> WwrScraper:
 @pytest.fixture
 def job_element(scraper):
     """Provide a parsed BS4 job element for extraction tests."""
-    from bs4 import BeautifulSoup
-
     soup = BeautifulSoup(WWR_JOB_LISTING_HTML, "html.parser")
     return soup.find("li", class_="feature")
 
@@ -138,8 +137,6 @@ def test_extract_date_published_calculates_days_ago(scraper, job_element):
 def test_extract_date_published_handles_new_label(scraper):
     """extract_date_published should return today's date when the label is 'New'."""
     # Setup
-    from bs4 import BeautifulSoup
-
     soup = BeautifulSoup(WWR_JOB_NEW_DATE_HTML, "html.parser")
     job_element = soup.find("li", class_="feature")
 
@@ -155,8 +152,6 @@ def test_extract_date_published_returns_today_when_no_date_tag(scraper):
     absent.
     """
     # Setup
-    from bs4 import BeautifulSoup
-
     html = "<li class='feature'><h4 class='new-listing__header__title'>Job</h4></li>"
     soup = BeautifulSoup(html, "html.parser")
     job_element = soup.find("li", class_="feature")
