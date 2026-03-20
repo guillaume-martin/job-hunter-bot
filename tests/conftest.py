@@ -1,3 +1,5 @@
+import json
+
 import boto3
 import pytest
 from moto import mock_aws
@@ -52,9 +54,9 @@ class FakeResponse:
         self._content = content
         self.status_code = status_code
         self.content = (
-            content.encode("utf-8")
-            if isinstance(content, str)
-            else str(content).encode()
+            json.dumps(content).encode("utf-8")
+            if isinstance(content, dict)
+            else content.encode("utf-8")
         )
 
     def json(self):

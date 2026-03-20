@@ -104,7 +104,7 @@ class RemotiveScraper(BaseScraper):
 
                 if description_div is None:
                     logger.warning(f"Description div not found for {job_url}")
-                    return "No description available"
+                    return "Description div not found in job page."
 
                 job_description: str = (
                     description_div.get_text(separator=" ", strip=True)
@@ -113,9 +113,9 @@ class RemotiveScraper(BaseScraper):
                 )
             else:
                 logger.error(f"Failed to fetch job description for {job_url}")
-                job_description = "No description available"
+                job_description = "Request for job page failed."
         except (RequestException, IndexError) as e:
             logger.exception(f"Failed to extract job description for {job_url}: {e}")
-            job_description = "No description available"
+            job_description = "Request for job page failed."
 
         return job_description
