@@ -177,9 +177,7 @@ class WwrScraper(BaseScraper):
 
         soup = BeautifulSoup(page_content, "html.parser")
         try:
-            description_div = soup.find_all(
-                "div", class_="lis-container__job__content"
-            )[0]
+            description_div = soup.find("div", class_="lis-container__job__content")
             job_description = cast(
                 str, description_div.text.translate(translation_table)
             )
