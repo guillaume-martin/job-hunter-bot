@@ -1,0 +1,59 @@
+name: Unit Tests
+
+on:
+    pull_request:
+        branches:
+            - main
+    push:
+        branches:
+            - main
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                 python-version: "3.11"
+
+            - name: Install Poetry
+              uses: snok/install-poetry@v1
+              with:
+                virtualenvs-create: true
+                virtualenvs-in-project: true
+
+            - name: Cache dependencies
+              uses: actions/cache@v4
+              with:
+                path: .venv
+                key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+                restore-keys: |
+                  venv-${{ runner.os}}-
+
+            - name: Install dependencies
+              run: poetry install --with dev
+
+            - name: Run unit tests
+              run: poetry run pytest tests/unit/ -v
+              env:
+                AWS_REGION: us-east-1
+                FIREFOX_PATH: /usr/local/bin/firefox
+                GECKODRIVER_PATH: /usr/local/bin/geckodriver
+                SENDER: sender@example.com
+                RECIPIENT: recipient@example.com
+                ROLE_ARN: arn:aws:iam::123456789012:role/RoleName
+                SESSION_NAME: RemoteBotTestSession
+                AI_API_KEY: test-api-key    # pragma: allowlist secret
+                JOBS_TABLE: test_jobs_table
+                RETENTION_DAYS: 30
+                API_KEY: test-api-key       # pragma: allowlist secret
+                FROM_EMAIL: from@test.com
+                FROM_NAME: Test Sender
+                TO_EMAIL: to@test.com
+                TO_NAME: Test Receiver
+                RECEIVER_EMAIL: receiver@test.com
