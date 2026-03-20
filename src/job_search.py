@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from .ai_analyzer import AIAnalyzer
 from .config import Config
 from .mailer import send_email
-from .scrappers.scraper_factory import get_scraper
+from .scrapers.scraper_factory import get_scraper
 
 load_dotenv("src/.env")
 
@@ -111,25 +111,25 @@ def find_jobs(searches):
         for site in Config.SITES:
             logger.info("-" * 20)
             logger.info(f"Searching jobs on {site}...")
-            scrapper = get_scraper(site)
+            scraper = get_scraper(site)
             if site.lower() == "workingnomads":
-                scrapper.since = Config.SINCE
-            scrapper.get_jobs(term)
+                scraper.since = Config.SINCE
+            scraper.get_jobs(term)
 
             # Remove older jobs
             logger.info(f"Removing jobs older than {Config.SINCE} days...")
-            scrapper.remove_older_jobs(Config.SINCE)
+            scraper.remove_older_jobs(Config.SINCE)
 
             # Extract job descriptions
             logger.info("Extracting job descriptions...")
-            for job in scrapper.jobs:
+            for job in scraper.jobs:
                 if "description" not in job or not job["description"]:
-                    description = scrapper.extract_job_description(job["url"])
+                    description = scraper.extract_job_description(job["url"])
                     job["description"] = description
 
-            logger.info(f"Found {len(scrapper.jobs)} jobs on {site} for term '{term}'")
+            logger.info(f"Found {len(scraper.jobs)} jobs on {site} for term '{term}'")
 
-            jobs += scrapper.jobs
+            jobs += scraper.jobs
 
     return jobs
 

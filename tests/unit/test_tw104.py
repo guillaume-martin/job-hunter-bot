@@ -1,4 +1,4 @@
-"""Unit tests for src/scrappers/tw104.py.
+"""Unit tests for src/scrapers/tw104.py.
 
 Run with:
     pytest tests/test_remotive.py -v
@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from src.scrappers.tw104 import Tw104Scraper
+from src.scrapers.tw104 import Tw104Scraper
 from tests.conftest import FakeResponse
 
 # ---------------------------------------------------------------------------

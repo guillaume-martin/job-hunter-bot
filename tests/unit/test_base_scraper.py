@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError, NoCredentialsError
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import Timeout
 
-from src.scrappers.base_scraper import BaseScraper
+from src.scrapers.base_scraper import BaseScraper
 
 
 class FakeScraper(BaseScraper):
@@ -182,7 +182,7 @@ def test_request_returns_response_on_success(scraper):
     fake_response = FakeResponse()
 
     # Exercise
-    with patch("src.scrappers.base_scraper.request", return_value=fake_response):
+    with patch("src.scrapers.base_scraper.request", return_value=fake_response):
         result = scraper._request(url="https://example.com")
 
     # Verify
@@ -193,15 +193,15 @@ def test_request_returns_response_on_success(scraper):
 def test_request_returns_none_after_all_retries_fail(scraper, monkeypatch):
     """_request should return None when all retry attempts are exhausted."""
     # Setup
-    monkeypatch.setattr("src.scrappers.base_scraper.Config.REQUEST_RETRIES", 2)
+    monkeypatch.setattr("src.scrapers.base_scraper.Config.REQUEST_RETRIES", 2)
 
     # Exercise
     with (
         patch(
-            "src.scrappers.base_scraper.request",
+            "src.scrapers.base_scraper.request",
             side_effect=RequestsConnectionError("fail"),
         ),
-        patch("src.scrappers.base_scraper.time.sleep"),
+        patch("src.scrapers.base_scraper.time.sleep"),
     ):
         result = scraper._request(url="https://example.com")
 
@@ -212,13 +212,13 @@ def test_request_returns_none_after_all_retries_fail(scraper, monkeypatch):
 def test_request_retries_on_timeout(scraper, monkeypatch):
     """_request should retry on Timeout and eventually return None."""
     # Setup
-    monkeypatch.setattr("src.scrappers.base_scraper.Config.REQUEST_RETRIES", 3)
+    monkeypatch.setattr("src.scrapers.base_scraper.Config.REQUEST_RETRIES", 3)
     mock_request = MagicMock(side_effect=Timeout("timed out"))
 
     # Exercise
     with (
-        patch("src.scrappers.base_scraper.request", mock_request),
-        patch("src.scrappers.base_scraper.time.sleep"),
+        patch("src.scrapers.base_scraper.request", mock_request),
+        patch("src.scrapers.base_scraper.time.sleep"),
     ):
         result = scraper._request(url="https://example.com")
 

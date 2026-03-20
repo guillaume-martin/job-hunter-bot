@@ -113,7 +113,7 @@ def test_jobs_to_html_contails_job_data():
     assert "href='https://acme.com/job1'" in result
 
 
-def test_find_jobs_calls_scrappers(monkeypatch):
+def test_find_jobs_calls_scrapers(monkeypatch):
     """find_jobs should call the configured scrapers and return combined results"""
     # setup
     calls: list[tuple[str, str]] = []

@@ -1,4 +1,4 @@
-"""Unit tests for src/scrappers/remoteok.py.
+"""Unit tests for src/scrapers/remoteok.py.
 
 Run with:
     pytest tests/test_remoteok.py -v
@@ -9,7 +9,7 @@ from unittest.mock import patch
 import pytest
 from bs4 import BeautifulSoup
 
-from src.scrappers.remoteok import RemoteOkScraper
+from src.scrapers.remoteok import RemoteOkScraper
 
 # ---------------------------------------------------------------------------
 # Sample HTML fixtures
@@ -119,7 +119,7 @@ def test_extract_job_description_from_html_div(scraper):
     mock_request = make_mock_request({"html": HTML_JOB_DESCRIPTION})
 
     # Exercise
-    with patch("src.scrappers.base_scraper.request", side_effect=mock_request):
+    with patch("src.scrapers.base_scraper.request", side_effect=mock_request):
         description = scraper.extract_job_description("https://remoteok.com/html-job")
 
     # Verify
@@ -133,7 +133,7 @@ def test_extract_job_description_from_markdown_div(scraper):
     mock_request = make_mock_request({"markdown": MARKDOWN_JOB_DESCRIPTION})
 
     # Exercise
-    with patch("src.scrappers.base_scraper.request", side_effect=mock_request):
+    with patch("src.scrapers.base_scraper.request", side_effect=mock_request):
         description = scraper.extract_job_description(
             "https://remoteok.com/markdown-job"
         )
@@ -149,7 +149,7 @@ def test_extract_job_description_no_description(scraper):
     mock_request = make_mock_request({})
 
     # Exercise
-    with patch("src.scrappers.base_scraper.request", side_effect=mock_request):
+    with patch("src.scrapers.base_scraper.request", side_effect=mock_request):
         description = scraper.extract_job_description("https://remoteok.com/no-desc")
 
     # Verify
@@ -162,7 +162,7 @@ def test_extract_job_description_strips_whitespace_characters(scraper):
     mock_request = make_mock_request({"html": HTML_JOB_DESCRIPTION})
 
     # Exercise
-    with patch("src.scrappers.base_scraper.request", side_effect=mock_request):
+    with patch("src.scrapers.base_scraper.request", side_effect=mock_request):
         description = scraper.extract_job_description("https://remoteok.com/html-job")
 
     # Verify
@@ -269,7 +269,7 @@ def test_get_jobs_returns_list_of_jobs(scraper):
     mock_request = make_mock_request({"remoteok.com": JOB_LISTING_HTML})
 
     # Exercise
-    with patch("src.scrappers.base_scraper.request", side_effect=mock_request):
+    with patch("src.scrapers.base_scraper.request", side_effect=mock_request):
         jobs = scraper.get_jobs("python")
 
     # Verify

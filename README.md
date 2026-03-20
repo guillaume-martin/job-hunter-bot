@@ -71,7 +71,7 @@ job-hunter-bot/
 │   └── environments/       # Terraform + Terragrunt configuration
 ├── src/
 │   ├── config.py           # Centralized configuration
-│   ├── scrappers/
+│   ├── scrapers/
 │   │   ├── base_scraper.py # Abstract base class for all scrapers
 │   │   ├── remotive.py
 │   │   ├── remoteok.py
@@ -147,7 +147,7 @@ poetry run pytest tests/
 
 ## Adding a New Scraper
 
-1. Create a new file in `src/scrappers/`, e.g. `myboard.py`
+1. Create a new file in `src/scrapers/`, e.g. `myboard.py`
 2. Implement `BaseScraper`:
 
 ```python
@@ -197,4 +197,3 @@ scrapers = {
 - [ ] Complete IaC scripts with Terraform and Terragrunt
 - [ ] Build full CI/CD pipeline with GitHub Actions (lint → test → deploy)
 - [ ] Add monitoring and alerting (CloudWatch metrics, error notifications)
-
