@@ -14,6 +14,7 @@ from ..config import Config
 
 logger = logging.getLogger(__name__)
 
+
 class BaseScraper(ABC):
     def __init__(self, base_url: str, name: str):
         self.base_url = base_url
@@ -30,7 +31,7 @@ class BaseScraper(ABC):
         cutoff_date = datetime.now() - timedelta(days=days_threshold)
         filtered_jobs = []
         for job in self.jobs:
-            job_date = datetime.strptime(job['date_published'], "%Y-%m-%d")
+            job_date = datetime.strptime(job["date_published"], "%Y-%m-%d")
             if job_date.date() >= cutoff_date.date():
                 filtered_jobs.append(job)
         self.jobs = filtered_jobs
@@ -41,16 +42,16 @@ class BaseScraper(ABC):
             "company": self.extract_company(job_element),
             "title": self.extract_title(job_element),
             "url": self.extract_url(job_element),
-            "date_published": self.extract_date_published(job_element)
+            "date_published": self.extract_date_published(job_element),
         }
 
     def _build_search_url(self, term: str) -> str:
         """Construct the search URL for the given term."""
-        raise NotImplementedError("This scrapper does not use URL based search.")
+        raise NotImplementedError("This scraper does not use URL based search.")
 
     def _build_api_payload(self, term: str) -> dict:
         """Construct the API payload for the given term."""
-        raise NotImplementedError("This scrapper does not use API based search.")
+        raise NotImplementedError("This scraper does not use API based search.")
 
     @abstractmethod
     def extract_company(self, job_element) -> str:
@@ -92,10 +93,7 @@ class BaseScraper(ABC):
         for attempt in range(Config.REQUEST_RETRIES):
             try:
                 response = request(
-                    method,
-                    url,
-                    timeout=Config.REQUEST_TIMEOUT,
-                    **kwargs
+                    method, url, timeout=Config.REQUEST_TIMEOUT, **kwargs
                 )
                 response.raise_for_status()
                 return response
@@ -110,7 +108,7 @@ class BaseScraper(ABC):
                     f"{attempt + 1}/{Config.REQUEST_RETRIES}"
                 )
 
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
 
         logger.error(f"Failed to fetch {url} after {Config.REQUEST_RETRIES} attempts.")
         return None
@@ -127,7 +125,7 @@ class BaseScraper(ABC):
 
         Raises:
             ValueError: If the table name is empty or AWS credentials are missing.
-            botocore.exceptions.ClientError: If the table doesn’t exist or AWS 
+            botocore.exceptions.ClientError: If the table doesn’t exist or AWS
             access is denied.
         """
         if not table_name:
@@ -135,9 +133,8 @@ class BaseScraper(ABC):
 
         try:
             ddb = boto3.resource(
-                    'dynamodb',
-                    region_name=os.getenv('AWS_REGION', 'us-east-1')
-                )
+                "dynamodb", region_name=os.getenv("AWS_REGION", "us-east-1")
+            )
             return ddb.Table(table_name)
         except NoCredentialsError:
             raise ValueError("AWS credentials not configured.")
@@ -146,30 +143,28 @@ class BaseScraper(ABC):
 
     def _get_existing_job_ids(self) -> set[str]:
         """Fetch all existing job IDs from DynamoDB."""
-        table = self._connect_dynamodb_table(os.getenv('JOBS_TABLE', 'jobs_cache'))
+        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE", "jobs_cache"))
         job_ids: set[str] = set()
         last_evaluated_key = None
 
         while True:
             query_params = {
-                'IndexName': 'site-index',
-                'KeyConditionExpression': 'site = :site',
-                'ExpressionAttributeValues': {
-                    ':site': self.name
-                },
-                'ProjectionExpression': 'job_id'
+                "IndexName": "site-index",
+                "KeyConditionExpression": "site = :site",
+                "ExpressionAttributeValues": {":site": self.name},
+                "ProjectionExpression": "job_id",
             }
 
             if last_evaluated_key:
-                query_params['ExclusiveStartKey'] = last_evaluated_key
+                query_params["ExclusiveStartKey"] = last_evaluated_key
 
             response = table.query(**query_params)
-            job_ids.update(item['job_id'] for item in response.get('Items', []))
+            job_ids.update(item["job_id"] for item in response.get("Items", []))
 
-            if 'LastEvaluatedKey' not in response:
+            if "LastEvaluatedKey" not in response:
                 break
 
-            last_evaluated_key = response['LastEvaluatedKey']
+            last_evaluated_key = response["LastEvaluatedKey"]
 
         return job_ids
 
@@ -189,11 +184,13 @@ class BaseScraper(ABC):
                     # Convert to Unix timestamp
                     expires_at = int(expiry_date.timestamp())
 
-                    batch.put_item({
-                        "job_id": job_id,
-                        "site": self.name,
-                        "date_added": datetime.now(UTC).strftime('%Y-%m-%d'),
-                        "expires_at": expires_at
-                    })
+                    batch.put_item(
+                        {
+                            "job_id": job_id,
+                            "site": self.name,
+                            "date_added": datetime.now(UTC).strftime("%Y-%m-%d"),
+                            "expires_at": expires_at,
+                        }
+                    )
         except ClientError as e:
             raise ValueError(f"Failed to save jobs in DynamoDB: {e}")

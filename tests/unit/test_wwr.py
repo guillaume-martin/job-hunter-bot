@@ -1,4 +1,4 @@
-"""Unit tests for src/scrappers/wwr.py."""
+"""Unit tests for src/scrapers/wwr.py."""
 
 from datetime import datetime, timedelta
 from unittest.mock import patch
@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from bs4 import BeautifulSoup
 
-from src.scrappers.wwr import WwrScraper
+from src.scrapers.wwr import WwrScraper
 
 # ---------------------------------------------------------------------------
 # Sample data fixtures

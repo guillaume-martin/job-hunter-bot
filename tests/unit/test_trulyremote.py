@@ -1,10 +1,10 @@
-"""Unit tests for src/scrappers/trulyremote.py."""
+"""Unit tests for src/scrapers/trulyremote.py."""
 
 from unittest.mock import patch
 
 import pytest
 
-from src.scrappers.trulyremote import TrulyRemoteScraper, to_utc
+from src.scrapers.trulyremote import TrulyRemoteScraper, to_utc
 from tests.conftest import FakeResponse
 
 # ---------------------------------------------------------------------------
