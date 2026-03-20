@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
+from unittest.mock import MagicMock, patch
 
 import pytest
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import Timeout
 
 from src.scrappers.base_scraper import BaseScraper
 
@@ -35,6 +38,11 @@ class TestScraper(BaseScraper):
 def scraper() -> TestScraper:
     """Provide a fresh TestScraper instance for each test."""
     return TestScraper("https://example.com", "ExampleScraper")
+
+
+# ---------------------------------------------------------------------------
+# remove_older_jobs
+# ---------------------------------------------------------------------------
 
 
 def test_remove_older_jobs():
@@ -115,3 +123,105 @@ def test_remove_older_jobs_empty_list(scraper):
 
     # Verify
     assert scraper.jobs == []
+
+
+def test_remove_older_jobs_all_olds(scraper):
+    """remove_older_jobs should return an empty list when all jobs are too old."""
+    # Setup
+    old_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+    scraper.jobs = [
+        {"title": "Old Job 1", "date_published": old_date},
+        {"title": "Old Job 2", "date_published": old_date},
+    ]
+
+    # Exercise
+    scraper.remove_older_jobs(days_threshold=5)
+
+    # Verify
+    assert scraper.jobs == []
+
+
+def test_remove_older_jobs_all_recent(scraper):
+    """remove_older_jobs should keep all jobs when none exceed the threshold."""
+    # Setup
+    today = datetime.now().strftime("%Y-%m-%d")
+    scraper.jobs = [
+        {"title": "Job 1", "date_published": today},
+        {"title": "Job 2", "date_published": today},
+    ]
+
+    # Exercise
+    scraper.remove_older_jobs(days_threshold=5)
+
+    # Verify
+    assert len(scraper.jobs) == 2
+
+
+# ---------------------------------------------------------------------------
+# _request
+# ---------------------------------------------------------------------------
+
+
+def test_request_returns_response_on_success(scraper):
+    """_request should return the response object on a successful call."""
+
+    # Setup
+    class FakeResponse:
+        """Test double for a requests.Response object.
+
+        Implements only the attributes and methods _request actually calls:
+        - raise_for_status() — called after every request to check for HTTP errors
+        - status_code — used by callers to inspect the response
+        """
+
+        status_code = 200
+
+        def raise_for_status(self) -> None:
+            pass
+
+    fake_response = FakeResponse()
+
+    # Exercise
+    with patch("src.scrappers.base_scraper.request", return_value=fake_response):
+        result = scraper._request(url="https://example.com")
+
+    # Verify
+    assert result == fake_response
+    assert result.status_code == 200
+
+
+def test_request_returns_none_after_all_retries_fail(scraper, monkeypatch):
+    """_request should return None when all retru attempts are exhausted."""
+    # Setup
+    monkeypatch.setattr("src.scrappers.base_scraper.Config.REQUEST_RETRIES", 2)
+
+    # Exercise
+    with (
+        patch(
+            "src.scrappers.base_scraper.request",
+            side_effect=RequestsConnectionError("fail"),
+        ),
+        patch("src.scrappers.base_scraper.time.sleep"),
+    ):
+        result = scraper._request(url="https://example.com")
+
+    # Verify
+    assert result is None
+
+
+def test_request_retries_on_timeout(scraper, monkeypatch):
+    """_request should retry on Timeout and eventually return None."""
+    # Setup
+    monkeypatch.setattr("src.scrappers.base_scraper.Config.REQUEST_RETRIES", 3)
+    mock_request = MagicMock(side_effect=Timeout("timed out"))
+
+    # Exercise
+    with (
+        patch("src.scrappers.base_scraper.request", mock_request),
+        patch("src.scrappers.base_scraper.time.sleep"),
+    ):
+        result = scraper._request(url="https://example.com")
+
+    # Verify
+    assert result is None
+    assert mock_request.call_count == 3  # retried exactly REQUEST_RETRIES times
