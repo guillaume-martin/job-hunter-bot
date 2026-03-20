@@ -154,7 +154,7 @@ def test_save_jobs_to_file_create_file(tmp_path, monkeypatch):
     which would require patching unrelated dependencies (AIAnalyzer, resume, etc.).
     """
 
-    # Setting
+    # Setup
     monkeypatch.setattr(job_search.Config, "OUTPUT_PATH", str(tmp_path))
     monkeypatch.setattr(job_search.Config, "OUTPUT_FILE", "jobs.md")
 
