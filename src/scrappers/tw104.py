@@ -111,10 +111,10 @@ class Tw104Scraper(BaseScraper):
                 description = job_description.translate(translation_table).strip()
             else:
                 logger.error(f"Failed to fetch job description for {job_url}")
-                description = "No description available"
+                description = "Request for job page failed."
         except RequestException as e:
             logger.exception(
                 f"Failed to extract job description for {request_url}: {e}"
             )
-            description = "No description available"
+            description = "Request for job page failed."
         return description
