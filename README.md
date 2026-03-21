@@ -5,7 +5,6 @@
 [![AWS](https://img.shields.io/badge/AWS-DynamoDB%20%7C%20SES-orange)](https://aws.amazon.com/)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
-
 Job hunting is time-consuming — finding openings that actually match your skills requires
 checking multiple boards every day. Job Hunter Bot automates that process by scraping remote
 job boards, scoring each listing against your resume using AI, and delivering only the best
@@ -18,6 +17,7 @@ in a DynamoDB cache and filters them out on subsequent runs.
 ---
 
 ## 📚 Table of Contents
+
 - [Features](#-features)
 - [Demo](#-demo)
 - [How it works](#-how-it-works)
@@ -38,6 +38,8 @@ in a DynamoDB cache and filters them out on subsequent runs.
 - Configurable retention window — cached listings expire automatically via DynamoDB TTL
 - Extensible scraper architecture: add a new board by implementing a single base class
 
+[Top](#-table-of-contents)
+
 ---
 
 ## 📸 Demo
@@ -51,6 +53,8 @@ The bot generates a dated Markdown file for each run. Example output:
 | [Cloud Infrastructure Engineer](https://example.com/jobs/789) | Initech | 78/100 | 2025-12-07 | Terraform, AWS CDK |
 | [DevOps Engineer](https://example.com/jobs/101) | Umbrella Corp | 72/100 | 2025-12-07 | Go Programming Language, CI/CD Pipeline |
 | [Site Reliability Engineer](https://example.com/jobs/112) | Hooli | 65/100 | 2025-12-06 | Expert-level Kubernetes, On-call experience |
+
+[Top](#-table-of-contents)
 
 ---
 
@@ -71,9 +75,11 @@ G -->|local| H[File]
 F -->|email| I[AWS SES]
 ```
 
+[Top](#-table-of-contents)
+
 ---
 
-## 🛠️ Tech Stack
+## 🔧 Tech Stack
 
 | Layer                 | Technology                         |
 |-----------------------|------------------------------------|
@@ -87,11 +93,13 @@ F -->|email| I[AWS SES]
 | CI/CD                 | GitHub Actions                     |
 | Testing               | Pytest                             |
 
+[Top](#-table-of-contents)
+
 ---
 
 ## 📁 Project Structure
 
-```
+```txt
 job-hunter-bot/
 ├── .github/
 │   └── workflows/          # GitHub Actions pipelines
@@ -116,6 +124,8 @@ job-hunter-bot/
 └── README.md
 ```
 
+[Top](#-table-of-contents)
+
 ---
 
 ## 🚀 Getting Started
@@ -139,7 +149,9 @@ poetry install
 ### ⚙️ Configuration
 
 #### Environment Variables
+
 1. Create the `.env` file
+
 ```bash
 cp src/template.env src/.env
 ```
@@ -148,7 +160,6 @@ cp src/template.env src/.env
 Open `src/.env` and fill in the required values. Every variable in the file is required unless marked optional.
 
 > **Never commit `.env` to version control.**
-
 
 ### 💻 Running Locally
 
@@ -174,6 +185,8 @@ poetry run pytest tests/unit/ -v
 # Or via Makefile:
 make test
 ```
+
+[Top](#-table-of-contents)
 
 ---
 
@@ -220,9 +233,11 @@ scrapers = {
 }
 ```
 
+[Top](#-table-of-contents)
+
 ---
 
-## 🗺️ Roadmap
+## 📍 Roadmap
 
 - [x] Refactor all scrapers to use the new `BaseScraper` architecture
 - [x] Expand unit test coverage across all scrapers
@@ -231,6 +246,8 @@ scrapers = {
 - [ ] Build full CI/CD pipeline with GitHub Actions (lint → test → deploy)
 - [ ] Add monitoring and alerting (CloudWatch metrics, error notifications)
 
+[Top](#-table-of-contents)
+
 ---
 
 ## 🤝 Contributing
@@ -238,8 +255,12 @@ scrapers = {
 Issues and pull requests are welcome. Please open an issue first to discuss
 what you'd like to change.
 
+[Top](#-table-of-contents)
+
 ---
 
 ## 📄 License
 
 Distributed under the GPL-3.0 License. See [LICENSE](LICENSE) for details.
+
+[Top](#-table-of-contents)

@@ -42,4 +42,4 @@ repos:
     rev: v0.9.36
     hooks:
       - id: pymarkdown
-        args: ["--disable-rules", "MD013 MD029"]
+        args: ["--disable-rules", "MD013,MD029", "scan"]
