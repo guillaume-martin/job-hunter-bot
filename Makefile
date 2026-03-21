@@ -9,7 +9,10 @@ build:
 	docker build -t $(IMAGE_NAME):$(TAG) -f $(DOCKERFILE_PATH) .
 
 run:
-	docker run -i --rm -v ~/.aws:/home/appuser/.aws $(IMAGE_NAME):$(TAG)
+	docker run -i --rm \
+        -v ~/.aws:/home/appuser/.aws \
+        --env-file src/.env \
+        $(IMAGE_NAME):$(TAG)
 
 .PHONY: build run
 
