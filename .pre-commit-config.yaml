@@ -37,3 +37,9 @@ repos:
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]
+
+  - repo: https://github.com/jackdewinter/pymarkdown
+    rev: v0.9.36
+    hooks:
+      - id: pymarkdown
+        args: ["--disable-rules", "MD013,MD029", "fix"]
