@@ -1,0 +1,25 @@
+name: Lint
+
+on:
+    pull_request:
+        branches:
+            - main
+    push:
+        branches:
+            - main
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Set up Python
+              uses: actions/setup-python@v6
+              with:
+                python-version: "3.11"
+
+            - name: Run pre-commit hooks
+              uses: pre-commit/action@v3.0.1

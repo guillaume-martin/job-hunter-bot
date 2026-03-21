@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: 
+      # Step 1:
       - uses: actions/checkout@v2
 
       # Step 2:
@@ -38,11 +38,11 @@ jobs:
       - name: Activate and Install Dependencies into Virtual Env
         run: |
           python -m venv venv
-          source venv/bin/activate 
+          source venv/bin/activate
           pip3 install -r requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
 
-      # Tests fail to run properly 
+      # Tests fail to run properly
       # TODO uncomment after test issue is fixed
       # Step 6
       # - name: Run Tests
@@ -50,15 +50,15 @@ jobs:
 
       # Step 7
       - name: Create zipfile archive of dependencies
-        run: | 
+        run: |
           cd ./venv/lib/python3.8/site-packages
           zip -r9 ../../../../job-hunter-bot.zip .
 
       # Step 8
       - name: Add app to zip file
         run: cd ./src && zip -g ../job-hunter-bot.zip -r .
-        
-      # Step 9 
+
+      # Step 9
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
         with:

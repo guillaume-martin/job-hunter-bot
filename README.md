@@ -1,6 +1,7 @@
 # Job Hunter Bot
 
 <!-- Status -->
+[![Lint](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/lint.yml/badge.svg)](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/lint.yml)
 [![Unit Tests](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/tests.yml/badge.svg)](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/tests.yml)
 [![Last Commit](https://img.shields.io/github/last-commit/guillaume-martin/job-hunter-bot)](https://github.com/guillaume-martin/job-hunter-bot/commits/main)
 
