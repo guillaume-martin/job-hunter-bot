@@ -54,7 +54,7 @@ The bot generates a dated Markdown file for each run. Example output:
 
 ---
 
-## 🏗️ Architecture
+## 🔄 How it works
 
 ```mermaid
 flowchart TD
@@ -70,6 +70,7 @@ G -->|cloud| F[Mailer]
 G -->|local| H[File]
 F -->|email| I[AWS SES]
 ```
+
 ---
 
 ## 🛠️ Tech Stack
