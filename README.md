@@ -1,66 +1,98 @@
 # Job Hunter Bot
 
-A Python bot that scrapes remote job boards, deduplicates results against a DynamoDB cache, and delivers new listings by email.
+[![Unit Tests](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/tests.yml/badge.svg)](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/tests.yml)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![AWS](https://img.shields.io/badge/AWS-DynamoDB%20%7C%20SES-orange)](https://aws.amazon.com/)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+
+
+Job hunting is time-consuming — finding openings that actually match your skills requires
+checking multiple boards every day. Job Hunter Bot automates that process by scraping remote
+job boards, scoring each listing against your resume using AI, and delivering only the best
+matches to your inbox.
+
+Some job boards let recruiters refresh their listings daily to stay at the top of search
+results. To avoid seeing the same listings every day, the bot tracks previously scraped jobs
+in a DynamoDB cache and filters them out on subsequent runs.
 
 ---
 
-## Features
+## 📚 Table of Contents
+- [Features](#features)
+- [Demo](#-demo)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Adding a New Scraper](#adding-a-new-scraper)
+- [Roadmap](#roadmap)
+
+---
+
+## ✨ Features
 
 - Scrapes multiple remote job boards (Remotive, RemoteOK, We Work Remotely, Working Nomads, Truly Remote, 104)
-- Filters jobs by search term and location (Worldwide / APAC)
-- Deduplicates against a DynamoDB cache to avoid re-sending known listings
-- Sends new listings by email via AWS SES
-- Configurable retention window — old listings expire automatically via DynamoDB TTL
+- Scores each listing against your resume using AI to surface the best matches
+- Filters by search term and location (Worldwide / APAC)
+- Tracks previously seen listings in DynamoDB to avoid duplicates across daily runs
+- Delivers new matches by email via AWS SES
+- Configurable retention window — cached listings expire automatically via DynamoDB TTL
 - Extensible scraper architecture: add a new board by implementing a single base class
 
 ---
 
-## Architecture
+## 📸 Demo
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   Job Hunter Bot                    │
-│                                                     │
-│  ┌────────────────┐      ┌───────────────────────┐  │
-│  │ ScraperFactory │────▶│ BaseScraper (ABC)     │  │
-│  └────────────────┘      │  - get_jobs()         │  │
-│                          │  - extract_company()  │  │
-│                          │  - extract_title()    │  │
-│                          │  - ...                │  │
-│                          └──────────┬────────────┘  │
-│                                     │ implements    │
-│              ┌──────────────────────┼──────────┐    │
-│              ▼          ▼           ▼          ▼    │
-│         Remotive   RemoteOK   WorkingNomads   ...   │
-└──────────────────────────┬──────────────────────────┘
-                           │
-              ┌────────────┴────────────┐
-              ▼                         ▼
-       ┌─────────────┐          ┌──────────────┐
-       │  DynamoDB   │          │   AWS SES    │
-       │ (job cache) │          │  (delivery)  │
-       └─────────────┘          └──────────────┘
-```
+The bot generates a dated Markdown file for each run. Example output (`2025-12-09-jobs-selected.md`):
+
+| Title | Company | Match Score | Date Published | Missing Required Skills |
+| ----- | ------- | ----------- | -------------- | ----------------------- |
+| [Senior Backend Engineer](https://example.com/jobs/123) | Acme Corp | 92/100 | 2025-12-08 | |
+| [Staff Platform Engineer](https://example.com/jobs/456) | Globex Inc | 85/100 | 2025-12-08 | Kubernetes, Helm |
+| [Cloud Infrastructure Engineer](https://example.com/jobs/789) | Initech | 78/100 | 2025-12-07 | Terraform, AWS CDK |
+| [DevOps Engineer](https://example.com/jobs/101) | Umbrella Corp | 72/100 | 2025-12-07 | Go Programming Language, CI/CD Pipeline |
+| [Site Reliability Engineer](https://example.com/jobs/112) | Hooli | 65/100 | 2025-12-06 | Expert-level Kubernetes, On-call experience |
 
 ---
 
-## Tech Stack
+## 🏗️ Architecture
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.11+ |
-| Dependency management | Poetry |
-| Scraping | Requests, BeautifulSoup4, Selenium |
-| Storage | AWS DynamoDB |
-| Email delivery | AWS SES |
-| Infrastructure | Terraform + Terragrunt |
-| Containerization | Docker |
-| CI/CD | GitHub Actions |
-| Testing | Pytest |
+```mermaid
+flowchart TD
+    A[job_search.py] -->|search terms| B[ScraperFactory]
+    B --> C[RemoteOK]
+    B --> D[Remotive]
+    B --> E[WorkingNomads]
+    B --> F[TrulyRemote]
+    B --> G[WeWorkRemotely]
+    B --> H[104]
+
+    H <-->|deduplicate| I[(DynamoDB)]
+
+    C & D & E & F & G & H -->|raw jobs| A
+    A -->|job + resume| J[AIAnalyzer]
+    J -->|match score| A
+    A -->|selected jobs| K[Mailer]
+    K -->|email| L[AWS SES]
+```
+---
+
+## 🛠️ Tech Stack
+
+| Layer                 | Technology                         |
+|-----------------------|------------------------------------|
+| Language              | Python 3.11+                       |
+| Dependency management | Poetry                             |
+| Scraping              | Requests, BeautifulSoup4, Selenium |
+| Storage               | AWS DynamoDB                       |
+| Email delivery        | AWS SES                            |
+| Infrastructure        | Terraform + Terragrunt             |
+| Containerization      | Docker                             |
+| CI/CD                 | GitHub Actions                     |
+| Testing               | Pytest                             |
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 job-hunter-bot/
@@ -79,6 +111,9 @@ job-hunter-bot/
 │   │   └── ...
 │   └── ...
 ├── tests/
+│   ├── e2e/
+│   ├── integration/
+│   └── unit/
 ├── Makefile
 ├── pyproject.toml
 └── README.md
@@ -86,9 +121,9 @@ job-hunter-bot/
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
-### Prerequisites
+### 📋 Prerequisites
 
 - Python 3.11+
 - [Poetry](https://python-poetry.org/docs/#installation)
@@ -96,7 +131,7 @@ job-hunter-bot/
 - A DynamoDB table for job caching
 - An AWS SES verified sender address
 
-### Installation
+### 📦 Installation
 
 ```bash
 git clone https://github.com/guillaume-martin/job-hunter-bot.git
@@ -104,28 +139,21 @@ cd job-hunter-bot
 poetry install
 ```
 
-### Configuration
+### ⚙️ Configuration
 
-Create a `.env` file at the project root:
-
-```env
-# AWS
-AWS_REGION=us-east-1
-
-# DynamoDB
-JOBS_TABLE=your-dynamodb-table-name
-
-# Job retention
-RETENTION_DAYS=30
-
-# Email delivery
-FROM_EMAIL=sender@example.com
-TO_EMAIL=recipient@example.com
+#### Environment Variables
+1. Create the `.env` file
+```bash
+cp src/template.env src/.env
 ```
 
-> **Never commit `.env` to version control.** A `.env.example` template is provided.
+2. Update the variables
+Open `src/.env` and fill in the required values. Every variable in the file is required unless marked optional.
 
-### Running locally
+> **Never commit `.env` to version control.**
+
+
+### 💻 Running locally
 
 ```bash
 # Build the Docker image
@@ -137,15 +165,22 @@ make run
 
 The `run` target mounts your local AWS credentials into the container, so no additional AWS configuration is needed inside Docker.
 
-To run the tests directly:
+### ☁️ Running in the cloud
+
+🚧 Coming Soon
+
+### 🧪 Run the tests
 
 ```bash
-poetry run pytest tests/
+poetry run pytest tests/unit/ -v
+
+# Or via Makefile:
+make test
 ```
 
 ---
 
-## Adding a New Scraper
+## 🔌 Adding a New Scraper
 
 1. Create a new file in `src/scrapers/`, e.g. `myboard.py`
 2. Implement `BaseScraper`:
@@ -190,10 +225,24 @@ scrapers = {
 
 ---
 
-## Roadmap
+## 🗺️ Roadmap
 
-- [ ] Refactor all scrapers to use the new `BaseScraper` architecture
-- [ ] Expand unit test coverage across all scrapers
+- [x] Refactor all scrapers to use the new `BaseScraper` architecture
+- [x] Expand unit test coverage across all scrapers
+- [ ] Add integration tests for all scrapers
 - [ ] Complete IaC scripts with Terraform and Terragrunt
 - [ ] Build full CI/CD pipeline with GitHub Actions (lint → test → deploy)
 - [ ] Add monitoring and alerting (CloudWatch metrics, error notifications)
+
+---
+
+## 🤝 Contributing
+
+Issues and pull requests are welcome. Please open an issue first to discuss
+what you'd like to change.
+
+---
+
+## 📄 License
+
+Distributed under the GPL-3.0 License. See [LICENSE](LICENSE) for details.
