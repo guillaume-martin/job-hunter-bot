@@ -42,7 +42,7 @@ in a DynamoDB cache and filters them out on subsequent runs.
 
 ## 📸 Demo
 
-The bot generates a dated Markdown file for each run. Example output (`2025-12-09-jobs-selected.md`):
+The bot generates a dated Markdown file for each run. Example output:
 
 | Title | Company | Match Score | Date Published | Missing Required Skills |
 | ----- | ------- | ----------- | -------------- | ----------------------- |
