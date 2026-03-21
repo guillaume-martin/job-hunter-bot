@@ -25,6 +25,8 @@ in a DynamoDB cache and filters them out on subsequent runs.
 - [Getting Started](#-getting-started)
 - [Adding a New Scraper](#-adding-a-new-scraper)
 - [Roadmap](#-roadmap)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ---
 
@@ -241,6 +243,7 @@ scrapers = {
 
 - [x] Refactor all scrapers to use the new `BaseScraper` architecture
 - [x] Expand unit test coverage across all scrapers
+- [ ] Refactor `remoteco.py` legacy scraper into `BaseScraper` architecture
 - [ ] Add integration tests for all scrapers
 - [ ] Complete IaC scripts with Terraform and Terragrunt
 - [ ] Build full CI/CD pipeline with GitHub Actions (lint → test → deploy)
