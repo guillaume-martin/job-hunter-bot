@@ -18,13 +18,13 @@ in a DynamoDB cache and filters them out on subsequent runs.
 ---
 
 ## 📚 Table of Contents
-- [Features](#features)
+- [Features](#-features)
 - [Demo](#-demo)
-- [Architecture](#architecture)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Adding a New Scraper](#adding-a-new-scraper)
-- [Roadmap](#roadmap)
+- [How it works](#-how-it-works)
+- [Tech Stack](#-tech-stack)
+- [Getting Started](#-getting-started)
+- [Adding a New Scraper](#-adding-a-new-scraper)
+- [Roadmap](#-roadmap)
 
 ---
 
