@@ -20,7 +20,7 @@ in a DynamoDB cache and filters them out on subsequent runs.
 
 - [Features](#-features)
 - [Demo](#-demo)
-- [How it works](#-how-it-works)
+- [How It Works](#-how-it-works)
 - [Tech Stack](#-tech-stack)
 - [Getting Started](#-getting-started)
 - [Adding a New Scraper](#-adding-a-new-scraper)
