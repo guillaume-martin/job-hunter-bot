@@ -54,7 +54,7 @@ The bot generates a dated Markdown file for each run. Example output:
 
 ---
 
-## 🔄 How it works
+## 🔄 How It Works
 
 ```mermaid
 flowchart TD
@@ -150,7 +150,7 @@ Open `src/.env` and fill in the required values. Every variable in the file is r
 > **Never commit `.env` to version control.**
 
 
-### 💻 Running locally
+### 💻 Running Locally
 
 ```bash
 # Build the Docker image
@@ -162,11 +162,11 @@ make run
 
 The `run` target mounts your local AWS credentials into the container, so no additional AWS configuration is needed inside Docker.
 
-### ☁️ Running in the cloud
+### ☁️ Running In The Cloud
 
 🚧 Coming Soon
 
-### 🧪 Run the tests
+### 🧪 Run The Tests
 
 ```bash
 poetry run pytest tests/unit/ -v
