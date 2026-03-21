@@ -58,21 +58,17 @@ The bot generates a dated Markdown file for each run. Example output:
 
 ```mermaid
 flowchart TD
-    A[job_search.py] -->|search terms| B[ScraperFactory]
-    B --> C[RemoteOK]
-    B --> D[Remotive]
-    B --> E[WorkingNomads]
-    B --> F[TrulyRemote]
-    B --> G[WeWorkRemotely]
-    B --> H[104]
 
-    H <-->|deduplicate| I[(DynamoDB)]
-
-    C & D & E & F & G & H -->|raw jobs| A
-    A -->|job + resume| J[AIAnalyzer]
-    J -->|match score| A
-    A -->|selected jobs| K[Mailer]
-    K -->|email| L[AWS SES]
+A[job_search.py] -->|1 - search terms| B[ScraperFactory]
+B --> C[Scraper Instance]
+C <-->|"Deduplicate (104 only)"| D[(DynamoDB)]
+C -->|2 - raw jobs| A
+A -->|3 - job + resume| E[AIAnalyzer]
+E -->|4 - match score| A
+A -->|5 - selected jobs| G[Output]
+G -->|cloud| F[Mailer]
+G -->|local| H[File]
+F -->|email| I[AWS SES]
 ```
 ---
 
