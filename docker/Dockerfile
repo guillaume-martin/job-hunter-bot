@@ -14,10 +14,10 @@ RUN apt-get update \
         firefox-esr \
     && curl -L https://github.com/mozilla/geckodriver/releases/download/v0.36.0/geckodriver-v0.36.0-linux64.tar.gz | tar xz -C /usr/local/bin \
     && apt-get clean cache \
-    && rm -rf /var/lib/apt/lists/* 
+    && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user and switch to it
-RUN useradd -m appuser 
+RUN useradd -m appuser
 USER appuser
 
 # Copy only the requirements file first to leverage Docker cache

@@ -7,19 +7,17 @@ import os
 
 class Config:
     # Searches are a list keywords searched on the job boards
-    SEARCHES: list[str] = [
+    SEARCHES: list[str] = []
 
-    ]
-
-    # List of sites to search. They should match the names of the scrapers in 
+    # List of sites to search. They should match the names of the scrapers in
     # `scraper_factory.py`
     SITES: list[str] = [
-       "104",
-       "remoteok",
-       "remotive",
-       "trulyremote",
-       "workingnomads",
-       "weworkremotely",
+        "104",
+        "remoteok",
+        "remotive",
+        "trulyremote",
+        "workingnomads",
+        "weworkremotely",
     ]
 
     # Number of days since the job was published
@@ -27,7 +25,7 @@ class Config:
     SINCE = 2
 
     # Scrapers requests settings
-    REQUEST_RETRIES = 3     # Number of retries when requests fail.
+    REQUEST_RETRIES = 3  # Number of retries when requests fail.
     REQUEST_TIMEOUT = 60
 
     # AI settings
@@ -48,7 +46,7 @@ class Config:
     #      Scrapers settings       #
     # ============================ #
 
-   # Selenium configuration
+    # Selenium configuration
     FIREFOX_PATH = os.getenv("FIREFOX_PATH")
     GECKODRIVER_PATH = os.getenv("GECKODRIVER_PATH")
 
@@ -58,7 +56,7 @@ class Config:
     WORKINGNOMADS_URL_LOCATION = "taiwan,-province-of-china"
 
     # We Work Remotely Settings
-    WWR_BASE_URL = 'https://weworkremotely.com'
+    WWR_BASE_URL = "https://weworkremotely.com"
     WWR_REGION = "taiwan"
 
     # Remotive settings
