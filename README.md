@@ -22,6 +22,7 @@ in a DynamoDB cache and filters them out on subsequent runs.
 - [Demo](#-demo)
 - [How It Works](#-how-it-works)
 - [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
 - [Adding a New Scraper](#-adding-a-new-scraper)
 - [Roadmap](#-roadmap)
