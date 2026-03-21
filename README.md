@@ -1,8 +1,15 @@
 # Job Hunter Bot
 
+<!-- Status -->
 [![Unit Tests](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/tests.yml/badge.svg)](https://github.com/guillaume-martin/job-hunter-bot/actions/workflows/tests.yml)
+[![Last Commit](https://img.shields.io/github/last-commit/guillaume-martin/job-hunter-bot)](https://github.com/guillaume-martin/job-hunter-bot/commits/main)
+
+<!-- Stack -->
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![Poetry](https://img.shields.io/badge/Poetry-package%20manager-blue?logo=poetry)](https://python-poetry.org/)
 [![AWS](https://img.shields.io/badge/AWS-DynamoDB%20%7C%20SES-orange)](https://aws.amazon.com/)
+
+<!-- License -->
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
 
 Job hunting is time-consuming — finding openings that actually match your skills requires
