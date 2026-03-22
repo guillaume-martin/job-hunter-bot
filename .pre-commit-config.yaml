@@ -49,3 +49,9 @@ repos:
     hooks:
       - id: hadolint-docker
         args: ["--failure-threshold", "warning"]
+
+  - repo: https://github.com/AleksaC/terraform-py
+    rev: v1.14.7
+    hooks:
+      - id: tf-fmt
+      - id: tf-validate
