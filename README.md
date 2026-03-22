@@ -29,6 +29,7 @@ in a DynamoDB cache and filters them out on subsequent runs.
 - [Features](#-features)
 - [Demo](#-demo)
 - [How It Works](#-how-it-works)
+- [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
@@ -90,6 +91,14 @@ F -->|email| I[AWS SES]
 
 ---
 
+## 📐 Architecture
+
+![](docs/img/architecture.png)
+
+[Top](#-table-of-contents)
+
+---
+
 ## 🔧 Tech Stack
 
 | Layer                 | Technology                         |
@@ -115,8 +124,14 @@ job-hunter-bot/
 ├── .github/
 │   └── workflows/          # GitHub Actions pipelines
 ├── docker/                 # Dockerfile and compose files
+├── docs/
+│   ├── architecture.py     # generates the architecture diagram
+│   └── img/
 ├── iac/
 │   └── environments/       # Terraform + Terragrunt configuration
+│       ├── develop/
+│       ├── prod/
+│       └── staging/
 ├── src/
 │   ├── config.py           # Centralized configuration
 │   ├── scrapers/
