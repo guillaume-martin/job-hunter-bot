@@ -39,6 +39,7 @@ __pycache__
 *.tfvars.json
 *.tfplan
 .terragrunt-cache
+**/local_vars.hcl
 
 # Data files
 resume.txt
