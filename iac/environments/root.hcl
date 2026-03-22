@@ -4,35 +4,65 @@ locals {
 
   # Extract variables to top level
   environment = local.environment_vars.locals.environment
-  aws_region  = local.environment_vars.locals.aws_region
+  aws_region  = local.common_vars.locals.aws_region
   aws_profile = local.common_vars.locals.aws_profile
   project     = local.common_vars.locals.aws_project
+  cost_center = local.common_vars.locals.cost_center
+
+  component = basename(get_terragrunt_dir())
 
   name = replace("${local.project}/${local.environment}/${local.component}", "_", "-")
 
-  component = replace(regex("^.*${local.environment}/(.*)$", path_relative_to_include())[0], "/[^a-zA-Z0-9]/", "-")
-
+  state_bucket = "iac-tfstate-files"
   statefile = "${local.name}/terraform.tfstate"
 
   default_tags = {
-    "Name"      = local.name
-    "project"   = local.project
-    "component" = local.component
-    "statefile" = local.statefile
+    "Name"        = local.name
+    "project"     = local.project
+    "env"         = local.environment
+    "component"   = local.component
+    "managed-by"  = "iac"
+    "cost-center" = local.cost_center
+    "owner"       = regex(".*/(.+)$", get_aws_caller_identity_arn())[0]
   }
 }
 
 remote_state {
- backend = "local"
+  backend = "s3"
 
- generate = {
-    path = "backend.tf"
+  generate = {
+    path      = "backend.tf"
     if_exists = "overwrite_terragrunt"
- }
+  }
 
   config = {
-    path = "${get_parent_terragrunt_dir()}/${path_relative_to_include()}/terraform.tfstate"
+    bucket         = local.state_bucket
+    dynamodb_table = "terraform-state-lock"
+    key            = local.statefile
+    region         = "us-east-1"
+    profile        = local.aws_profile
+    encrypt        = true
+    # Following two configurations are required unless we want to update our state bucket
+    skip_bucket_root_access  = true
+    skip_bucket_enforced_tls = true
   }
+}
+
+generate "versions" {
+  path      = "versions.tf"
+  if_exists = "overwrite"
+  contents  = <<EOF
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+EOF
 }
 
 generate "aws_provider" {

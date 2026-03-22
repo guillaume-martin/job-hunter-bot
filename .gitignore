@@ -32,6 +32,12 @@ __pycache__
 .mypy_cache/
 
 # IaC
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.tfplan
 .terragrunt-cache
 
 # Data files
