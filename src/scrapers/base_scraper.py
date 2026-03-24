@@ -194,3 +194,74 @@ class BaseScraper(ABC):
                     )
         except ClientError as e:
             raise ValueError(f"Failed to save jobs in DynamoDB: {e}")
+
+
+class SeleniumMixin:
+    """Mixin class providing Selenium-based HTML retrieval for scrapers.
+
+    Use this mixin in scrapers that need to render JavaScript-heavy pages
+    or require Firefox for scraping.
+
+    Example:
+        class MyJsHeavyScraper(BaseScraper, SeleniumMixin):
+            def get_jobs(self, term):
+                page_content = self._retrieve_html_content(url)
+    """
+
+    def _retrieve_html_content(self, url: str) -> str:
+        """Extract source code of a web page from the URL using Selenium with Firefox.
+
+        Args:
+            url (str): The URL of the web page to retrieve.
+
+        Returns:
+            str: The source code of the page.
+        """
+        # Lazy imports - only load Selenium when this method is called
+        import shutil
+
+        from selenium import webdriver
+        from selenium.common.exceptions import InvalidArgumentException
+        from selenium.webdriver.firefox.options import Options
+        from selenium.webdriver.firefox.service import Service
+
+        # Setup Firefox options
+        firefox_options = Options()
+        firefox_options.add_argument("--headless")
+        firefox_options.add_argument("--no-sandbox")
+        firefox_options.add_argument("--disable-dev-shm-usage")
+
+        # Auto-detect Firefox binary
+        firefox_path = shutil.which("firefox-esr")
+
+        if firefox_path:
+            logger.info(f"Using Firefox binary: {firefox_path}")
+            firefox_options.binary_location = firefox_path
+        else:
+            raise ValueError(
+                "Firefox binary not found. "
+                "Ensure Firefox is installed in the container."
+            )
+
+        # Auto-detect Geckodriver
+        gecko_path = shutil.which("geckodriver")
+        service = Service(gecko_path) if gecko_path else Service()
+
+        # Start a new browser session
+        driver = webdriver.Firefox(service=service, options=firefox_options)
+
+        try:
+            driver.get(url)
+            # Wait for the page to load
+            time.sleep(5)
+            page_content: str = driver.page_source
+        except InvalidArgumentException as e:
+            logger.exception(f"Failed to reach URL {url}: {e}")
+            page_content = ""
+        except TimeoutError:
+            logger.exception("Loading took too much time!")
+            page_content = ""
+        finally:
+            driver.quit()
+
+        return page_content
