@@ -11,12 +11,12 @@ from typing import Any
 
 from bs4 import BeautifulSoup
 
+from ..config import Config
 from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 
 API_URL = "https://trulyremote.co/api/getListing"
-LOCATIONS = ["Anywhere in the world", "Asia"]
 
 
 class TrulyRemoteScraper(BaseScraper):
@@ -24,10 +24,11 @@ class TrulyRemoteScraper(BaseScraper):
 
     def __init__(self):
         super().__init__(base_url=API_URL, name="TrulyRemote")
-        self.locations = LOCATIONS
+        _cfg = Config.scraper_config("trulyremote")
+        self.locations: list[str] = _cfg.get("locations", ["Anywhere in the world"])
 
     def _build_api_payload(self, term):
-        payload = {"term": term, "locations": LOCATIONS}
+        payload = {"term": term, "locations": self.locations}
 
         return payload
 

@@ -5,12 +5,13 @@ from typing import Any
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
 
+from ..config import Config
 from .base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://remoteok.com"
-LOCATIONS = ["Worldwide", "region_AS", "TW"]
+
 
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -33,10 +34,12 @@ HEADERS = {
 class RemoteOkScraper(BaseScraper):
     def __init__(self):
         super().__init__(base_url=BASE_URL, name="RemoteOK")
+        _cfg = Config.scraper_config("remoteok")
+        self.locations: list[str] = _cfg.get("locations", ["Worldwide"])
 
     def _build_search_url(self, term):
         search_url = (
-            f"{self.base_url}/?location={','.join(LOCATIONS)}&"
+            f"{self.base_url}/?location={','.join(self.locations)}&"
             f"search={term}&action=get_jobs"
         )
 

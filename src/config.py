@@ -4,6 +4,7 @@ Configuration class for job search parameters and settings.
 
 import logging
 import os
+from typing import Any
 
 import yaml
 
@@ -41,6 +42,12 @@ class Config:
     SITES: list[str] = _search_config.get("sites", ["remotive"])
     SINCE: int = _search_config.get("since", 2)
 
+    @staticmethod
+    def scraper_config(scraper_name: str) -> dict[str, Any]:
+        """Return per-scraper settings from search_config.yaml."""
+        result: dict[str, Any] = _search_config.get(scraper_name, {})
+        return result
+
     # Scrapers requests settings
     REQUEST_RETRIES = 3  # Number of retries when requests fail.
     REQUEST_TIMEOUT = 60
@@ -65,12 +72,9 @@ class Config:
 
     # Working Nomads Settings
     WORKINGNOMADS_API_URL = "https://www.workingnomads.com/jobsapi/_search"
-    WORKINGNOMADS_LOCATIONS = ["Anywhere", "Asia", "APAC", "Taiwan, Province of China"]
-    WORKINGNOMADS_URL_LOCATION = "taiwan,-province-of-china"
 
     # We Work Remotely Settings
     WWR_BASE_URL = "https://weworkremotely.com"
-    WWR_REGION = "taiwan"
 
     # Remotive settings
     REMOTIVE_ALGOLIA_KEY = "8ad949132d497255ffc04accd141f083"

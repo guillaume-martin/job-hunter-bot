@@ -15,7 +15,9 @@ class WorkingNomadsScraper(BaseScraper):
 
     def __init__(self):
         super().__init__(base_url=Config.WORKINGNOMADS_API_URL, name="WorkingNomads")
-        self.locations = Config.WORKINGNOMADS_LOCATIONS
+        _cfg = Config.scraper_config("workingnomads")
+        self.locations: list[str] = _cfg.get("locations", ["Anywhere"])
+        self.url_location: str = _cfg.get("url_locations", "")
         self.since = Config.SINCE
 
     def _build_api_payload(self, term):
@@ -64,7 +66,7 @@ class WorkingNomadsScraper(BaseScraper):
                         }
                     },
                     "filter": [
-                        {"terms": {"locations": Config.WORKINGNOMADS_LOCATIONS}},
+                        {"terms": {"locations": self.locations}},
                         {"range": {"pub_date": {"gte": f"now-{self.since}d/d"}}},
                     ],
                 }
@@ -101,7 +103,7 @@ class WorkingNomadsScraper(BaseScraper):
         tag = term.replace(" ", "-")
         referer = (
             "https://www.workingnomads.com/jobs?"
-            f"location={Config.WORKINGNOMADS_URL_LOCATION}&"
+            f"location={self.url_location}&"
             f"postedDate={self.since}&tag={tag}"
         )
         cookie = (
