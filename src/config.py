@@ -12,7 +12,6 @@ class Config:
     SITES: list[str] = [
         "weworkremotely",
     ]
-    print("Sites list: ", SITES)
 
     # Number of days since the job was published
     # Older jobs are dropped.
@@ -33,7 +32,7 @@ class Config:
     APPLY_THRESHOLD = 80
 
     # Output file settings
-    OUTPUT_PATH = ""
+    OUTPUT_PATH = "output/"
     OUTPUT_FILE = "new-jobs.md"
 
     # ============================ #
