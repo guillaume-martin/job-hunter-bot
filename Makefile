@@ -13,6 +13,7 @@ run:
 	docker run -i --rm \
         -v ~/.aws:/home/appuser/.aws \
         -v $$PWD/output:/app/output \
+        -v $$PWD/src/search_config.yaml:/app/src/search_config.yaml:ro \
         --env-file src/.env \
         $(IMAGE_NAME):$(TAG)
 
