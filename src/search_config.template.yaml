@@ -1,0 +1,15 @@
+# Job search configuration
+# Copy this file to search_config.yaml and customize it.
+#
+# searches: list of keywords to search on job boards
+# sites: list of job boards to scrape (must match names in scraper_factory.py)
+#   Valid sites: 104, remoteok, remotive, trulyremote, workingnomads, weworkremotely
+# since: only show jobs published within the last N days
+
+searches:
+  - "backend engineer"
+
+sites:
+  - "weworkremotely"
+
+since: 2
