@@ -43,7 +43,7 @@ in a DynamoDB cache and filters them out on subsequent runs.
 
 - Scrapes multiple remote job boards (Remotive, RemoteOK, We Work Remotely, Working Nomads, Truly Remote, 104)
 - Scores each listing against your resume using AI to surface the best matches
-- Filters by search term and location (Worldwide / APAC)
+- Filters by search term and configurable per-scraper locations
 - Tracks previously seen listings in DynamoDB to avoid duplicates across daily runs
 - Delivers new matches by email via AWS SES
 - Configurable retention window — cached listings expire automatically via DynamoDB TTL
@@ -181,7 +181,7 @@ Open `src/.env` and fill in the required values. Every variable in the file is r
 cp src/search_config.template.yaml src/search_config.yaml
 ```
 
-2. Edit `src/search_config.yaml` to set your search terms, target job boards, and freshness window:
+2. Edit `src/search_config.yaml` to set your search terms, target job boards, freshness window, and per-scraper location filters:
 
 ```yaml
 searches:
@@ -194,11 +194,33 @@ sites:
   - "remoteok"
 
 since: 3
+
+# Per-scraper location filters (optional)
+workingnomads:
+  locations:
+    - "Anywhere"
+    - "Asia"
+  url_locations: "taiwan,-province-of-china"
+
+remoteok:
+  locations:
+    - "Worldwide"
+    - "region_AS"
+
+remotive:
+  locations:
+    - "Worldwide"
+    - "APAC"
+
+trulyremote:
+  locations:
+    - "Anywhere in the world"
+    - "Asia"
 ```
 
 Valid site names: `104`, `remoteok`, `remotive`, `trulyremote`, `workingnomads`, `weworkremotely`
 
-> If the file is missing, the bot falls back to built-in defaults.
+> If the file is missing, the bot falls back to built-in defaults. Per-scraper location sections are optional — each scraper uses sensible defaults when omitted.
 
 ### 💻 Running Locally
 
