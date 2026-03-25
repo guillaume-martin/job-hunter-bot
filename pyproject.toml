@@ -13,6 +13,7 @@ lxml = "6.0.0"
 requests = "2.32.4"
 selenium = "4.34.2"
 urllib3 = "2.5.0"
+pyyaml = "^6.0.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=9.0.0"
@@ -26,6 +27,7 @@ detect-secrets = "^1.5.0"
 pytest-env = "^1.6.0"
 moto = "^5.1.22"
 types-python-dateutil = "^2.9.0.20260305"
+types-pyyaml = "^6.0.12.20250915"
 
 [tool.ruff]
 line-length = 88
