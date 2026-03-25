@@ -52,8 +52,8 @@ COPY --from=builder /runtime /usr/local
 # Copy application source
 COPY ./src/ ./src/
 
-# Create logs directory and give appuser ownership
-RUN mkdir -p ./src/logs \
+# Create logs and output directories and give appuser ownership
+RUN mkdir -p ./src/logs ./output \
     && useradd -m appuser \
     && chown -R appuser:appuser /app
 

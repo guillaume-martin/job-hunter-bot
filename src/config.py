@@ -2,21 +2,14 @@
 Configuration class for job search parameters and settings.
 """
 
-import os
-
 
 class Config:
     # Searches are a list keywords searched on the job boards
-    SEARCHES: list[str] = []
+    SEARCHES: list[str] = ["backend engineer"]
 
     # List of sites to search. They should match the names of the scrapers in
     # `scraper_factory.py`
     SITES: list[str] = [
-        "104",
-        "remoteok",
-        "remotive",
-        "trulyremote",
-        "workingnomads",
         "weworkremotely",
     ]
 
@@ -39,16 +32,12 @@ class Config:
     APPLY_THRESHOLD = 80
 
     # Output file settings
-    OUTPUT_PATH = ""
+    OUTPUT_PATH = "output/"
     OUTPUT_FILE = "new-jobs.md"
 
     # ============================ #
     #      Scrapers settings       #
     # ============================ #
-
-    # Selenium configuration
-    FIREFOX_PATH = os.getenv("FIREFOX_PATH")
-    GECKODRIVER_PATH = os.getenv("GECKODRIVER_PATH")
 
     # Working Nomads Settings
     WORKINGNOMADS_API_URL = "https://www.workingnomads.com/jobsapi/_search"
