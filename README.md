@@ -118,7 +118,8 @@ job-hunter-bot/
 ├── iac/
 │   └── environments/       # Terraform + Terragrunt configuration
 ├── src/
-│   ├── config.py           # Centralized configuration
+│   ├── config.py                    # Centralized configuration
+│   ├── search_config.template.yaml  # Search config template
 │   ├── scrapers/
 │   │   ├── base_scraper.py # Abstract base class for all scrapers
 │   │   ├── remotive.py
@@ -171,6 +172,33 @@ cp src/template.env src/.env
 Open `src/.env` and fill in the required values. Every variable in the file is required unless marked optional.
 
 > **Never commit `.env` to version control.**
+
+#### Search Configuration
+
+1. Create the search config file:
+
+```bash
+cp src/search_config.template.yaml src/search_config.yaml
+```
+
+2. Edit `src/search_config.yaml` to set your search terms, target job boards, and freshness window:
+
+```yaml
+searches:
+  - "backend engineer"
+  - "data engineer"
+
+sites:
+  - "weworkremotely"
+  - "remotive"
+  - "remoteok"
+
+since: 3
+```
+
+Valid site names: `104`, `remoteok`, `remotive`, `trulyremote`, `workingnomads`, `weworkremotely`
+
+> If the file is missing, the bot falls back to built-in defaults.
 
 ### 💻 Running Locally
 
