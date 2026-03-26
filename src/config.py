@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 _SEARCH_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "search_config.yaml")
 
 
-def _load_search_config() -> dict:
+def _load_search_config() -> dict[str, Any]:
     """Load search configuration from YAML file with fallback to defaults."""
     if not os.path.isfile(_SEARCH_CONFIG_PATH):
         logger.warning(
