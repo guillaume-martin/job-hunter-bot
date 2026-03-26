@@ -11,7 +11,7 @@ def test_missing_file(caplog, config_path):
     config_path("missing.yaml")
 
     # Exercise
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.WARNING, logger="src.config"):
         result = _load_search_config()
 
     # Verify
@@ -52,7 +52,7 @@ def test_malformed_yaml(caplog, config_path):
     path.write_text("{invalid: [}")
 
     # Exercise
-    with caplog.at_level(logging.ERROR):
+    with caplog.at_level(logging.ERROR, logger="src.config"):
         result = _load_search_config()
 
     # Verify
