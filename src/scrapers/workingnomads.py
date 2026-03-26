@@ -17,7 +17,7 @@ class WorkingNomadsScraper(BaseScraper):
         super().__init__(base_url=Config.WORKINGNOMADS_API_URL, name="WorkingNomads")
         _cfg = Config.scraper_config("workingnomads")
         self.locations: list[str] = _cfg.get("locations", ["Anywhere"])
-        self.url_location: str = _cfg.get("url_locations", "")
+        self.url_location: str = _cfg.get("url_location", "")
         self.since = Config.SINCE
 
     def _build_api_payload(self, term):

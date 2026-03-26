@@ -24,7 +24,7 @@ since: 2
 workingnomads:
   locations:
     - "Anywhere"
-  url_locations: ""
+  url_location: ""
 
 remoteok:
   locations:
