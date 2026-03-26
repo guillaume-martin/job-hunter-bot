@@ -2,6 +2,9 @@
 **/.env
 *.env
 
+# User search config — mounted at runtime, not baked into image
+src/search_config.yaml
+
 # AWS credentials
 .aws
 

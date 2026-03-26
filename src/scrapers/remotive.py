@@ -25,18 +25,19 @@ HEADERS = {
     "Referer": "https://remotive.com/",
 }
 
-LOCATIONS = '["locations:Worldwide","locations:APAC"]'
-
 
 class RemotiveScraper(BaseScraper):
     """Scraper for remotive.io jobs"""
 
     def __init__(self):
         super().__init__(base_url=BASE_URL, name="Remotive")
+        _cfg = Config.scraper_config("remotive")
+        self.locations: list[str] = _cfg.get("locations", ["Worldwide"])
 
     def __build_api_payload(self, term: str) -> dict:
         term_encoded = urllib.parse.quote(term)
-        locations_encoded = urllib.parse.quote(LOCATIONS)
+        locations_facet = json.dumps([f"locations:{loc}" for loc in self.locations])
+        locations_encoded = urllib.parse.quote(locations_facet)
         params = (
             f"facetFilters=%5B{locations_encoded}%5D&"
             "facets=&"

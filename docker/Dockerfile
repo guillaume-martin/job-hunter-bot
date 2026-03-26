@@ -36,11 +36,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-        curl=7.88.1-10+deb12u14 \
-        ca-certificates=20230311+deb12u1 \
-        libxml2=2.9.14+dfsg-1.3~deb12u5 \
-        libxslt1.1=1.1.35-1+deb12u3 \
-        firefox-esr=140.8.0esr-1~deb12u1 \
+        curl \
+        ca-certificates \
+        libxml2 \
+        libxslt1.1 \
+        firefox-esr \
     && curl -L "https://github.com/mozilla/geckodriver/releases/download/v${GECKODRIVER_VERSION}/geckodriver-v${GECKODRIVER_VERSION}-linux64.tar.gz" \
        | tar xz -C /usr/local/bin \
     && apt-get clean \

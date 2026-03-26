@@ -4,8 +4,11 @@ IMAGE_NAME = job-hunter-bot
 TAG = latest
 DOCKERFILE_PATH = ./docker/Dockerfile
 
-# Build target
+# Build targets
 build:
+	docker build -t $(IMAGE_NAME):$(TAG) -f $(DOCKERFILE_PATH) .
+
+build-clean:
 	docker build --no-cache -t $(IMAGE_NAME):$(TAG) -f $(DOCKERFILE_PATH) .
 
 run:
@@ -13,10 +16,11 @@ run:
 	docker run -i --rm \
         -v ~/.aws:/home/appuser/.aws \
         -v $$PWD/output:/app/output \
+        $$([ -f src/search_config.yaml ] && echo "-v $$PWD/src/search_config.yaml:/app/src/search_config.yaml:ro") \
         --env-file src/.env \
         $(IMAGE_NAME):$(TAG)
 
-.PHONY: build run
+.PHONY: build build-clean run
 
 # Tests
 test:          ## Run unit tests
