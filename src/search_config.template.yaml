@@ -1,0 +1,39 @@
+# Job search configuration
+# Copy this file to search_config.yaml and customize it.
+#
+# searches: list of keywords to search on job boards
+# sites: list of job boards to scrape (must match names in scraper_factory.py)
+#   Valid sites: 104, remoteok, remotive, trulyremote, workingnomads, weworkremotely
+# since: only show jobs published within the last N days
+#
+# Per-scraper location filters (optional):
+#   workingnomads.locations: location terms for the API filter
+#   workingnomads.url_locations: location slug for the referer URL
+#   remoteok.locations: location filters for the search URL
+#   remotive.locations: Algolia facet filters (prefixed with "locations:" automatically)
+#   trulyremote.locations: location filters sent in the API payload
+
+searches:
+  - "backend engineer"
+
+sites:
+  - "remotive"
+
+since: 2
+
+workingnomads:
+  locations:
+    - "Anywhere"
+  url_location: ""
+
+remoteok:
+  locations:
+    - "Worldwide"
+
+remotive:
+  locations:
+    - "Worldwide"
+
+trulyremote:
+  locations:
+    - "Anywhere in the world"

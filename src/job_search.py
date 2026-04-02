@@ -19,7 +19,10 @@ load_dotenv("src/.env")
 DATE = datetime.strftime(datetime.now(), "%Y-%m-%d")
 
 # Load the logging configuration
-logging.config.fileConfig(os.path.join(os.path.dirname(__file__), "logging.conf"))
+logging.config.fileConfig(
+    os.path.join(os.path.dirname(__file__), "logging.conf"),
+    disable_existing_loggers=False,
+)
 
 # Check if the log directory exists, if not create it
 log_dir = os.path.join(os.path.dirname(__file__), "logs")

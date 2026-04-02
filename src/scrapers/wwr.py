@@ -1,22 +1,17 @@
 import logging
-import time
 import urllib
 from datetime import datetime, timedelta
 from typing import Any, cast
 
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.common.exceptions import InvalidArgumentException
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
 
 from ..config import Config
-from .base_scraper import BaseScraper
+from .base_scraper import BaseScraper, SeleniumMixin
 
 logger = logging.getLogger(__name__)
 
 
-class WwrScraper(BaseScraper):
+class WwrScraper(BaseScraper, SeleniumMixin):
     """Scraper for We Work Remotely"""
 
     def __init__(self):
@@ -118,49 +113,6 @@ class WwrScraper(BaseScraper):
             self.jobs.append(self._extract_job_details(job))
 
         return self.jobs
-
-    @staticmethod
-    def _retrieve_html_content(url: str):
-        """Extract source code of a web page from the url using Selenium.
-
-        Args:
-            url (str): The url of the web page to retrieve.
-
-        Return:
-            The source code of the page.
-        """
-        # Setup Firefox options
-        firefox_options = Options()
-        firefox_options.add_argument("--headless")
-        firefox_options.add_argument("--no-sandbox")
-        firefox_options.add_argument("--disable-dev-shm-usage")
-        if Config.FIREFOX_PATH is not None:
-            firefox_options.binary_location = Config.FIREFOX_PATH
-        else:
-            # Handle the None case
-            raise ValueError("FIREFOX_PATH is not configured")
-
-        # Specify the path to Geckodriver if not in PATH
-        service = Service(Config.GECKODRIVER_PATH)
-
-        # Start a new browser session
-        driver = webdriver.Firefox(service=service, options=firefox_options)
-
-        try:
-            driver.get(url)
-            # Wait for the page to load
-            time.sleep(5)
-            page_content = driver.page_source
-        except InvalidArgumentException as e:
-            logger.exception(f"Failed to reach URL {url}: {e}")
-            page_content = ""
-        except TimeoutError:
-            logger.exception("Loading took too much time!")
-            page_content = ""
-        finally:
-            driver.quit()
-
-        return page_content
 
     def extract_job_description(self, job_url: str) -> str:
         """Extract the job description from the job page.
