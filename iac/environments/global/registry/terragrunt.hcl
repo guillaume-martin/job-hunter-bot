@@ -54,7 +54,7 @@ inputs = {
     rules = [
       {
         rulePriority = 1
-        description  = "Keep last 10 images"
+        description  = "Keep last 5 images"
         selection = {
           tagStatus     = "tagged"
           tagPrefixList = ["v"]
