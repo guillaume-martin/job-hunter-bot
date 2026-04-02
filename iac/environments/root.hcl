@@ -9,6 +9,9 @@ locals {
   project     = local.common_vars.locals.aws_project
   cost_center = local.common_vars.locals.cost_center
 
+  # Define the path to the Terraform modules
+  modules_path = "${get_repo_root()}/iac/modules"
+
   component = basename(get_terragrunt_dir())
 
   name = replace("${local.project}/${local.environment}/${local.component}", "_", "-")

@@ -8,7 +8,7 @@ locals {
 }
 
 terraform {
-    source = "../../modules/security"
+    source = "${include.root.locals.modules_path}/security"
 }
 
 inputs = {
