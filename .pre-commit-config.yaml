@@ -56,4 +56,3 @@ repos:
     hooks:
       - id: tf-fmt
       - id: tf-validate
-        args: ["--ignore", "DL3008", "--failure-threshold", "warning"]  # Ignoring packages versions to avoid errors on install

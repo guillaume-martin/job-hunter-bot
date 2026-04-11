@@ -12,5 +12,6 @@ terraform {
 }
 
 inputs = {
-
+  ecr_repository_name = include.root.locals.project
+  # cicd_trusted_arns = ["arn:aws:iam::ACCOUNT_ID:role/GitHubActionsRole"]
 }
