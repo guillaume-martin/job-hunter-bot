@@ -25,7 +25,7 @@ dependency "security" {
   mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
     task_execution_role_arn = "arn:aws:iam::123456789012:role/EcsTaskExecutionRole"
-    terraform_role_arn      = "arn:aws:iam::123456789012:role/TerraformRole"
+    cicd_role_arn      = "arn:aws:iam::123456789012:role/TerraformRole"
   }
 }
 
@@ -46,7 +46,7 @@ inputs = {
   # Access control (ARNs of roles that can push/pull images)
   repository_read_write_access_arns = [
     dependency.security.outputs.task_execution_role_arn,
-    dependency.security.outputs.terraform_role_arn,
+    dependency.security.outputs.cicd_role_arn,
   ]
 
   # Lifecycle policy (cleanup old images)
