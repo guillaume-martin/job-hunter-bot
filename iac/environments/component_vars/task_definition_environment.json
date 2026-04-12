@@ -1,0 +1,14 @@
+[
+    {
+        "name": "AWS_REGION",
+        "value": "${env.aws_region}"
+    },
+    {
+        "name": "JOBS_TABLE",
+        "value": "${env.jobs_table}"
+    },
+    {
+        "name": "RETENTION_DAYS",
+        "value": "${env.retention_days}"
+    }
+]

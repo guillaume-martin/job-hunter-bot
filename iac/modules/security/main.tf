@@ -77,6 +77,42 @@ resource "aws_iam_role_policy" "task_role" {
 
 
 #------------------------------------------------------------------------------
+# Scheduler Role and Policy
+#------------------------------------------------------------------------------
+data "aws_iam_policy_document" "scheduler_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["scheduler.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "scheduler_role" {
+  name               = "${local.name_hyphen}-scheduler-role"
+  assume_role_policy = data.aws_iam_policy_document.scheduler_assume_role_policy.json
+}
+
+data "aws_iam_policy_document" "scheduler_role_policy" {
+  statement {
+    actions   = ["ecs:RunTask"]
+    resources = ["arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:task-definition/*"]
+  }
+  statement {
+    actions   = ["iam:PassRole"]
+    resources = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*"]
+  }
+}
+
+resource "aws_iam_role_policy" "scheduler_role" {
+  name   = "${local.name_hyphen}-scheduler-policy"
+  role   = aws_iam_role.scheduler_role.id
+  policy = data.aws_iam_policy_document.scheduler_role_policy.json
+}
+
+#------------------------------------------------------------------------------
 # CICD Role and Policy
 #------------------------------------------------------------------------------
 data "aws_iam_policy_document" "cicd_assume_role_policy" {
