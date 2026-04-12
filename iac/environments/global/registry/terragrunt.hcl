@@ -17,7 +17,7 @@ locals {
 }
 
 terraform {
-  source = "git::https://github.com/terraform-aws-modules/terraform-aws-ecr.git"?ref=v${local.ref}"
+  source = "git::https://github.com/terraform-aws-modules/terraform-aws-ecr.git?ref=v${local.ref}"
 }
 
 dependency "security" {
