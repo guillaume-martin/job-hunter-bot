@@ -45,9 +45,9 @@ remote_state {
     region         = "us-east-1"
     profile        = local.aws_profile
     encrypt        = true
-    # Following two configurations are required unless we want to update our state bucket
-    skip_bucket_root_access  = true
-    skip_bucket_enforced_tls = true
+    # false = Terragrunt actively enforces these controls on the state bucket
+    skip_bucket_root_access  = false
+    skip_bucket_enforced_tls = false
   }
 }
 
@@ -61,7 +61,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.0"
     }
   }
 }
