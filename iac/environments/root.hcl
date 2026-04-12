@@ -39,12 +39,12 @@ remote_state {
   }
 
   config = {
-    bucket         = local.state_bucket
-    dynamodb_table = "terraform-state-lock"
-    key            = local.statefile
-    region         = "us-east-1"
-    profile        = local.aws_profile
-    encrypt        = true
+    bucket       = local.state_bucket
+    key          = local.statefile
+    region       = "us-east-1"
+    profile      = local.aws_profile
+    encrypt      = true
+    use_lockfile = true
     # false = Terragrunt actively enforces these controls on the state bucket
     skip_bucket_root_access  = false
     skip_bucket_enforced_tls = false
