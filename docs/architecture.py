@@ -26,7 +26,7 @@ with Diagram(
         # Security
         exec_role = IAMRole("Task\nExecution\nRole")
         task_role = IAMRole("Task Role")
-        scheduler_role = IAMRole("scheduler\nRole")
+        scheduler_role = IAMRole("Scheduler Role")
 
         # Application Infrastructure
         ssm = ParameterStore("SSM\nParameters")
@@ -47,8 +47,9 @@ with Diagram(
     ssm >> worker  # task reads config at startup
 
     # IAM
-    exec_role >> Edge(style="dashed", label="assumes") >> worker
-    task_role >> Edge(style="dashed", label="assumes") >> worker
+    worker >> Edge(style="dashed", label="assumes") >> exec_role
+    worker >> Edge(style="dashed", label="assumes") >> task_role
+    scheduler >> Edge(style="dashed", label="assumes") >> scheduler_role
 
     # Outputs
     worker >> cache  # reads/writes job cache
