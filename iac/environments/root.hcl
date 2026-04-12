@@ -16,8 +16,8 @@ locals {
 
   name = replace("${local.project}/${local.environment}/${local.component}", "_", "-")
 
-  state_bucket = "iac-tfstate-files"
-  statefile = "${local.name}/terraform.tfstate"
+  state_bucket = "iac-tfstate-${local.environment}"
+  statefile = "${local.project}/${local.component}/terraform.tfstate"
 
   default_tags = {
     "Name"        = local.name
