@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime, timedelta
@@ -132,9 +131,7 @@ class BaseScraper(ABC):
             raise ValueError("Table name cannot be empty.")
 
         try:
-            ddb = boto3.resource(
-                "dynamodb", region_name=os.getenv("AWS_REGION", "us-east-1")
-            )
+            ddb = boto3.resource("dynamodb", region_name=Config.AWS_REGION)
             return ddb.Table(table_name)
         except NoCredentialsError:
             raise ValueError("AWS credentials not configured.")
@@ -143,7 +140,7 @@ class BaseScraper(ABC):
 
     def _get_existing_job_ids(self) -> set[str]:
         """Fetch all existing job IDs from DynamoDB."""
-        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE", "jobs_cache"))
+        table = self._connect_dynamodb_table(Config.JOBS_TABLE)
         job_ids: set[str] = set()
         last_evaluated_key = None
 
@@ -173,12 +170,12 @@ class BaseScraper(ABC):
         if not new_jobs:
             return
 
-        table = self._connect_dynamodb_table(os.getenv("JOBS_TABLE", "jobs_cache"))
+        table = self._connect_dynamodb_table(Config.JOBS_TABLE)
         try:
             with table.batch_writer() as batch:
                 for job_id in new_jobs:
                     # Add RETENTION_DAYS to today's date
-                    retention_days = int(os.getenv("RETENTION_DAYS", 30))
+                    retention_days = Config.RETENTION_DAYS
                     expiry_date = datetime.now(UTC) + timedelta(days=retention_days)
 
                     # Convert to Unix timestamp
