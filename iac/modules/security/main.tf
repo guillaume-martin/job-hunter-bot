@@ -7,11 +7,9 @@ data "aws_region" "current" {}
 locals {
   name        = data.aws_default_tags.this.tags.Name
   name_hyphen = replace(local.name, "/", "-")
-  # Fall back to account root if no specific principals are provided
-  cicd_trusted_arns = length(var.cicd_trusted_arns) > 0 ? var.cicd_trusted_arns : ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
 }
 
-data "aws_iam_policy_document" "execution_role_trust" {
+data "aws_iam_policy_document" "assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -22,9 +20,12 @@ data "aws_iam_policy_document" "execution_role_trust" {
   }
 }
 
+#------------------------------------------------------------------------------
+# Execution Role for ECS Tasks
+#------------------------------------------------------------------------------
 resource "aws_iam_role" "execution_role" {
   name               = "${local.name_hyphen}-execution-role"
-  assume_role_policy = data.aws_iam_policy_document.execution_role_trust.json
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "execution_role" {
@@ -33,13 +34,58 @@ resource "aws_iam_role_policy_attachment" "execution_role" {
 }
 
 
-data "aws_iam_policy_document" "cicd_role_trust" {
+#------------------------------------------------------------------------------
+# Task Role for ECS Tasks (application permissions)
+#------------------------------------------------------------------------------
+data "aws_iam_policy_document" "task_role_policy" {
+  statement {
+    sid = "DynamoDB"
+    actions = [
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:Scan",
+      "dynamodb:Query",
+    ]
+    resources = ["arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.jobs_table_name}"]
+  }
+
+  statement {
+    sid       = "SES"
+    actions   = ["ses:SendEmail", "ses:SendRawEmail"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid       = "STS"
+    actions   = ["sts:AssumeRole"]
+    resources = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.task_assume_role_name}"]
+  }
+}
+
+resource "aws_iam_role" "task_role" {
+  name               = "${local.name_hyphen}-task-role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+}
+
+resource "aws_iam_role_policy" "task_role" {
+  name   = "${local.name_hyphen}-task-policy"
+  role   = aws_iam_role.task_role.id
+  policy = data.aws_iam_policy_document.task_role_policy.json
+}
+
+
+#------------------------------------------------------------------------------
+# CICD Role and Policy
+#------------------------------------------------------------------------------
+data "aws_iam_policy_document" "cicd_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
 
     principals {
       type        = "AWS"
-      identifiers = local.cicd_trusted_arns
+      identifiers = var.cicd_trusted_arns
     }
   }
 }
@@ -64,7 +110,7 @@ data "aws_iam_policy_document" "cicd_role" {
 
 resource "aws_iam_role" "cicd_role" {
   name               = "${local.name_hyphen}-cicd-role"
-  assume_role_policy = data.aws_iam_policy_document.cicd_role_trust.json
+  assume_role_policy = data.aws_iam_policy_document.cicd_assume_role_policy.json
 }
 
 resource "aws_iam_role_policy" "cicd_role" {
