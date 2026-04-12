@@ -26,6 +26,7 @@ with Diagram(
         # Security
         exec_role = IAMRole("Task\nExecution\nRole")
         task_role = IAMRole("Task Role")
+        scheduler_role = IAMRole("scheduler\nRole")
 
         # Application Infrastructure
         ssm = ParameterStore("SSM\nParameters")
@@ -35,7 +36,7 @@ with Diagram(
         register = ECR("ECR")
 
         with Cluster("VPC"):
-            with Cluster("Private Subnet"):
+            with Cluster("Public Subnet"):
                 cache = Dynamodb("Jobs Cache")
                 with Cluster("ECS Cluster"):
                     worker = Fargate("Fargate Task")
