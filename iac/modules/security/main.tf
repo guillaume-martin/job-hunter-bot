@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "execution_role_policy" {
       "ssm:GetParameters",
     ]
     resources = [
-      "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${local.env}/*",
+      "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${local.env}/*",
     ]
   }
 }
@@ -68,7 +68,7 @@ data "aws_iam_policy_document" "task_role_policy" {
       "dynamodb:Scan",
       "dynamodb:Query",
     ]
-    resources = ["arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.jobs_table_name}"]
+    resources = ["arn:aws:dynamodb:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.jobs_table_name}"]
   }
 
   statement {
@@ -118,7 +118,7 @@ resource "aws_iam_role" "scheduler_role" {
 data "aws_iam_policy_document" "scheduler_role_policy" {
   statement {
     actions   = ["ecs:RunTask"]
-    resources = ["arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:task-definition/*"]
+    resources = ["arn:aws:ecs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:task-definition/*"]
   }
   statement {
     actions   = ["iam:PassRole"]
@@ -137,11 +137,26 @@ resource "aws_iam_role_policy" "scheduler_role" {
 #------------------------------------------------------------------------------
 data "aws_iam_policy_document" "cicd_assume_role_policy" {
   statement {
-    actions = ["sts:AssumeRole"]
+    actions = ["sts:AssumeRoleWithWebIdentity"]
 
     principals {
-      type        = "AWS"
-      identifiers = var.cicd_trusted_arns
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.github.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values = [
+        for s in var.github_allowed_subs :
+        "repo:${var.github_user}/${var.github_repo}:${s}"
+      ]
     }
   }
 }
@@ -160,7 +175,7 @@ data "aws_iam_policy_document" "cicd_role" {
       "ecr:CompleteLayerUpload",
       "ecr:PutImage",
     ]
-    resources = ["arn:aws:ecr:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
+    resources = ["arn:aws:ecr:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
   }
 }
 
@@ -173,4 +188,13 @@ resource "aws_iam_role_policy" "cicd_role" {
   name   = "${local.name_hyphen}-cicd-policy"
   role   = aws_iam_role.cicd_role.id
   policy = data.aws_iam_policy_document.cicd_role.json
+}
+
+
+#------------------------------------------------------------------------------
+# GitHubActions
+#------------------------------------------------------------------------------
+resource "aws_iam_openid_connect_provider" "github" {
+  url            = "https://token.actions.githubusercontent.com"
+  client_id_list = ["sts.amazonaws.com"]
 }

@@ -9,5 +9,10 @@ terraform {
 
 inputs = {
   ecr_repository_name = include.root.locals.project
-  # cicd_trusted_arns = ["arn:aws:iam::ACCOUNT_ID:role/GitHubActionsRole"]
+  github_user         = "guillaume-martin"
+  github_repo         = "job-hunter-bot"
+  # The default allowed subs are `refs/heads/main` to allow GitHub Actions
+  # workflows running on the main branch to assume the role. You can add
+  # additional subs (e.g., for other branches or environments) as needed.
+  # github_allowed_subs = []
 }
