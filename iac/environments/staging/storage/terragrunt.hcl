@@ -13,8 +13,6 @@ include "component_vars" {
 locals {
   # Version of the terraform module to use
   ref = "5.5.0"
-
-  component = basename(get_terragrunt_dir())
 }
 
 terraform {

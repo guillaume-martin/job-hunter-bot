@@ -3,10 +3,6 @@ include "root" {
     expose = true
 }
 
-locals {
-  component    = basename(get_terragrunt_dir())
-}
-
 terraform {
     source = "${include.root.locals.modules_path}/security"
 }
