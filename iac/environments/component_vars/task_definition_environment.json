@@ -10,5 +10,13 @@
     {
         "name": "RETENTION_DAYS",
         "value": "${env.retention_days}"
+    },
+    {
+        "name": "SENDER",
+        "value": "${env.sender}"
+    },
+    {
+        "name": "RECIPIENT",
+        "value": "${env.recipient}"
     }
 ]
