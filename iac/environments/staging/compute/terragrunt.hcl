@@ -6,12 +6,12 @@ include "root" {
 locals {
   # Set the environment variables end secrets to insert in task definition
   td_env = {
-    aws_region = include.root.locals.aws_region
-    jobs_table = "${include.root.locals.project}-${include.root.locals.environment}-jobs-cache"
+    aws_region     = include.root.locals.aws_region
+    jobs_table     = "${include.root.locals.project}-${include.root.locals.environment}-jobs-cache"
     retention_days = 30
+    sender         = get_env("SENDER")
+    recipient      = get_env("RECIPIENT")
   }
-
-  td_secrets = {}
 }
 
 terraform {
@@ -60,7 +60,6 @@ inputs = {
 
     task_cpu                    = 512
     task_definition_environment = templatefile("${dirname(find_in_parent_folders("root.hcl"))}/component_vars/task_definition_env.json", { env = local.td_env })
-    task_definition_secrets     = templatefile("${dirname(find_in_parent_folders("root.hcl"))}/component_vars/task_definition_secrets.json", { env = local.td_secrets })
     task_memory                 = 1024
 
     execution_role_arn  = dependency.security.outputs.execution_role_arn

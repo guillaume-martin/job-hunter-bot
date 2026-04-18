@@ -22,7 +22,9 @@ resource "aws_ecs_task_definition" "this" {
       essential = true
 
       environment = var.task_definition_environment
-      secrets     = var.task_definition_secrets
+      secrets = [
+        { name = "AI_API_KEY", valueFrom = aws_ssm_parameter.ai_api_key.arn },
+      ]
 
       logConfiguration = {
         "logDriver" = "awslogs"

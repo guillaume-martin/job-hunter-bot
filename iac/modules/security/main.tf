@@ -5,6 +5,8 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
+  project     = data.aws_default_tags.this.tags.project
+  env         = data.aws_default_tags.this.tags.env
   name        = data.aws_default_tags.this.tags.Name
   name_hyphen = replace(local.name, "/", "-")
 }
@@ -23,9 +25,27 @@ data "aws_iam_policy_document" "assume_role_policy" {
 #------------------------------------------------------------------------------
 # Execution Role for ECS Tasks
 #------------------------------------------------------------------------------
+data "aws_iam_policy_document" "execution_role_policy" {
+  statement {
+    sid = "SSM"
+    actions = [
+      "ssm:GetParameters",
+    ]
+    resources = [
+      "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${local.env}/*",
+    ]
+  }
+}
+
 resource "aws_iam_role" "execution_role" {
   name               = "${local.name_hyphen}-execution-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+}
+
+resource "aws_iam_role_policy" "execution_role" {
+  name   = "${local.name_hyphen}-execution-policy"
+  role   = aws_iam_role.execution_role.id
+  policy = data.aws_iam_policy_document.execution_role_policy.json
 }
 
 resource "aws_iam_role_policy_attachment" "execution_role" {
