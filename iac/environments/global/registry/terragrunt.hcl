@@ -3,12 +3,6 @@ include "root" {
     expose = true
 }
 
-include "component_vars" {
-  path = "${dirname(find_in_parent_folders("root.hcl"))}/component_vars/registry.hcl"
-  # Expose component vars so inputs are included in the module inputs below
-  expose = true
-}
-
 locals {
   # Version of the terraform module to use
   ref = "2.3.0"
