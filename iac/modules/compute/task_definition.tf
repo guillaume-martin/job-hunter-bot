@@ -27,10 +27,9 @@ resource "aws_ecs_task_definition" "this" {
       logConfiguration = {
         "logDriver" = "awslogs"
         "options" = {
-          "awslogs-create-group"  = "true"
-          "awslogs-group"         = "/ecs/${local.name_hyphen}"
+          "awslogs-group"         = var.cloudwatch_log_group_name
           "awslogs-region"        = data.aws_region.current.name
-          "awslogs-stream-prefix" = var.project_name
+          "awslogs-stream-prefix" = "ecs"
         }
       }
     }

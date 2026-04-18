@@ -21,11 +21,6 @@ variable "scheduler_role_arn" {
   type        = string
 }
 
-variable "project_name" {
-  description = "Name of the project, used as prefix for log stream names."
-  type        = string
-}
-
 variable "task_definition_environment" {
   description = "Environment variables to pass to the container."
   type        = list(object({ name = string, value = string }))
@@ -94,4 +89,13 @@ variable "scheduler_timezone" {
   description = "Timezone for the scheduler cron expression."
   type        = string
   default     = "UTC"
+}
+
+
+#------------------------------------------------------------------------------
+# Logging Settings
+#------------------------------------------------------------------------------
+variable "cloudwatch_log_group_name" {
+  description = "Name of the CloudWatch log group to use for the task logs."
+  type        = string
 }

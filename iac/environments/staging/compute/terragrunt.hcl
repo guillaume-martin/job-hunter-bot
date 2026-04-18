@@ -45,6 +45,14 @@ dependency "security" {
     }
 }
 
+dependency "logging" {
+  config_path = "../logging"
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+  mock_outputs = {
+    cloudwatch_log_group_name = "log-group-name"
+  }
+}
+
 inputs = {
     # Task Definition Settings
     ecr_name                     = dependency.registry.outputs.ecr_name
@@ -58,8 +66,6 @@ inputs = {
     execution_role_arn  = dependency.security.outputs.execution_role_arn
     task_role_arn       = dependency.security.outputs.task_role_arn
 
-    project_name = include.root.locals.project
-
     # Scheduler settings
     network_configuration = {
         security_groups  = [dependency.networking.outputs.security_group_id]
@@ -71,4 +77,7 @@ inputs = {
     scheduler_flexible_time_window_mode = "OFF"
     scheduler_maximum_window_in_minutes = null
     scheduler_timezone = "UTC"
+
+    # Logging settings
+    cloudwatch_log_group_name = dependency.logging.outputs.cloudwatch_log_group_name
 }
