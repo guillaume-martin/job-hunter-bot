@@ -59,7 +59,7 @@ inputs = {
   ecr_tag                      = "staging"
 
   task_cpu                    = 512
-  task_definition_environment = templatefile("${dirname(find_in_parent_folders("root.hcl"))}/component_vars/task_definition_env.json", { env = local.td_env })
+  task_definition_environment = templatefile("${dirname(find_in_parent_folders("root.hcl"))}/component_vars/task_definition_environment.json", { env = local.td_env })
   task_memory                 = 1024
 
   execution_role_arn  = dependency.security.outputs.execution_role_arn
