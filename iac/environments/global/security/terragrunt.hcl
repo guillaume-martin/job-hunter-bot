@@ -4,7 +4,7 @@ include "root" {
 }
 
 terraform {
-    source = "${include.root.locals.modules_path}/security"
+    source = "${include.root.locals.modules_path}/security-global"
 }
 
 inputs = {

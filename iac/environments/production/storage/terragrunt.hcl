@@ -22,8 +22,8 @@ terraform {
 }
 
 inputs = {
-  name         = "${include.root.locals.project}-${include.root.locals.environment}-job-cache"
-  hash_key     = "job_id"
+  name         = "${include.root.locals.project}-${include.root.locals.environment}-jobs-cache"
+  hash_key   = "job_id"
   billing_mode = "PAY_PER_REQUEST"
 
   server_side_encryption_enabled = true
@@ -39,7 +39,7 @@ inputs = {
   global_secondary_indexes = [
     {
       name            = "site-index"
-      hash_key        = "site"
+      hash_key      = "site"
       projection_type = "ALL"
     }
   ]

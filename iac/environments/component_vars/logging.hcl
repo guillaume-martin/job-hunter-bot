@@ -5,7 +5,3 @@ locals {
   module_loc = "modules/log-group"
   source_loc = "${local.repo}//${local.module_loc}"
 }
-
-inputs = {
-
-}

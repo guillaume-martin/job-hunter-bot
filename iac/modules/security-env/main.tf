@@ -5,10 +5,13 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
 locals {
-  project     = data.aws_default_tags.this.tags.project
-  env         = data.aws_default_tags.this.tags.env
-  name        = data.aws_default_tags.this.tags.Name
-  name_hyphen = replace(local.name, "/", "-")
+  account_id      = data.aws_caller_identity.current.account_id
+  region          = data.aws_region.current.region
+  project         = data.aws_default_tags.this.tags.project
+  env             = data.aws_default_tags.this.tags.env
+  name            = data.aws_default_tags.this.tags.Name
+  name_hyphen     = replace(local.name, "/", "-")
+  jobs_table_name = "${local.project}-${local.env}-jobs-cache"
 }
 
 data "aws_iam_policy_document" "assume_role_policy" {
@@ -32,7 +35,7 @@ data "aws_iam_policy_document" "execution_role_policy" {
       "ssm:GetParameters",
     ]
     resources = [
-      "arn:aws:ssm:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:parameter/${local.project}/${local.env}/*",
+      "arn:aws:ssm:${local.region}:${local.account_id}:parameter/${local.project}/${local.env}/*",
     ]
   }
 }
@@ -68,19 +71,13 @@ data "aws_iam_policy_document" "task_role_policy" {
       "dynamodb:Scan",
       "dynamodb:Query",
     ]
-    resources = ["arn:aws:dynamodb:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:table/${var.jobs_table_name}"]
+    resources = ["arn:aws:dynamodb:${local.region}:${local.account_id}:table/${local.jobs_table_name}"]
   }
 
   statement {
     sid       = "SES"
     actions   = ["ses:SendEmail", "ses:SendRawEmail"]
     resources = ["*"]
-  }
-
-  statement {
-    sid       = "STS"
-    actions   = ["sts:AssumeRole"]
-    resources = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.task_assume_role_name}"]
   }
 }
 
@@ -130,71 +127,4 @@ resource "aws_iam_role_policy" "scheduler_role" {
   name   = "${local.name_hyphen}-scheduler-policy"
   role   = aws_iam_role.scheduler_role.id
   policy = data.aws_iam_policy_document.scheduler_role_policy.json
-}
-
-#------------------------------------------------------------------------------
-# CICD Role and Policy
-#------------------------------------------------------------------------------
-data "aws_iam_policy_document" "cicd_assume_role_policy" {
-  statement {
-    actions = ["sts:AssumeRoleWithWebIdentity"]
-
-    principals {
-      type        = "Federated"
-      identifiers = [aws_iam_openid_connect_provider.github.arn]
-    }
-
-    condition {
-      test     = "StringEquals"
-      variable = "token.actions.githubusercontent.com:aud"
-      values   = ["sts.amazonaws.com"]
-    }
-
-    condition {
-      test     = "StringLike"
-      variable = "token.actions.githubusercontent.com:sub"
-      values = [
-        for s in var.github_allowed_subs :
-        "repo:${var.github_user}/${var.github_repo}:${s}"
-      ]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "cicd_role" {
-  statement {
-    actions   = ["ecr:GetAuthorizationToken"]
-    resources = ["*"]
-  }
-
-  statement {
-    actions = [
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:InitiateLayerUpload",
-      "ecr:UploadLayerPart",
-      "ecr:CompleteLayerUpload",
-      "ecr:PutImage",
-    ]
-    resources = ["arn:aws:ecr:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:repository/${var.ecr_repository_name}"]
-  }
-}
-
-resource "aws_iam_role" "cicd_role" {
-  name               = "${local.name_hyphen}-cicd-role"
-  assume_role_policy = data.aws_iam_policy_document.cicd_assume_role_policy.json
-}
-
-resource "aws_iam_role_policy" "cicd_role" {
-  name   = "${local.name_hyphen}-cicd-policy"
-  role   = aws_iam_role.cicd_role.id
-  policy = data.aws_iam_policy_document.cicd_role.json
-}
-
-
-#------------------------------------------------------------------------------
-# GitHubActions
-#------------------------------------------------------------------------------
-resource "aws_iam_openid_connect_provider" "github" {
-  url            = "https://token.actions.githubusercontent.com"
-  client_id_list = ["sts.amazonaws.com"]
 }

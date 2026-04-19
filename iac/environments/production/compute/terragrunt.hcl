@@ -35,8 +35,8 @@ dependency "registry" {
   }
 }
 
-dependency "security" {
-  config_path = "../../global/security"
+dependency "security_env" {
+  config_path = "../security"
   mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
     execution_role_arn = "arn:aws:iam::123456789012:role/EcsTaskExecutionRole"
@@ -62,8 +62,8 @@ inputs = {
   task_definition_environment = templatefile("${dirname(find_in_parent_folders("root.hcl"))}/component_vars/task_definition_environment.json", { env = local.td_env })
   task_memory                 = 1024
 
-  execution_role_arn  = dependency.security.outputs.execution_role_arn
-  task_role_arn       = dependency.security.outputs.task_role_arn
+  execution_role_arn  = dependency.security_env.outputs.execution_role_arn
+  task_role_arn       = dependency.security_env.outputs.task_role_arn
 
   # Scheduler settings
   network_configuration = {
@@ -71,7 +71,7 @@ inputs = {
     subnets          = [dependency.networking.outputs.public_subnet_id]
     assign_public_ip = true
   }
-  scheduler_role_arn = dependency.security.outputs.scheduler_role_arn
+  scheduler_role_arn = dependency.security_env.outputs.scheduler_role_arn
   scheduler_cron_expression = "5 0 * * *"
   scheduler_flexible_time_window_mode = "OFF"
   scheduler_maximum_window_in_minutes = null

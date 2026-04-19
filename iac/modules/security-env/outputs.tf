@@ -12,9 +12,3 @@ output "scheduler_role_arn" {
   description = "ARN of the EventBridge scheduler role"
   value       = aws_iam_role.scheduler_role.arn
 }
-
-
-output "cicd_role_arn" {
-  description = "ARN of the CI/CD role"
-  value       = aws_iam_role.cicd_role.arn
-}
