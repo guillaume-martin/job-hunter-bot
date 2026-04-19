@@ -9,7 +9,7 @@ include "component_vars" {
 }
 
 locals {
-  # Set the environment variables end secrets to insert in task definition
+  # Set the environment variables and secrets to insert in task definition
   td_env = {
     aws_region = include.root.locals.aws_region
     jobs_table = "${include.root.locals.project}-${include.root.locals.environment}-jobs-cache"
