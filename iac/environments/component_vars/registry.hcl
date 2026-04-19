@@ -1,6 +1,6 @@
 locals {
   # Define the source location so different versions of the module can be
   # deployed in different environments.
-  repo       = "../../../modules/security-env"
-  source_loc = local.repo
+  repo       = "git::https://github.com/terraform-aws-modules/terraform-aws-ecr.git"
+  source_loc = "${local.repo}"
 }

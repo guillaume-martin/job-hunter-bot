@@ -10,10 +10,10 @@ CloudWatch log group.
 ```
 iac/
 ├── modules/            # Reusable Terraform modules (application-specific)
+│   ├── cicd/           # GitHub OIDC provider + CI/CD role (global)
 │   ├── compute/        # ECS cluster, task definition, EventBridge scheduler
+│   ├── iam/            # Per-environment IAM: execution, task, scheduler roles
 │   ├── networking/     # VPC, public subnet, route table, security group
-│   ├── security-env/   # Per-environment IAM: execution, task, scheduler roles
-│   ├── security-global/# Global IAM: GitHub OIDC provider, CI/CD role
 │   └── ses/            # SES verified identity for outbound email
 │
 └── environments/       # Terragrunt stacks — one deployable unit per folder
@@ -22,15 +22,15 @@ iac/
     ├── component_vars/ # Shared module source + inputs (storage, logging, ...)
     │
     ├── global/         # Cross-environment resources (one copy for the account)
-    │   ├── registry/   # ECR repository (uses upstream terraform-aws-ecr)
-    │   ├── security/   # OIDC provider + CI/CD role (security-global)
+    │   ├── cicd/       # OIDC provider + CI/CD role (modules/cicd)
+    │   ├── registry/   # ECR repository (upstream terraform-aws-ecr)
     │   └── ses/        # SES sender identity
     │
     ├── staging/
     │   ├── environment.hcl
     │   ├── networking/
-    │   ├── security/   # Execution, task, scheduler roles (security-env)
-    │   ├── storage/    # DynamoDB job-cache table (upstream dynamodb module)
+    │   ├── iam/        # Execution, task, scheduler roles (modules/iam)
+    │   ├── storage/    # DynamoDB jobs-cache table (upstream dynamodb module)
     │   ├── logging/    # CloudWatch log group (upstream cloudwatch module)
     │   └── compute/    # ECS task + scheduler
     │
@@ -39,13 +39,20 @@ iac/
 
 `modules/` holds Terraform code; `environments/` holds Terragrunt configuration
 that wires modules into a concrete deployment. Some stacks source modules from
-this repo (`compute`, `networking`, `security-*`, `ses`), others pull community
-modules from GitHub (`registry` uses terraform-aws-ecr, `storage` uses
-terraform-aws-dynamodb-table, `logging` uses terraform-aws-cloudwatch).
+this repo (`cicd`, `compute`, `iam`, `networking`, `ses`), others pull
+community modules from GitHub (`registry` uses terraform-aws-ecr, `storage`
+uses terraform-aws-dynamodb-table, `logging` uses terraform-aws-cloudwatch).
 
-The split between `security-global` (GitHub OIDC + CI/CD role) and
-`security-env` (ECS roles scoped to a single environment) is intentional: it
-keeps the blast radius of per-env IAM contained to that environment.
+IAM is split into two modules on purpose:
+
+- `cicd/` lives in `global/` and manages what crosses the boundary with
+  GitHub: the OIDC provider and the role assumed by CI/CD workflows.
+- `iam/` lives in each environment and manages the ECS execution, task, and
+  scheduler roles — scoped tightly to that environment's DynamoDB table,
+  SSM parameters, and SES usage.
+
+This keeps the blast radius of per-environment IAM contained to that
+environment, while the CI/CD trust with GitHub stays account-wide.
 
 ## Prerequisites
 
@@ -138,8 +145,9 @@ terragrunt run-all plan  --working-dir environments/staging
 terragrunt run-all apply --working-dir environments/staging
 ```
 
-`run-all` walks the dependency graph: `security` before `compute`, `networking`
-before `compute`, etc. During `plan` the downstream stacks see
+`run-all` walks the dependency graph: `iam` before `compute`, `networking`
+before `compute`, `cicd` before `registry`, etc. During `plan` the downstream
+stacks see
 [`mock_outputs`](https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#mock_outputs)
 for any dep that hasn't been applied yet — this is expected, the real values
 flow through at apply time.
@@ -155,7 +163,7 @@ terragrunt --working-dir environments/staging/compute apply
 
 1. Push a container image tagged `staging` (or `production`) to the ECR repo
    created by `global/registry`. The CI/CD role ARN exported by
-   `global/security` is used by the GitHub Actions workflow.
+   `global/cicd` is used by the GitHub Actions workflow.
 2. Confirm the EventBridge schedule exists and triggers the task on the cron
    expression set in `<env>/compute/terragrunt.hcl` (default: `5 0 * * *`).
 3. Tail the CloudWatch log group to watch the first run.

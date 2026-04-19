@@ -3,20 +3,24 @@ include "root" {
     expose = true
 }
 
+include "component_vars" {
+    path   = find_in_parent_folders("component_vars/registry.hcl")
+    expose = true
+}
+
 locals {
   # Version of the terraform module to use
   ref = "2.3.0"
 }
 
 terraform {
-  source = "git::https://github.com/terraform-aws-modules/terraform-aws-ecr.git?ref=v${local.ref}"
+  source = "${include.component_vars.locals.source_loc}?ref=v${local.ref}"
 }
 
-dependency "security" {
-  config_path = "${dirname(get_terragrunt_dir())}/security"
+dependency "cicd" {
+  config_path = "${dirname(get_terragrunt_dir())}/cicd"
   mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
   mock_outputs = {
-    task_execution_role_arn = "arn:aws:iam::123456789012:role/EcsTaskExecutionRole"
     cicd_role_arn      = "arn:aws:iam::123456789012:role/TerraformRole"
   }
 }
@@ -37,8 +41,7 @@ inputs = {
 
   # Access control (ARNs of roles that can push/pull images)
   repository_read_write_access_arns = [
-    dependency.security.outputs.task_execution_role_arn,
-    dependency.security.outputs.cicd_role_arn,
+    dependency.cicd.outputs.cicd_role_arn,
   ]
 
   # Lifecycle policy (cleanup old images)
