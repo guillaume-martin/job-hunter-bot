@@ -115,11 +115,15 @@ resource "aws_iam_role" "scheduler_role" {
 data "aws_iam_policy_document" "scheduler_role_policy" {
   statement {
     actions   = ["ecs:RunTask"]
-    resources = ["arn:aws:ecs:${data.aws_region.current.region}:${data.aws_caller_identity.current.account_id}:task-definition/*"]
+    resources = ["arn:aws:ecs:${local.region}:${local.account_id}:cluster/${local.project}-${local.env}-*"]
   }
+
   statement {
-    actions   = ["iam:PassRole"]
-    resources = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/*"]
+    actions = ["iam:PassRole"]
+    resources = [
+      aws_iam_role.execution_role.arn,
+      aws_iam_role.task_role.arn
+    ]
   }
 }
 
