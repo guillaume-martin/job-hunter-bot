@@ -3,8 +3,13 @@ include "root" {
     expose = true
 }
 
+include "component_vars" {
+    path   = find_in_parent_folders("component_vars/networking.hcl")
+    expose = true
+}
+
 terraform {
-    source = "${get_path_to_repo_root()}/iac/modules/networking"
+    source = include.component_vars.locals.source_loc
 }
 
 inputs = {

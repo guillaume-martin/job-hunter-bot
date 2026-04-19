@@ -3,6 +3,11 @@ include "root" {
     expose = true
 }
 
+include "component_vars" {
+    path   = find_in_parent_folders("component_vars/compute.hcl")
+    expose = true
+}
+
 locals {
   # Set the environment variables end secrets to insert in task definition
   td_env = {
@@ -15,7 +20,7 @@ locals {
 }
 
 terraform {
-  source = "${get_path_to_repo_root()}/iac/modules/compute"
+  source = include.component_vars.locals.source_loc
 }
 
 dependency "networking" {
