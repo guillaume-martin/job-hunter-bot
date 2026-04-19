@@ -23,6 +23,14 @@ terraform {
   source = include.component_vars.locals.source_loc
 }
 
+dependency "cicd" {
+  config_path = "../../global/cicd"
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+  mock_outputs = {
+    cicd_role_arn = "arn:aws:iam::123456789012:role/mock-cicd-role"
+  }
+}
+
 dependency "networking" {
   config_path = "${dirname(get_terragrunt_dir())}/networking"
     mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
@@ -36,7 +44,7 @@ dependency "registry" {
     config_path = "../../global/registry"
     mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
     mock_outputs = {
-        ecr_name = "my-repo"
+        repository_name = "my-repo"
     }
 }
 
@@ -60,7 +68,7 @@ dependency "logging" {
 
 inputs = {
     # Task Definition Settings
-    ecr_name                     = dependency.registry.outputs.ecr_name
+    ecr_name                     = dependency.registry.outputs.repository_name
     ecr_tag                      = "staging"
 
     task_cpu                    = 512
@@ -77,7 +85,7 @@ inputs = {
         assign_public_ip = true
     }
     scheduler_role_arn = dependency.iam.outputs.scheduler_role_arn
-    scheduler_cron_expression = "5 0 * * *"
+    scheduler_cron_expression = "5 0 * * ? *"
     scheduler_flexible_time_window_mode = "OFF"
     scheduler_maximum_window_in_minutes = null
     scheduler_timezone = "UTC"

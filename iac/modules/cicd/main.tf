@@ -12,6 +12,16 @@ locals {
 
 
 #------------------------------------------------------------------------------
+# AWS Service-Linked Roles
+# SLRs are account-wide prerequisites that must exist before their services
+# can be used. Provisioned here since the CI/CD stack is also account-scoped.
+#------------------------------------------------------------------------------
+resource "aws_iam_service_linked_role" "ecs" {
+  aws_service_name = "ecs.amazonaws.com"
+}
+
+
+#------------------------------------------------------------------------------
 # CICD Role and Policy
 #------------------------------------------------------------------------------
 data "aws_iam_policy_document" "cicd_assume_role_policy" {
