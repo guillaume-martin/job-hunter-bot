@@ -127,11 +127,16 @@ job-hunter-bot/
 ├── docs/
 │   ├── architecture.py     # generates the architecture diagram
 │   └── img/
-├── iac/
-│   └── environments/       # Terraform + Terragrunt configuration
-│       ├── develop/
-│       ├── prod/
-│       └── staging/
+├── iac/                    # Terraform + Terragrunt (see iac/README.md)
+│   ├── Makefile
+│   ├── modules/            # Reusable Terraform modules
+│   └── environments/
+│       ├── root.hcl
+│       ├── common_vars.hcl
+│       ├── component_vars/
+│       ├── global/         # Cross-env: cicd, registry, ses
+│       ├── staging/
+│       └── production/
 ├── src/
 │   ├── config.py                    # Centralized configuration
 │   ├── search_config.template.yaml  # Search config template
@@ -162,8 +167,9 @@ job-hunter-bot/
 - Python 3.11+
 - [Poetry](https://python-poetry.org/docs/#installation)
 - AWS credentials configured (`~/.aws/credentials` or environment variables)
-- A DynamoDB table for job caching
-- An AWS SES verified sender address
+- A DynamoDB table for job caching and a verified SES sender identity —
+  provisioned by the Terraform/Terragrunt stacks in [`iac/`](iac/README.md),
+  or create them manually if you prefer
 
 ### 📦 Installation
 
@@ -251,7 +257,12 @@ The `run` target mounts your local AWS credentials into the container, so no add
 
 ### ☁️ Running In The Cloud
 
-🚧 Coming Soon
+The bot runs on AWS as an ECS Fargate task triggered daily by EventBridge
+Scheduler. The full infrastructure (VPC, ECS, DynamoDB, SES, IAM, scheduler,
+logs) is defined as Terraform modules orchestrated by Terragrunt.
+
+See [iac/README.md](iac/README.md) for the layout, prerequisites, and
+deployment steps.
 
 ### 🧪 Run The Tests
 

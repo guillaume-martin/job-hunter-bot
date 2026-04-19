@@ -12,7 +12,7 @@ iac/
 ├── Makefile            # Read-only shortcuts: state, plan, outputs
 │
 ├── modules/            # Reusable Terraform modules (application-specific)
-│   ├── cicd/           # GitHub OIDC provider + CI/CD role
+│   ├── cicd/           # GitHub OIDC provider, CI/CD role, ECS service-linked role
 │   ├── compute/        # ECS cluster, task definition, EventBridge scheduler
 │   ├── iam/            # Per-env IAM: execution, task, scheduler roles
 │   ├── networking/     # VPC, public subnet, route table, security group
@@ -24,7 +24,7 @@ iac/
     ├── component_vars/     # Shared module source + inputs
     │
     ├── global/             # Cross-environment resources
-    │   ├── cicd/           # OIDC provider + CI/CD role (modules/cicd)
+    │   ├── cicd/           # OIDC provider, CI/CD role, ECS SLR (modules/cicd)
     │   ├── registry/       # ECR repository (upstream module)
     │   └── ses/            # SES sender identity (modules/ses)
     │
@@ -76,6 +76,7 @@ graph LR
     compute[compute]
   end
   cicd --> registry
+  cicd --> compute
   iam --> compute
   networking --> compute
   logging --> compute
@@ -84,13 +85,15 @@ graph LR
 
 ### Why IAM is split
 
-`cicd/` lives in `global/` and manages what crosses the boundary with GitHub:
-the OIDC provider and the role CI/CD workflows assume. `iam/` lives in each
-environment and manages the ECS execution, task, and scheduler roles — scoped
-tightly to that environment's DynamoDB table, SSM parameters, and SES usage.
+`cicd/` lives in `global/` and manages what's account-wide: the GitHub OIDC
+provider, the role CI/CD workflows assume, and the AWS service-linked role
+for ECS (a one-off prerequisite every account needs before using ECS).
+`iam/` lives in each environment and manages the ECS execution, task, and
+scheduler roles — scoped tightly to that environment's DynamoDB table, SSM
+parameters, and SES usage.
 
 The split keeps the blast radius of per-environment IAM contained, while the
-CI/CD trust with GitHub stays account-wide.
+account-wide trust and prerequisites stay together.
 
 ## Prerequisites
 
@@ -136,21 +139,15 @@ SSM parameter paths are scoped the same way and referenced by the task role.
 Each environment writes its state to its own S3 bucket, named
 `iac-tfstate-<environment>` (see [root.hcl](environments/root.hcl)).
 
-> ⚠️ The buckets must exist **before** the first `terragrunt` run — the
-> backend is not auto-bootstrapped.
+Terragrunt **auto-bootstraps** each bucket on the first `init`/`plan`/`apply`
+in that environment: creation, versioning, public-access block, enforced TLS,
+and server-side encryption are all set up automatically. State locking uses
+S3 native locking (`use_lockfile = true`) — no DynamoDB lock table needed.
 
-```bash
-aws s3api create-bucket \
-  --bucket iac-tfstate-global \
-  --region us-east-1 \
-  --profile iac-job-hunter-bot
-aws s3api put-bucket-versioning \
-  --bucket iac-tfstate-global \
-  --versioning-configuration Status=Enabled \
-  --profile iac-job-hunter-bot
-```
-
-Repeat for `iac-tfstate-staging` and `iac-tfstate-production`.
+The deploy role just needs the S3 bucket-management permissions
+(`s3:CreateBucket`, `s3:PutBucketVersioning`,
+`s3:PutBucketPublicAccessBlock`, `s3:PutEncryptionConfiguration`, etc.).
+Covered by `PowerUserAccess` or equivalent broad policies.
 
 ### 2. AWS profile
 
@@ -173,14 +170,14 @@ Stacks have dependencies resolved automatically by Terragrunt. Deploy the
 shared pieces first, then the target environment:
 
 ```bash
-terragrunt run-all plan  --working-dir environments/global
-terragrunt run-all apply --working-dir environments/global
+terragrunt plan  --all --working-dir environments/global
+terragrunt apply --all --working-dir environments/global
 
-terragrunt run-all plan  --working-dir environments/staging
-terragrunt run-all apply --working-dir environments/staging
+terragrunt plan  --all --working-dir environments/staging
+terragrunt apply --all --working-dir environments/staging
 ```
 
-`run-all` walks the DAG shown above. During `plan`, downstream stacks see
+`--all` walks the DAG shown above. During `plan`, downstream stacks see
 [`mock_outputs`](https://terragrunt.gruntwork.io/docs/reference/config-blocks-and-attributes/#mock_outputs)
 for any dep that hasn't been applied yet — this is expected; the real values
 flow through at apply time.
@@ -188,8 +185,8 @@ flow through at apply time.
 ### Single stack
 
 ```bash
-terragrunt --working-dir environments/staging/compute plan
-terragrunt --working-dir environments/staging/compute apply
+terragrunt plan  --working-dir environments/staging/compute
+terragrunt apply --working-dir environments/staging/compute
 ```
 
 ### After the first apply
@@ -198,7 +195,9 @@ terragrunt --working-dir environments/staging/compute apply
    created by `global/registry`. The CI/CD role ARN exported by `global/cicd`
    is consumed by the GitHub Actions workflow.
 2. Confirm the EventBridge schedule triggers the task on the cron expression
-   set in `<env>/compute/terragrunt.hcl` (default: `5 0 * * *`).
+   set in `<env>/compute/terragrunt.hcl` (default: `cron(5 0 * * ? *)` —
+   daily at 00:05 UTC). Scheduler uses a 6-field cron where `day-of-month`
+   and `day-of-week` are mutually exclusive, hence the `?`.
 3. Tail the CloudWatch log group to watch the first run.
 
 ## Makefile shortcuts
@@ -223,8 +222,8 @@ State-side (what IaC believes exists):
 ```bash
 make state ENV=staging
 # or for a single stack:
-terragrunt --working-dir environments/staging/<stack> state list
-terragrunt --working-dir environments/staging/<stack> output
+terragrunt state list --working-dir environments/staging/<stack>
+terragrunt output     --working-dir environments/staging/<stack>
 ```
 
 AWS-side (what actually exists, across all stacks, via tags):
@@ -240,8 +239,8 @@ aws resourcegroupstaggingapi get-resources \
 Destroy in reverse dependency order: per-env first, then global.
 
 ```bash
-terragrunt run-all destroy --working-dir environments/staging
-terragrunt run-all destroy --working-dir environments/global
+terragrunt destroy --all --working-dir environments/staging
+terragrunt destroy --all --working-dir environments/global
 ```
 
 > ⚠️ The state buckets are **not** managed by Terragrunt — remove them
