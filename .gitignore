@@ -31,6 +31,16 @@ venv
 __pycache__
 .mypy_cache/
 
+# IaC
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+*.tfplan
+.terragrunt-cache
+**/local_vars.hcl
+
 # Data files
 resume.txt
 search_config.yaml

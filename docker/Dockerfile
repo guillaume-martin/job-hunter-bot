@@ -33,6 +33,7 @@ WORKDIR /app
 
 # Install only runtime system dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# hadolint ignore=DL3005,DL3008
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \

@@ -1,0 +1,95 @@
+include "root" {
+    path   = find_in_parent_folders("root.hcl")
+    expose = true
+}
+
+include "component_vars" {
+    path   = find_in_parent_folders("component_vars/compute.hcl")
+    expose = true
+}
+
+locals {
+  # Set the environment variables and secrets to insert in task definition
+  td_env = {
+    aws_region = include.root.locals.aws_region
+    jobs_table = "${include.root.locals.project}-${include.root.locals.environment}-jobs-cache"
+    retention_days = 30
+    sender = get_env("SENDER")
+    recipient = get_env("RECIPIENT")
+  }
+}
+
+terraform {
+  source = include.component_vars.locals.source_loc
+}
+
+dependency "cicd" {
+  config_path = "../../global/cicd"
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+  mock_outputs = {
+    cicd_role_arn = "arn:aws:iam::123456789012:role/mock-cicd-role"
+  }
+}
+
+dependency "networking" {
+  config_path = "${dirname(get_terragrunt_dir())}/networking"
+    mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+    mock_outputs = {
+        security_group_id = "sg-0123456789abcdef0"
+        public_subnet_id = "subnet-0123456789abcdef0"
+    }
+}
+
+dependency "registry" {
+  config_path = "../../global/registry"
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+  mock_outputs = {
+    ecr_name = "my-repo"
+  }
+}
+
+dependency "iam" {
+  config_path = "../iam"
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+  mock_outputs = {
+    execution_role_arn = "arn:aws:iam::123456789012:role/EcsTaskExecutionRole"
+      task_role_arn      = "arn:aws:iam::123456789012:role/TaskRole"
+      scheduler_role_arn = "arn:aws:iam::123456789012:role/SchedulerRole"
+  }
+}
+
+dependency "logging" {
+  config_path = "../logging"
+  mock_outputs_allowed_terraform_commands = ["validate", "init", "plan"]
+  mock_outputs = {
+    cloudwatch_log_group_name = "log-group-name"
+  }
+}
+
+inputs = {
+  # Task Definition Settings
+  ecr_name                     = dependency.registry.outputs.ecr_name
+  ecr_tag                      = "staging"
+
+  task_cpu                    = 512
+  task_definition_environment = templatefile("${dirname(find_in_parent_folders("root.hcl"))}/component_vars/task_definition_environment.json", { env = local.td_env })
+  task_memory                 = 1024
+
+  execution_role_arn  = dependency.iam.outputs.execution_role_arn
+  task_role_arn       = dependency.iam.outputs.task_role_arn
+
+  # Scheduler settings
+  network_configuration = {
+    security_groups  = [dependency.networking.outputs.security_group_id]
+    subnets          = [dependency.networking.outputs.public_subnet_id]
+    assign_public_ip = true
+  }
+  scheduler_role_arn = dependency.iam.outputs.scheduler_role_arn
+  scheduler_cron_expression = "5 0 * * ? *"
+  scheduler_flexible_time_window_mode = "OFF"
+  scheduler_maximum_window_in_minutes = null
+  scheduler_timezone = "UTC"
+
+  # Logging settings
+  cloudwatch_log_group_name = dependency.logging.outputs.cloudwatch_log_group_name
+}

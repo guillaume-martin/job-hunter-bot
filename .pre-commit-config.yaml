@@ -49,4 +49,10 @@ repos:
     rev: v2.12.0
     hooks:
       - id: hadolint-docker
-        args: ["--ignore", "DL3008", "--failure-threshold", "warning"]  # Ignoring packages versions to avoid errors on install
+        args: ["--failure-threshold", "warning"]
+
+  - repo: https://github.com/AleksaC/terraform-py
+    rev: v1.14.7
+    hooks:
+      - id: tf-fmt
+      - id: tf-validate

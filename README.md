@@ -29,6 +29,7 @@ in a DynamoDB cache and filters them out on subsequent runs.
 - [Features](#-features)
 - [Demo](#-demo)
 - [How It Works](#-how-it-works)
+- [Architecture](#-architecture)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
@@ -90,6 +91,14 @@ F -->|email| I[AWS SES]
 
 ---
 
+## 📐 Architecture
+
+![](docs/img/architecture.png)
+
+[Top](#-table-of-contents)
+
+---
+
 ## 🔧 Tech Stack
 
 | Layer                 | Technology                         |
@@ -115,8 +124,19 @@ job-hunter-bot/
 ├── .github/
 │   └── workflows/          # GitHub Actions pipelines
 ├── docker/                 # Dockerfile and compose files
-├── iac/
-│   └── environments/       # Terraform + Terragrunt configuration
+├── docs/
+│   ├── architecture.py     # generates the architecture diagram
+│   └── img/
+├── iac/                    # Terraform + Terragrunt (see iac/README.md)
+│   ├── Makefile
+│   ├── modules/            # Reusable Terraform modules
+│   └── environments/
+│       ├── root.hcl
+│       ├── common_vars.hcl
+│       ├── component_vars/
+│       ├── global/         # Cross-env: cicd, registry, ses
+│       ├── staging/
+│       └── production/
 ├── src/
 │   ├── config.py                    # Centralized configuration
 │   ├── search_config.template.yaml  # Search config template
@@ -147,8 +167,9 @@ job-hunter-bot/
 - Python 3.11+
 - [Poetry](https://python-poetry.org/docs/#installation)
 - AWS credentials configured (`~/.aws/credentials` or environment variables)
-- A DynamoDB table for job caching
-- An AWS SES verified sender address
+- A DynamoDB table for job caching and a verified SES sender identity —
+  provisioned by the Terraform/Terragrunt stacks in [`iac/`](iac/README.md),
+  or create them manually if you prefer
 
 ### 📦 Installation
 
@@ -236,7 +257,12 @@ The `run` target mounts your local AWS credentials into the container, so no add
 
 ### ☁️ Running In The Cloud
 
-🚧 Coming Soon
+The bot runs on AWS as an ECS Fargate task triggered daily by EventBridge
+Scheduler. The full infrastructure (VPC, ECS, DynamoDB, SES, IAM, scheduler,
+logs) is defined as Terraform modules orchestrated by Terragrunt.
+
+See [iac/README.md](iac/README.md) for the layout, prerequisites, and
+deployment steps.
 
 ### 🧪 Run The Tests
 
@@ -300,11 +326,8 @@ scrapers = {
 
 ## 📍 Roadmap
 
-- [x] Refactor all scrapers to use the new `BaseScraper` architecture
-- [x] Expand unit test coverage across all scrapers
 - [ ] Refactor `remoteco.py` legacy scraper into `BaseScraper` architecture
 - [ ] Add integration tests for all scrapers
-- [ ] Complete IaC scripts with Terraform and Terragrunt
 - [ ] Build full CI/CD pipeline with GitHub Actions (lint → test → deploy)
 - [ ] Add monitoring and alerting (CloudWatch metrics, error notifications)
 

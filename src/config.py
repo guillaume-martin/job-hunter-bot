@@ -37,6 +37,16 @@ _search_config = _load_search_config()
 
 
 class Config:
+    # ================================== #
+    #      Infrastructure settings       #
+    # ================================== #
+    AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+    JOBS_TABLE = os.environ["JOBS_TABLE"]
+    RETENTION_DAYS = int(os.getenv("RETENTION_DAYS", "30"))
+
+    # ============================ #
+    #      Search  settings        #
+    # ============================ #
     # Search parameters (loaded from search_config.yaml)
     SEARCHES: list[str] = _search_config.get("searches", ["backend engineer"])
     SITES: list[str] = _search_config.get("sites", ["remotive"])
