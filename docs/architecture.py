@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from diagrams import Cluster, Diagram, Edge
 from diagrams.aws.compute import ECR, Fargate
 from diagrams.aws.database import Dynamodb
@@ -5,11 +7,14 @@ from diagrams.aws.engagement import SimpleEmailServiceSes
 from diagrams.aws.integration import Eventbridge
 from diagrams.aws.management import Cloudwatch, ParameterStore
 from diagrams.aws.security import IAMRole
+from diagrams.custom import Custom
+
+ASSETS = Path(__file__).parent / "assets"
 
 graph_attr = {
     "fontsize": "20",
     "bgcolor": "transparent",
-    "splines": "ortho",  # right-angle edges — cleaner look
+    "splines": "polyline",
     "nodesep": "0.8",  # horizontal spacing between nodes
     "ranksep": "1.0",  # vertical spacing between ranks
 }
@@ -22,6 +27,10 @@ with Diagram(
     filename="img/architecture",
     outformat="png",
 ):
+    with Cluster("External"):
+        ai_api = Custom("AI API", str(ASSETS / "api.png"))
+        job_boards = Custom("Job Boards", str(ASSETS / "web.png"))
+
     with Cluster("AWS"):
         # Security
         exec_role = IAMRole("Task\nExecution\nRole")
@@ -34,16 +43,17 @@ with Diagram(
         mailer = SimpleEmailServiceSes("SES")
         logs = Cloudwatch("CloudWatch\nLogs")
         register = ECR("ECR")
+        cache = Dynamodb("Jobs Cache")
 
         with Cluster("VPC"):
             with Cluster("Public Subnet"):
-                cache = Dynamodb("Jobs Cache")
-                with Cluster("ECS Cluster"):
-                    worker = Fargate("Fargate Task")
+                worker = Fargate("Fargate Task")
 
     # Execution flow
-    scheduler >> worker  # EventBridge triggers Fargate task
-    register >> worker  # Fargate pulls image from ECR at startup
+    scheduler >> Edge(label="triggers") >> worker  # EventBridge triggers Fargate task
+    (
+        register >> Edge(label="pulls image") >> worker
+    )  # Fargate pulls image from ECR at startup
     ssm >> worker  # task reads config at startup
 
     # IAM
@@ -52,6 +62,10 @@ with Diagram(
     scheduler >> Edge(style="dashed", label="assumes") >> scheduler_role
 
     # Outputs
-    worker >> cache  # reads/writes job cache
-    worker >> mailer  # sends email
+    worker >> Edge(label="read/write") >> cache  # reads/writes job cache
+    worker >> Edge(label="sends email") >> mailer  # sends email
     worker >> logs  # writes logs
+
+    # External interactions
+    worker >> Edge(label="scores jobs") >> ai_api  # calls AI API for job search
+    job_boards >> Edge(label="scrape") >> worker  # scrapes job boards for listings

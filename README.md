@@ -315,11 +315,8 @@ scrapers = {
 
 ## 📍 Roadmap
 
-- [x] Refactor all scrapers to use the new `BaseScraper` architecture
-- [x] Expand unit test coverage across all scrapers
 - [ ] Refactor `remoteco.py` legacy scraper into `BaseScraper` architecture
 - [ ] Add integration tests for all scrapers
-- [ ] Complete IaC scripts with Terraform and Terragrunt
 - [ ] Build full CI/CD pipeline with GitHub Actions (lint → test → deploy)
 - [ ] Add monitoring and alerting (CloudWatch metrics, error notifications)
 
