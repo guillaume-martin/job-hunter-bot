@@ -63,7 +63,7 @@ class Config:
     REQUEST_TIMEOUT = 60
 
     # AI settings
-    API_URL = "https://api.mistral.ai/v1/chat/completions"
+    PROVIDER = "mistral"
     MODEL = "mistral-small-latest"
     TEMPERATURE = 0.7
     TIMEOUT = 60
