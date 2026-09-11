@@ -13,8 +13,8 @@ class AIAnalyzer:
     def __init__(
         self,
         api_key: str,
+        provider: str,
         model: str,
-        api_url: str,
         prompt_file: str = "prompt.txt",
         temperature: float = 0.7,
         timeout: int = 60,
@@ -29,8 +29,8 @@ class AIAnalyzer:
             temperature: Temperature for AI responses (0.0-1.0).
         """
         self.api_key = api_key
+        self.provider = provider
         self.model = model
-        self.api_url = api_url
         self.prompt_file = prompt_file
         self.temperature = temperature
         self.timeout = timeout
