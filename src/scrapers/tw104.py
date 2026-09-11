@@ -48,7 +48,7 @@ class Tw104Scraper(BaseScraper):
         user_agent = (
             "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
         )
-        keyword = term.replace(" ", "+")
+        keyword = urllib.parse.quote(term)
         referer = (
             "https://www.104.com.tw/jobs/search/?"
             f"jobsource=joblist_search&keyword={keyword}&mode=s&page=1&order=16"
