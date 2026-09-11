@@ -65,4 +65,3 @@ When given `resume` and `job_description`, apply the steps above and output the 
 
 # Resume
 $resume
-
