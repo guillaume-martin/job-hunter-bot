@@ -3,6 +3,7 @@ import logging
 from string import Template
 from typing import cast
 
+from litellm import completion
 from requests import request
 from requests.exceptions import RequestException
 
@@ -39,18 +40,17 @@ class AIAnalyzer:
             "Content-Type": "application/json",
         }
 
-    def _build_message(self, resume: str, job_description: str) -> str:
-        """Build the message payload for the AI API.
+    def _build_system_instructions(self, resume: str) -> str:
+        """Build the instructions for the AI system based on the resume.
 
         Args:
             resume: Resume text.
-            job_description: Job description text.
 
         Returns:
             Formatted message string.
         """
-        if not resume or not job_description:
-            raise ValueError("Resume and job description must not be empty")
+        if not resume:
+            raise ValueError("Resume must not be empty")
 
         translation_table = str.maketrans({"\n": " ", "\r": " ", "\t": " "})
 
@@ -63,7 +63,7 @@ class AIAnalyzer:
             raise OSError(f"Error reading prompt file: {e}")
 
         template = Template(prompt_template)
-        message = template.substitute(resume=resume, job_description=job_description)
+        message = template.substitute(resume=resume,)
         message = message.translate(translation_table).strip()
 
         return message
@@ -81,38 +81,19 @@ class AIAnalyzer:
         if not resume or not job_description:
             raise ValueError("Resume and job description must not be empty")
 
-        try:
-            message = self._build_message(resume, job_description)
+        prompt = self._build_system_instructions(resume)
 
-            payload = {
-                "model": self.model,
-                "messages": [{"role": "user", "content": message}],
-                "response_format": {"type": "json_object"},
-                "temperature": self.temperature,
-            }
+        response = completion(
+            model=f"{self.provider}/{self.model}",
+            api_key=self.api_key,
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": job_description}
+            ],
+            temperature=self.temperature,
+            timeout=self.timeout,
+            num_retries=3,
+        ) 
 
-            response = request(
-                "POST",
-                url=self.api_url,
-                headers=self.headers,
-                json=payload,
-                timeout=self.timeout,
-            )
-            response.raise_for_status()  # Raises HTTPError for 4XX/5XX responses
-            result = response.json()
-            content = result["choices"][0]["message"]["content"]
+        return response.choices[0].message.content if response.choices else None
 
-            # Check if result["choices"][0]["message"]["content"] is already a dict
-            # before parsing.
-            try:
-                parsed = json.loads(content) if isinstance(content, str) else content
-                return cast(dict, parsed)
-            except json.JSONDecodeError:
-                return cast(dict, content)  # Fallback: return raw content
-
-        except RequestException as e:
-            logger.exception(f"API request failed: {e}")
-            return None
-        except (KeyError, json.JSONDecodeError) as e:
-            logger.exception(f"Invalid API response: {e}")
-            return None
