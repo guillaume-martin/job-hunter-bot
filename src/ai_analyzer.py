@@ -62,7 +62,7 @@ class AIAnalyzer:
             raise OSError(f"Error reading prompt file: {e}")
 
         template = Template(prompt_template)
-        message = template.substitute(resume=resume,)
+        message = template.substitute(resume=resume)
         message = message.translate(translation_table).strip()
 
         return message
@@ -88,12 +88,12 @@ class AIAnalyzer:
                 api_key=self.api_key,
                 messages=[
                     {"role": "system", "content": prompt},
-                    {"role": "user", "content": job_description}
+                    {"role": "user", "content": job_description},
                 ],
                 temperature=self.temperature,
                 timeout=self.timeout,
                 num_retries=3,
-            ) 
+            )
 
             if not response.choices:
                 return None
@@ -109,4 +109,3 @@ class AIAnalyzer:
         except (APIError, RateLimitError) as e:
             logger.exception(f"API request failed: {e}")
             return None
-
