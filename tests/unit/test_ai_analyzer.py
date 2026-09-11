@@ -21,6 +21,7 @@ def analyzer() -> AIAnalyzer:
         prompt_file="dummy_prompt.txt",
     )
 
+
 def make_mock_response(content) -> MagicMock:
     """Build a mock mimicking litellm's ModelResponse shape."""
     mock_message = MagicMock()
@@ -52,12 +53,12 @@ def test_build_system_instructions_replaces_placehoders(analyzer):
     assert "$resume" not in message
     assert test_resume in message
 
+
 def test_build_system_instructions_raises_on_empty_resume(analyzer):
     """_build_system_instructions should raise ValueError when resume is empty."""
-    with pytest.raises(
-        ValueError, match="Resume must not be empty"
-    ):
+    with pytest.raises(ValueError, match="Resume must not be empty"):
         analyzer._build_system_instructions("")
+
 
 def test_build_system_instructions_raises_on_missing_prompt_file(analyzer):
     """_build_system_instructions should raise FileNotFoundError when the prompt file is
@@ -78,7 +79,9 @@ def test_analyze_job_returns_parsed_dic(analyzer):
     # Setup
     expected = {"match_score": "85/100", "recommendation": "Apply"}
 
-    analyzer._build_system_instructions = MagicMock(return_value="Analyze this job and resume.")
+    analyzer._build_system_instructions = MagicMock(
+        return_value="Analyze this job and resume."
+    )
 
     mock_response = make_mock_response(json.dumps(expected))
 
@@ -91,6 +94,7 @@ def test_analyze_job_returns_parsed_dic(analyzer):
     assert result == expected
     assert result["match_score"] == "85/100"
     assert result["recommendation"] == "Apply"
+
 
 def test_analyze_job_handles_content_already_dict(analyzer):
     """analyze_job should handle responses where content is already a dict."""
@@ -109,6 +113,7 @@ def test_analyze_job_handles_content_already_dict(analyzer):
     # Verify
     assert result == expected
 
+
 def test_analyze_job_raises_on_empty_inputs(analyzer):
     """analyze_job should raise ValueError when resume or job description is empty."""
     # Setup
@@ -124,16 +129,17 @@ def test_analyze_job_raises_on_empty_inputs(analyzer):
     ):
         analyzer.analyze_job("Some resume", "")
 
+
 def test_analyze_job_returns_none_on_api_error(analyzer):
     """analyze_job should return None when the API returns an error."""
     # Setup
     analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
     api_error = APIError(
-                    status_code=500, 
-                    message="API Error occurred", 
-                    llm_provider="dummy_provider", 
-                    model="dummy_model"
-                )
+        status_code=500,
+        message="API Error occurred",
+        llm_provider="dummy_provider",
+        model="dummy_model",
+    )
 
     # Exercise
     with patch("src.ai_analyzer.completion", side_effect=api_error):
@@ -142,15 +148,16 @@ def test_analyze_job_returns_none_on_api_error(analyzer):
     # Verify
     assert result is None
 
+
 def test_analyze_job_returns_none_on_rate_limit_error(analyzer):
     """analyze_job should return None when the API returns a rate limit error."""
     # Setup
     analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
     rate_limit_error = RateLimitError(
-                            message="Rate limit exceeded",
-                            llm_provider="dummy_provider",
-                            model="dummy_model" 
-                        )   
+        message="Rate limit exceeded",
+        llm_provider="dummy_provider",
+        model="dummy_model",
+    )
 
     # Exercise
     with patch("src.ai_analyzer.completion", side_effect=rate_limit_error):
@@ -158,6 +165,7 @@ def test_analyze_job_returns_none_on_rate_limit_error(analyzer):
 
     # Verify
     assert result is None
+
 
 def test_analyze_job_returns_none_on_empty_choices(analyzer):
     """analyze_job should return None when the API response has no choices."""
