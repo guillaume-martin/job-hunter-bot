@@ -4,8 +4,7 @@ from string import Template
 from typing import cast
 
 from litellm import completion
-from requests import request
-from requests.exceptions import RequestException
+from litellm.exceptions import APIError, RateLimitError
 
 logger = logging.getLogger(__name__)
 
@@ -81,19 +80,33 @@ class AIAnalyzer:
         if not resume or not job_description:
             raise ValueError("Resume and job description must not be empty")
 
-        prompt = self._build_system_instructions(resume)
+        try:
+            prompt = self._build_system_instructions(resume)
 
-        response = completion(
-            model=f"{self.provider}/{self.model}",
-            api_key=self.api_key,
-            messages=[
-                {"role": "system", "content": prompt},
-                {"role": "user", "content": job_description}
-            ],
-            temperature=self.temperature,
-            timeout=self.timeout,
-            num_retries=3,
-        ) 
+            response = completion(
+                model=f"{self.provider}/{self.model}",
+                api_key=self.api_key,
+                messages=[
+                    {"role": "system", "content": prompt},
+                    {"role": "user", "content": job_description}
+                ],
+                temperature=self.temperature,
+                timeout=self.timeout,
+                num_retries=3,
+            ) 
 
-        return response.choices[0].message.content if response.choices else None
+            if not response.choices:
+                return None
+
+            content = response.choices[0].message.content
+
+            try:
+                parsed = json.loads(content) if isinstance(content, str) else content
+                return cast(dict, parsed)
+            except json.JSONDecodeError:
+                return cast(dict, content)
+
+        except (APIError, RateLimitError) as e:
+            logger.exception(f"API request failed: {e}")
+            return None
 
