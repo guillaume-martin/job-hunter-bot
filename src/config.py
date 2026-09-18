@@ -67,6 +67,7 @@ class Config:
     MODEL = "mistral-small-latest"
     TEMPERATURE = 0.7
     TIMEOUT = 60
+    NUM_RETRIES = 3
     PROMPT_FILE = "src/data/prompt.txt"
     RESUME_FILE = "src/data/resume.txt"
     # Minimum job `match_score` (0-100) required to select a job for application.

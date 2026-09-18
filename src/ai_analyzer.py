@@ -18,6 +18,7 @@ class AIAnalyzer:
         prompt_file: str = "prompt.txt",
         temperature: float = 0.7,
         timeout: int = 60,
+        num_retries: int = 3,
     ) -> None:
         """Initialize the AI analyzer.
 
@@ -38,6 +39,7 @@ class AIAnalyzer:
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
         }
+        self.num_retries = num_retries
 
     def _build_system_instructions(self, resume: str) -> str:
         """Build the instructions for the AI system based on the resume.
@@ -92,7 +94,8 @@ class AIAnalyzer:
                 ],
                 temperature=self.temperature,
                 timeout=self.timeout,
-                num_retries=3,
+                num_retries=self.num_retries,
+                retry_strategy="exponential_backoff_retry",
             )
 
             if not response.choices:
