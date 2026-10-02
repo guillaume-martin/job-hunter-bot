@@ -326,10 +326,11 @@ def main(context: Literal["cloud", "local"]) -> None:
     analyzer = AIAnalyzer(
         api_key=api_key,
         model=Config.MODEL,
-        api_url=Config.API_URL,
+        provider=Config.PROVIDER,
         prompt_file=Config.PROMPT_FILE,
         temperature=Config.TEMPERATURE,
         timeout=Config.TIMEOUT,
+        num_retries=Config.NUM_RETRIES,
     )
 
     # Load resume once (e.g., from a file or environment variable)
