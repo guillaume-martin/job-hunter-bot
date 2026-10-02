@@ -18,10 +18,10 @@ RUN pip install --no-cache-dir \
 # Copy dependency files
 COPY pyproject.toml poetry.lock ./
 
-# Export production dependencies to requirements.txt
-# then install them to /runtime so we can copy to the final stage
-RUN poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt \
-    && pip install --no-cache-dir --prefix=/runtime -r requirements.txt
+# Create venv and install into it
+RUN python -m venv /venv \
+    && poetry export --without-hashes --without dev -f requirements.txt -o requirements.txt \
+    && /venv/bin/pip install --no-cache-dir -r requirements.txt
 
 
 #  Stage 2: final image
@@ -33,6 +33,7 @@ WORKDIR /app
 
 # Install only runtime system dependencies
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # hadolint ignore=DL3005,DL3008
 RUN apt-get update \
     && apt-get upgrade -y \
@@ -48,7 +49,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy installed Python packages from builder
-COPY --from=builder /runtime /usr/local
+COPY --from=builder /venv /venv
 
 # Copy application source
 COPY ./src/ ./src/
@@ -61,4 +62,6 @@ RUN mkdir -p ./src/logs ./output \
 # Switch to non-root user
 USER appuser
 
-ENTRYPOINT ["python", "-m", "src.job_search"]
+ENV PATH="/venv/bin:$PATH"
+
+ENTRYPOINT ["/venv/bin/python", "-m", "src.job_search"]
