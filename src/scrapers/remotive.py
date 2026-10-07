@@ -97,7 +97,7 @@ class RemotiveScraper(BaseScraper):
         translation_table = str.maketrans({"\n": " ", "\r": " ", "\t": " "})
 
         try:
-            r = self._request(method="GET", url=job_url, headers=HEADERS, timeout=20)
+            r = self._request(method="GET", url=job_url, headers=HEADERS)
 
             if r:
                 soup = BeautifulSoup(r.content, "lxml")
