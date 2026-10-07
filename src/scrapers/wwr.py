@@ -105,6 +105,11 @@ class WwrScraper(BaseScraper, SeleniumMixin):
             term (str): The search keyword to filter job listings.
         """
 
+        if not term.isascii():
+            logger.info(
+                f"Skipping non-ASCII term '{term}': WWR is an English-only job board."
+            )
+
         page_content = self._retrieve_html_content(self._build_search_url(term))
         soup = BeautifulSoup(page_content, "html.parser")
         jobs_list = soup.find_all("li", class_="feature")
