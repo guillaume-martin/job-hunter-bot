@@ -65,6 +65,11 @@ class RemotiveScraper(BaseScraper):
         return date_published
 
     def get_jobs(self, term: str) -> list[dict[str, Any]]:
+        if not term.isascii():
+            logger.info(
+                f"Skipping non-ASCII term '{term}': "
+                "Remotive is an English-only job board"
+            )
         payload = self.__build_api_payload(term)
 
         r = self._request(
