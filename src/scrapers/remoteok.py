@@ -102,6 +102,10 @@ class RemoteOkScraper(BaseScraper):
         return description
 
     def get_jobs(self, term: str) -> list[dict[str, Any]]:
+        if not term.isascii():
+            logger.info(
+                f"Skipping non-ASCII term '{term}': RemoteOK is an English-only board"
+            )
         search_url = self._build_search_url(term)
         r = self._request(method="GET", url=search_url, headers=HEADERS)
         if r:
