@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 from string import Template
 from typing import cast
 
@@ -19,6 +20,7 @@ class AIAnalyzer:
         temperature: float = 0.7,
         timeout: int = 60,
         num_retries: int = 3,
+        request_delay: float = 1.5,  # seconds between API calls
     ) -> None:
         """Initialize the AI analyzer.
 
@@ -40,6 +42,7 @@ class AIAnalyzer:
             "Content-Type": "application/json",
         }
         self.num_retries = num_retries
+        self.request_delay = request_delay
 
     def _build_system_instructions(self, resume: str) -> str:
         """Build the instructions for the AI system based on the resume.
@@ -85,6 +88,10 @@ class AIAnalyzer:
         try:
             prompt = self._build_system_instructions(resume)
 
+            # Add a delay to respect API rate limits
+            logger.debug(f"Delaying API call by {self.request_delay} seconds")
+            time.sleep(self.request_delay)
+
             response = completion(
                 model=f"{self.provider}/{self.model}",
                 api_key=self.api_key,
@@ -99,9 +106,11 @@ class AIAnalyzer:
             )
 
             if not response.choices:
+                logger.debug("API response received: No choices returned")
                 return None
 
             content = response.choices[0].message.content
+            logger.debug(f"{'=' * 50}\nAPI response received:\n{content}\n{'=' * 50}")
 
             try:
                 parsed = json.loads(content) if isinstance(content, str) else content
