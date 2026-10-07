@@ -52,6 +52,11 @@ class TrulyRemoteScraper(BaseScraper):
         return datetime.strftime(utc_publish_date, "%Y-%m-%d")
 
     def get_jobs(self, term: str) -> list[dict[str, Any]]:
+        if not term.isascii():
+            logger.info(
+                f"Skipping non-ASCII term '{term}': "
+                "TrulyRemote is an English-only job board."
+            )
         payload = self._build_api_payload(term)
 
         r = self._request(method="POST", url=self.base_url, json=payload)
