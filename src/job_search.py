@@ -195,6 +195,14 @@ def select_jobs(
                 continue
 
             eval_result = analyzer.analyze_job(resume, job["description"])
+
+            if eval_result is None:
+                logger.error(
+                    f"Analyzer returned None for '{job.get('title')}': rejecting."
+                )
+                rejected_jobs.append(job)
+                continue
+
             job["evaluation"] = eval_result
 
         except Exception as e:
