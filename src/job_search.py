@@ -195,6 +195,14 @@ def select_jobs(
                 continue
 
             eval_result = analyzer.analyze_job(resume, job["description"])
+
+            if eval_result is None:
+                logger.error(
+                    f"Analyzer returned None for '{job.get('title')}': rejecting."
+                )
+                rejected_jobs.append(job)
+                continue
+
             job["evaluation"] = eval_result
 
         except Exception as e:
@@ -326,10 +334,11 @@ def main(context: Literal["cloud", "local"]) -> None:
     analyzer = AIAnalyzer(
         api_key=api_key,
         model=Config.MODEL,
-        api_url=Config.API_URL,
+        provider=Config.PROVIDER,
         prompt_file=Config.PROMPT_FILE,
         temperature=Config.TEMPERATURE,
         timeout=Config.TIMEOUT,
+        num_retries=Config.NUM_RETRIES,
     )
 
     # Load resume once (e.g., from a file or environment variable)

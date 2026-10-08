@@ -65,6 +65,11 @@ class RemotiveScraper(BaseScraper):
         return date_published
 
     def get_jobs(self, term: str) -> list[dict[str, Any]]:
+        if not term.isascii():
+            logger.info(
+                f"Skipping non-ASCII term '{term}': "
+                "Remotive is an English-only job board"
+            )
         payload = self.__build_api_payload(term)
 
         r = self._request(
@@ -97,7 +102,7 @@ class RemotiveScraper(BaseScraper):
         translation_table = str.maketrans({"\n": " ", "\r": " ", "\t": " "})
 
         try:
-            r = self._request(method="GET", url=job_url, headers=HEADERS, timeout=20)
+            r = self._request(method="GET", url=job_url, headers=HEADERS)
 
             if r:
                 soup = BeautifulSoup(r.content, "lxml")
