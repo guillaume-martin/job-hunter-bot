@@ -243,6 +243,26 @@ Valid site names: `104`, `remoteok`, `remotive`, `trulyremote`, `workingnomads`,
 
 > If the file is missing, the bot falls back to built-in defaults. Per-scraper location sections are optional — each scraper uses sensible defaults when omitted.
 
+#### LLM Configuration
+
+The bot uses LLM models to score job listings against your resume. The calls to
+the models API is managed by the litellm library. You can configure the provider
+and the model in `config.py`:
+
+```python
+PROVIDER = "openai"
+MODEL = "gpt-4"
+```
+
+You can find a list of supported providers in https://docs.litellm.ai/docs/providers.
+The API key for the provider must be set in thThe API key for the provider must
+be set in the .env file:
+
+```bash
+# AI configuration
+AI_API_KEY=your_api_key_here
+```
+
 ### 💻 Running Locally
 
 ```bash
