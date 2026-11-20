@@ -211,20 +211,36 @@ def select_jobs(
             job["evaluation"] = {"error": f"Analysis failed: {e}"}
 
         # Only keep the jobs that are worth applying for:
-        try:
-            job_score = job["evaluation"]["match_score"].split("/")[0]
-        except KeyError as e:
-            logger.exception(f"Missing {e} key in job.")
-            rejected_jobs.append(job)
-            continue
-        except TypeError as e:
-            logger.exception(f"Job evaluation has incorrect type: {e}.")
+        evaluation = job.get("evaluation")
+        if not isinstance(evaluation, dict):
+            logger.error(
+                f"Job '{job.get('title', 'Unknown')}' has an invalid evaluation "
+                f"(expected dict, got {type(evaluation).__name__}): rejecting."
+            )
             rejected_jobs.append(job)
             continue
 
-        # We select jobs with a score over the threshold and jobs that
-        # need to be evaluated manually.
-        if int(job_score) >= Config.APPLY_THRESHOLD or job["evaluation"] == "manual":
+        match_score = evaluation.get("match_score")
+        if match_score is None:
+            logger.error(
+                f"Missing 'match_score' in evaluation for "
+                f"'{job.get('title', 'Unknown')}': rejecting."
+            )
+            rejected_jobs.append(job)
+            continue
+
+        try:
+            job_score = int(str(match_score).split("/")[0])
+        except (ValueError, TypeError) as e:
+            logger.error(
+                f"Invalid match_score '{match_score}' for "
+                f"'{job.get('title', 'Unknown')}' ({e}): rejecting."
+            )
+            rejected_jobs.append(job)
+            continue
+
+        # We select jobs with a score over the threshold.
+        if job_score >= Config.APPLY_THRESHOLD:
             selected_jobs.append(job)
         else:
             rejected_jobs.append(job)
@@ -273,9 +289,14 @@ def jobs_to_html(jobs):
         title = job.get("title", "Missing title")
         company = job.get("company", "Missing employer")
         date_published = job.get("date_published", f"Found on {DATE}")
-        evaluation = job.get("evaluation", {})
+        evaluation = job.get("evaluation")
+        if not isinstance(evaluation, dict):
+            evaluation = {}
         score = evaluation.get("match_score", "Missing score")
-        missing_required = ", ".join(evaluation.get("missing_required", []))
+        missing_required = evaluation.get("missing_required", [])
+        if isinstance(missing_required, str):
+            missing_required = [missing_required]
+        missing_required = ", ".join(missing_required)
 
         html += (
             f"<tr><td><a href='{url}'>{title}</a></td>"
@@ -307,9 +328,14 @@ def jobs_to_markdown(jobs: list[dict]) -> str:
         title = job.get("title", "Missing title").replace("|", "\\|")
         company = job.get("company", "Missing employer")
         date_published = job.get("date_published", f"Found on {DATE}")
-        evaluation = job.get("evaluation") or {}
+        evaluation = job.get("evaluation")
+        if not isinstance(evaluation, dict):
+            evaluation = {}
         score = evaluation.get("match_score", "Missing score")
-        missing_required = ", ".join(evaluation.get("missing_required", []))
+        missing_required = evaluation.get("missing_required", [])
+        if isinstance(missing_required, str):
+            missing_required = [missing_required]
+        missing_required = ", ".join(missing_required)
 
         markdown += (
             f"|[{title}]({url})|{company}|{score}|"

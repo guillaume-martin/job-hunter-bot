@@ -180,3 +180,102 @@ def test_analyze_job_returns_none_on_empty_choices(analyzer):
 
     # Verify
     assert result is None
+
+
+# ---------------------------------------------------------------------------
+# Robust response parsing
+# ---------------------------------------------------------------------------
+
+
+def test_analyze_job_parses_markdown_fenced_json(analyzer):
+    """analyze_job should parse JSON wrapped in ```json code fences."""
+    # Setup
+    expected = {"match_score": "85/100", "recommendation": "Apply"}
+    fenced = f"```json\n{json.dumps(expected)}\n```"
+
+    analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
+    mock_response = make_mock_response(fenced)
+
+    # Exercise
+    with patch("src.ai_analyzer.completion", return_value=mock_response):
+        result = analyzer.analyze_job("Resume text", "Job description text")
+
+    # Verify
+    assert isinstance(result, dict)
+    assert result == expected
+
+
+def test_analyze_job_parses_json_with_surrounding_prose(analyzer):
+    """analyze_job should extract the JSON object even with extra text around it."""
+    # Setup
+    expected = {"match_score": "92/100", "recommendation": "Perfect - apply"}
+    content = f"Here is the evaluation:\n{json.dumps(expected)}\nHope this helps!"
+
+    analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
+    mock_response = make_mock_response(content)
+
+    # Exercise
+    with patch("src.ai_analyzer.completion", return_value=mock_response):
+        result = analyzer.analyze_job("Resume text", "Job description text")
+
+    # Verify
+    assert isinstance(result, dict)
+    assert result == expected
+
+
+def test_analyze_job_returns_none_on_non_json_content(analyzer):
+    """analyze_job should return None when the response contains no JSON object."""
+    # Setup
+    analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
+    mock_response = make_mock_response("The candidate is a good fit, score 85/100.")
+
+    # Exercise
+    with patch("src.ai_analyzer.completion", return_value=mock_response):
+        result = analyzer.analyze_job("Resume text", "Job description text")
+
+    # Verify
+    assert result is None
+
+
+def test_analyze_job_returns_none_on_non_dict_json(analyzer):
+    """analyze_job should return None when the JSON response is not an object."""
+    # Setup
+    analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
+    mock_response = make_mock_response(json.dumps("85/100"))
+
+    # Exercise
+    with patch("src.ai_analyzer.completion", return_value=mock_response):
+        result = analyzer.analyze_job("Resume text", "Job description text")
+
+    # Verify
+    assert result is None
+
+
+def test_analyze_job_normalizes_numeric_match_score(analyzer):
+    """analyze_job should convert a numeric match_score to the 'N/100' string form."""
+    # Setup
+    analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
+    mock_response = make_mock_response(json.dumps({"match_score": 85}))
+
+    # Exercise
+    with patch("src.ai_analyzer.completion", return_value=mock_response):
+        result = analyzer.analyze_job("Resume text", "Job description text")
+
+    # Verify
+    assert result is not None
+    assert result["match_score"] == "85/100"
+
+
+def test_analyze_job_normalizes_bare_number_match_score(analyzer):
+    """analyze_job should append '/100' when match_score is a bare number string."""
+    # Setup
+    analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
+    mock_response = make_mock_response(json.dumps({"match_score": "85"}))
+
+    # Exercise
+    with patch("src.ai_analyzer.completion", return_value=mock_response):
+        result = analyzer.analyze_job("Resume text", "Job description text")
+
+    # Verify
+    assert result is not None
+    assert result["match_score"] == "85/100"

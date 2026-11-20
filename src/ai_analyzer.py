@@ -1,8 +1,8 @@
 import json
 import logging
+import re
 import time
 from string import Template
-from typing import cast
 
 from litellm import completion
 from litellm.exceptions import APIError, RateLimitError
@@ -72,6 +72,66 @@ class AIAnalyzer:
 
         return message
 
+    @staticmethod
+    def _extract_json_object(content: str) -> dict | None:
+        """Extract and parse the first JSON object from a raw LLM response.
+
+        Models frequently wrap the JSON in markdown code fences
+        (```json ... ```) or add prose around it, which makes a plain
+        json.loads() fail. This strips fences and falls back to the
+        outermost {...} block before parsing.
+
+        Args:
+            content: Raw text returned by the model.
+
+        Returns:
+            The parsed dictionary, or None if no valid JSON object is found.
+        """
+        cleaned = content.strip()
+
+        # Strip markdown code fences if present (```json ... ``` or ``` ... ```)
+        fence_match = re.search(
+            r"```(?:json)?\s*(.*?)```", cleaned, re.DOTALL | re.IGNORECASE
+        )
+        if fence_match:
+            cleaned = fence_match.group(1).strip()
+
+        try:
+            parsed = json.loads(cleaned)
+        except json.JSONDecodeError:
+            # Fall back to the outermost {...} block, ignoring surrounding text
+            block_match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+            if not block_match:
+                return None
+            try:
+                parsed = json.loads(block_match.group(0))
+            except json.JSONDecodeError:
+                return None
+
+        return parsed if isinstance(parsed, dict) else None
+
+    @staticmethod
+    def _normalize_evaluation(evaluation: dict) -> dict:
+        """Normalize an evaluation dict to the shape expected downstream.
+
+        Ensures ``match_score`` is a string of the form "N/100", since the
+        model sometimes returns a bare number.
+
+        Args:
+            evaluation: The parsed evaluation dict.
+
+        Returns:
+            The normalized evaluation dict.
+        """
+        score = evaluation.get("match_score")
+        if isinstance(score, bool):
+            evaluation["match_score"] = "0/100"
+        elif isinstance(score, (int, float)):
+            evaluation["match_score"] = f"{score}/100"
+        elif isinstance(score, str) and "/" not in score:
+            evaluation["match_score"] = f"{score.strip()}/100"
+        return evaluation
+
     def analyze_job(self, resume: str, job_description: str) -> dict | None:
         """Query the AI API to analyze a job description against a resume.
 
@@ -112,11 +172,25 @@ class AIAnalyzer:
             content = response.choices[0].message.content
             logger.debug(f"{'=' * 50}\nAPI response received:\n{content}\n{'=' * 50}")
 
-            try:
-                parsed = json.loads(content) if isinstance(content, str) else content
-                return cast(dict, parsed)
-            except json.JSONDecodeError:
-                return cast(dict, content)
+            if isinstance(content, dict):
+                return self._normalize_evaluation(content)
+
+            if not isinstance(content, str):
+                logger.warning(
+                    "Unexpected AI response content type: %s",
+                    type(content).__name__,
+                )
+                return None
+
+            parsed = self._extract_json_object(content)
+            if parsed is None:
+                logger.warning(
+                    "Could not parse a JSON object from the AI response: %.500s",
+                    content,
+                )
+                return None
+
+            return self._normalize_evaluation(parsed)
 
         except (APIError, RateLimitError) as e:
             logger.exception(f"API request failed: {e}")
