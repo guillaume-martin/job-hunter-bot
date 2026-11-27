@@ -109,6 +109,7 @@ class WwrScraper(BaseScraper, SeleniumMixin):
             logger.info(
                 f"Skipping non-ASCII term '{term}': WWR is an English-only job board."
             )
+            return []
 
         page_content = self._retrieve_html_content(self._build_search_url(term))
         soup = BeautifulSoup(page_content, "html.parser")

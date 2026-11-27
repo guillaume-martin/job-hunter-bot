@@ -57,6 +57,7 @@ class TrulyRemoteScraper(BaseScraper):
                 f"Skipping non-ASCII term '{term}': "
                 "TrulyRemote is an English-only job board."
             )
+            return []
         payload = self._build_api_payload(term)
 
         r = self._request(method="POST", url=self.base_url, json=payload)

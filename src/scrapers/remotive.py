@@ -70,6 +70,7 @@ class RemotiveScraper(BaseScraper):
                 f"Skipping non-ASCII term '{term}': "
                 "Remotive is an English-only job board"
             )
+            return []
         payload = self.__build_api_payload(term)
 
         r = self._request(
