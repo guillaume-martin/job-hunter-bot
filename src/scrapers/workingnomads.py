@@ -1,4 +1,5 @@
 import logging
+import urllib.parse
 from datetime import UTC, datetime
 from typing import Any, cast
 
@@ -95,15 +96,22 @@ class WorkingNomadsScraper(BaseScraper):
         raise NotImplementedError("Job description is included in job details.")
 
     def get_jobs(self, term: str) -> list[dict[str, Any]]:
+        if not term.isascii():
+            logger.info(
+                f"Skipping non-ASCII term '{term}': "
+                "Workingnomads is an English-only job board."
+            )
+            return []
         payload = self._build_api_payload(term)
 
         user_agent = (
             "Mozilla/5.0 (X11; Linux x86_64; rv:145.0) Gecko/20100101 Firefox/145.0"
         )
-        tag = term.replace(" ", "-")
+        tag = urllib.parse.quote(term.replace(" ", "-"), safe="-")
+        location = urllib.parse.quote(self.url_location)
         referer = (
             "https://www.workingnomads.com/jobs?"
-            f"location={self.url_location}&"
+            f"location={location}&"
             f"postedDate={self.since}&tag={tag}"
         )
         cookie = (

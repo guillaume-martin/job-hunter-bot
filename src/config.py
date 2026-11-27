@@ -63,10 +63,12 @@ class Config:
     REQUEST_TIMEOUT = 60
 
     # AI settings
-    API_URL = "https://api.mistral.ai/v1/chat/completions"
+    PROVIDER = "mistral"
     MODEL = "mistral-small-latest"
     TEMPERATURE = 0.7
     TIMEOUT = 60
+    NUM_RETRIES = 3
+    REQUEST_DELAY = 1.5  # Delay between requests in seconds.
     PROMPT_FILE = "src/data/prompt.txt"
     RESUME_FILE = "src/data/resume.txt"
     # Minimum job `match_score` (0-100) required to select a job for application.

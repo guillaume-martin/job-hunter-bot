@@ -296,3 +296,92 @@ def test_select_jobs_no_description_is_selected(monkeypatch, fake_analyzer):
     assert len(rejected) == 0
     assert selected[0]["evaluation"] == "manual"
     assert not fake_analyzer.called  # analyzer should not have been called
+
+
+def test_select_jobs_string_evaluation_is_rejected(monkeypatch, fake_analyzer):
+    """A non-dict evaluation (e.g. raw LLM string) should reject the job, not crash."""
+    # Setup
+    monkeypatch.setattr(job_search.Config, "APPLY_THRESHOLD", 80)
+    fake_analyzer.return_value = "raw unparsed LLM output"
+
+    jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
+
+    # Exercise — must not raise TypeError: string indices must be integers
+    selected, rejected = job_search.select_jobs(jobs, fake_analyzer, "my resume")
+
+    # Verify
+    assert len(selected) == 0
+    assert len(rejected) == 1
+    assert rejected[0]["evaluation"] == "raw unparsed LLM output"
+
+
+def test_select_jobs_missing_match_score_is_rejected(monkeypatch, fake_analyzer):
+    """An evaluation dict without match_score should reject the job, not crash."""
+    # Setup
+    monkeypatch.setattr(job_search.Config, "APPLY_THRESHOLD", 80)
+    fake_analyzer.return_value = {"error": "Analysis failed"}
+
+    jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
+
+    # Exercise
+    selected, rejected = job_search.select_jobs(jobs, fake_analyzer, "my resume")
+
+    # Verify
+    assert len(selected) == 0
+    assert len(rejected) == 1
+
+
+def test_select_jobs_numeric_match_score(monkeypatch, fake_analyzer):
+    """A numeric match_score should be compared against the threshold correctly."""
+    # Setup
+    monkeypatch.setattr(job_search.Config, "APPLY_THRESHOLD", 80)
+    fake_analyzer.return_value = {"match_score": 85, "missing_required": []}
+
+    jobs = [{"title": "Job 1", "company": "Acme", "description": "Some description"}]
+
+    # Exercise
+    selected, rejected = job_search.select_jobs(jobs, fake_analyzer, "my resume")
+
+    # Verify
+    assert len(selected) == 1
+    assert len(rejected) == 0
+
+
+def test_jobs_to_markdown_handles_manual_evaluation():
+    """jobs_to_markdown should not crash when evaluation is the 'manual' string."""
+    # Setup
+    jobs = [
+        {
+            "url": "https://example.com/job1",
+            "title": "Job 1",
+            "company": "Acme",
+            "evaluation": "manual",
+        },
+    ]
+
+    # Exercise
+    result = job_search.jobs_to_markdown(jobs)
+
+    # Verify
+    assert "Job 1" in result
+    assert "Missing score" in result
+
+
+def test_jobs_to_html_handles_manual_evaluation():
+    """jobs_to_html should not crash when evaluation is the 'manual' string."""
+    # Setup
+    jobs = [
+        {
+            "url": "https://example.com/job1",
+            "title": "Job 1",
+            "company": "Acme",
+            "evaluation": "manual",
+        },
+    ]
+
+    # Exercise
+    result = job_search.jobs_to_html(jobs)
+
+    # Verify
+    assert "Job 1" in result
+    assert "Missing score" in result
