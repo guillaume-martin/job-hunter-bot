@@ -40,10 +40,6 @@ class AIAnalyzer:
         self.prompt_file = prompt_file
         self.temperature = temperature
         self.timeout = timeout
-        self.headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json",
-        }
         self.num_retries = num_retries
         self.request_delay = request_delay
 
