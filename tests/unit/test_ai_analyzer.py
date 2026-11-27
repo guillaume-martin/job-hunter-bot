@@ -280,3 +280,24 @@ def test_analyze_job_normalizes_bare_number_match_score(analyzer):
     # Verify
     assert result is not None
     assert result["match_score"] == "85/100"
+
+
+def test_analyze_job_configures_litellm_exponential_backoff_retries(analyzer):
+    """analyze_job should configure litellm to retry on transient errors."""
+    # Setup
+    analyzer._build_system_instructions = MagicMock(return_value="Analyze this.")
+    mock_response = make_mock_response(json.dumps({"match_score": "85/100"}))
+
+    # Exercise
+    with patch(
+        "src.ai_analyzer.completion", return_value=mock_response
+    ) as mock_completion:
+        result = analyzer.analyze_job("Resume text", "Job description text")
+
+    # Verify
+    mock_completion.assert_called_once()  # Exactly one LLM call
+    kwargs = mock_completion.call_args.kwargs
+    assert kwargs["num_retries"] == analyzer.num_retries
+    assert kwargs["retry_strategy"] == "exponential_backoff_retry"
+    assert kwargs["model"] == "dummy_provider/dummy_model"
+    assert result == {"match_score": "85/100"}
