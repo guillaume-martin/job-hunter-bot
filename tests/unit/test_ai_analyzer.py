@@ -19,6 +19,7 @@ def analyzer() -> AIAnalyzer:
         provider="dummy_provider",
         model="dummy_model",
         prompt_file="dummy_prompt.txt",
+        request_delay=0,
     )
 
 
