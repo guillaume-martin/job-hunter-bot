@@ -246,7 +246,7 @@ Valid site names: `104`, `remoteok`, `remotive`, `trulyremote`, `workingnomads`,
 #### LLM Configuration
 
 The bot uses LLM models to score job listings against your resume. The calls to
-the models API is managed by the litellm library. You can configure the provider
+the models API are managed by the litellm library. You can configure the provider
 and the model in `config.py`:
 
 ```python
@@ -255,8 +255,7 @@ MODEL = "gpt-4"
 ```
 
 You can find a list of supported providers in https://docs.litellm.ai/docs/providers.
-The API key for the provider must be set in thThe API key for the provider must
-be set in the .env file:
+The API key for the provider must be set in the .env file:
 
 ```bash
 # AI configuration
