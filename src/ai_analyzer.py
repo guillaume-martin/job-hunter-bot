@@ -26,10 +26,13 @@ class AIAnalyzer:
 
         Args:
             api_key: API key for authentication.
+            provider: AI provider (e.g., "openai").
             model: Model to use for analysis.
-            api_url: API endpoint URL.
             prompt_file: Path to the prompt template file.
             temperature: Temperature for AI responses (0.0-1.0).
+            timeout: Timeout for API requests in seconds.
+            num_retries: Number of retries for failed API requests.
+            request_delay: Delay between API requests in seconds.
         """
         self.api_key = api_key
         self.provider = provider
