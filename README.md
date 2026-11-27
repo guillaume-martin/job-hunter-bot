@@ -250,8 +250,8 @@ the models API are managed by the litellm library. You can configure the provide
 and the model in `config.py`:
 
 ```python
-PROVIDER = "openai"
-MODEL = "gpt-4"
+PROVIDER = "mistral"
+MODEL = "mistral-small-latest"
 ```
 
 You can find a list of supported providers in https://docs.litellm.ai/docs/providers.
@@ -259,7 +259,7 @@ The API key for the provider must be set in the .env file:
 
 ```bash
 # AI configuration
-AI_API_KEY=your_api_key_here
+AI_API_KEY=<your_api_key_here>
 ```
 
 ### 💻 Running Locally
