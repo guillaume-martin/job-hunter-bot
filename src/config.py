@@ -60,7 +60,6 @@ class Config:
 
     # Scrapers requests settings
     REQUEST_RETRIES = 3  # Number of retries when requests fail.
-    REQUEST_DELAY = 1.5  # Delay between requests in seconds.
     REQUEST_TIMEOUT = 60
 
     # AI settings
@@ -69,6 +68,7 @@ class Config:
     TEMPERATURE = 0.7
     TIMEOUT = 60
     NUM_RETRIES = 3
+    REQUEST_DELAY = 1.5  # Delay between requests in seconds.
     PROMPT_FILE = "src/data/prompt.txt"
     RESUME_FILE = "src/data/resume.txt"
     # Minimum job `match_score` (0-100) required to select a job for application.
