@@ -365,6 +365,7 @@ def main(context: Literal["cloud", "local"]) -> None:
         temperature=Config.TEMPERATURE,
         timeout=Config.TIMEOUT,
         num_retries=Config.NUM_RETRIES,
+        request_delay=Config.REQUEST_DELAY,
     )
 
     # Load resume once (e.g., from a file or environment variable)

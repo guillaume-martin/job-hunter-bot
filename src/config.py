@@ -60,6 +60,7 @@ class Config:
 
     # Scrapers requests settings
     REQUEST_RETRIES = 3  # Number of retries when requests fail.
+    REQUEST_DELAY = 1.5  # Delay between requests in seconds.
     REQUEST_TIMEOUT = 60
 
     # AI settings
